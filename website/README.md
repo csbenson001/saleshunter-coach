@@ -59,19 +59,19 @@ publishes this folder automatically.
 
 ## Custom domain with Cloudflare
 
-The site is served at **`parley.tw`** (apex) via GitHub Pages + Cloudflare DNS.
+The site is served at **`saleshunterlive.com`** (apex) via GitHub Pages + Cloudflare DNS.
 To reproduce or move it:
 
 1. **Tell GitHub the domain.** Create `website/CNAME` containing just the
    hostname, e.g.:
    ```
-   parley.tw
+   saleshunterlive.com
    ```
    (Or set it under Settings → Pages → Custom domain, which creates the same
    file. Keeping it in `website/` means the Actions deploy preserves it.)
 
 2. **Add the DNS record in Cloudflare** (DNS → Records):
-   - **Apex/root** (`parley.tw`, current setup): add `CNAME` `@` →
+   - **Apex/root** (`saleshunterlive.com`, current setup): add `CNAME` `@` →
      `pathorsai.github.io` (Cloudflare flattens this automatically), or use
      GitHub's four A records: `185.199.108.153`, `185.199.109.153`,
      `185.199.110.153`, `185.199.111.153`.
