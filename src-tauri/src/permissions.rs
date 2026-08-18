@@ -179,7 +179,7 @@ pub fn request_microphone() {
 /// "system-audio" and "screen" both land on the Screen & System Audio Recording
 /// pane — that's where the tap's "System Audio Recording Only" entry lives.
 /// "keyboard" opens the Keyboard pane (for setting the 🌐/fn key to "Do
-/// Nothing" when Parley can only listen to it, not swallow it).
+/// Nothing" when Coach can only listen to it, not swallow it).
 #[tauri::command]
 pub fn open_privacy_settings(pane: String) {
     #[cfg(target_os = "macos")]

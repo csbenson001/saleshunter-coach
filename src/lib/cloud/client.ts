@@ -5,12 +5,12 @@ import { CLOUD_ENABLED } from "../flags";
 import type { CloudUser } from "./types";
 
 /**
- * Parley Cloud HTTP client. The OSS app stays standalone — it only speaks to the
+ * Coach Cloud HTTP client. The OSS app stays standalone — it only speaks to the
  * cloud over this API (auth + sync), never importing private code. Override the
- * endpoint with VITE_PARLEY_CLOUD_URL to point at a local `wrangler dev` backend.
+ * endpoint with VITE_COACH_CLOUD_URL to point at a local `wrangler dev` backend.
  */
 export const CLOUD_URL =
-  (import.meta.env.VITE_PARLEY_CLOUD_URL as string | undefined)?.replace(/\/$/, "") ||
+  (import.meta.env.VITE_COACH_CLOUD_URL as string | undefined)?.replace(/\/$/, "") ||
   "https://api.parley.tw";
 
 type Me = { user: CloudUser | null; activeOrganizationId: string | null };

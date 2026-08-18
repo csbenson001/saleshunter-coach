@@ -1,6 +1,6 @@
 # iOS voice-typing keyboard
 
-A dictation keyboard for Parley: tap the mic in any text field and speak; the
+A dictation keyboard for SalesHunter Coach: tap the mic in any text field and speak; the
 words land in the field. It is the phone's version of the desktop's
 `voice_typing.rs` — the meeting transcription stack (mic → hosted STT relay) with
 none of the meeting overhead — reached from the system keyboard instead of a
@@ -15,7 +15,7 @@ Every dictation keyboard on the App Store — Wispr Flow, Typeless, Superwhisper
 works around this the same way: the keyboard bounces to its container app, the
 app records, and the transcript is handed back to the keyboard.
 
-Parley reuses its existing pipeline for the recording half: `AudioCapture`
+SalesHunter Coach reuses its existing pipeline for the recording half: `AudioCapture`
 (16 kHz mono) → `SttRelayClient` (hosted relay, billed under `feature:
 "dictation"`, no API key on the phone). Only the keyboard, the App Group
 hand-off, and the in-app dictation session are new.
@@ -23,9 +23,9 @@ hand-off, and the in-app dictation session are new.
 ## Flow
 
 ```
-┌ host app (any) ────────────┐        ┌ Parley app (background) ──────┐
+┌ host app (any) ────────────┐        ┌ SalesHunter Coach app (background) ──────┐
 │  text field                │        │  DictationCoordinator          │
-│  Parley keyboard  ──mic──▶  │  URL   │  parley://dictate?session=…    │
+│  SalesHunter Coach keyboard  ──mic──▶  │  URL   │  saleshunter-coach://dictate?session=…    │
 │      │                      │───────▶│      │                         │
 │      │                      │        │  AudioCapture → SttRelayClient │
 │  insertText ◀── App Group ──┼────────┼──▶ transcript (committed/tail) │
@@ -35,7 +35,7 @@ hand-off, and the in-app dictation session are new.
 
 1. **Keyboard mic tap.** The keyboard mints a session id, captures the host
    app's bundle id (best-effort, for auto-return — see below), writes an
-   *uplink* file to the App Group, and opens `parley://dictate?session=…` with
+   *uplink* file to the App Group, and opens `saleshunter-coach://dictate?session=…` with
    SwiftUI's `openURL` action (the responder-chain `openURL:` walk was disabled
    for keyboards in iOS 18; `openURL` is the public path that still works, with
    the walk kept only as an older-system fallback).
@@ -55,7 +55,7 @@ hand-off, and the in-app dictation session are new.
 
 ### App Group channel
 
-`DictationChannel` (in ParleyKit, so both targets share it) is two single-writer
+`DictationChannel` (in CoachKit, so both targets share it) is two single-writer
 mailboxes plus two Darwin notifications, so the two processes never contend on a
 file:
 
@@ -68,7 +68,7 @@ signals (they carry no payload). This is what makes the hand-off robust to the
 keyboard being suspended/killed while the app is foregrounded — whatever it
 missed is still in the downlink when it returns.
 
-App Group id: `group.com.pathors.parley.ios` (entitlement on both targets).
+App Group id: `group.com.saleshunter.coach.ios` (entitlement on both targets).
 
 ## The "jump back to the previous app" problem
 
@@ -84,7 +84,7 @@ own docs confirm the change: before 26.4 their keyboard "briefly opened the Flow
 app and returned you automatically"; now they instruct users to swipe right on
 the home indicator to go back.
 
-Parley's decision (隱蔽 + 版本閘門) is to keep the good experience where it still
+SalesHunter Coach's decision (隱蔽 + 版本閘門) is to keep the good experience where it still
 works and degrade cleanly where it doesn't:
 
 - **iOS < 26.4** (`HostReturn.canReturn == true`): the app auto-returns to the
@@ -106,7 +106,7 @@ only steps 1–3 change.
 `StartDictationIntent` (an `AudioRecordingIntent`, iOS 18+) starts dictation
 **without leaving the current app at all** — the intent runs in the app's process
 in the background with a recording assertion, so the mic opens with no jump and
-no swipe. Whatever Parley keyboard is frontmost inserts the text through the same
+no swipe. Whatever SalesHunter Coach keyboard is frontmost inserts the text through the same
 App Group path. This is the lowest-friction trigger and sidesteps the whole
 auto-return problem; the keyboard button remains the discoverable default.
 
@@ -148,7 +148,7 @@ own height and the change is animated when the user crosses between them.
 
 ### Mode strip
 
-Across the top, in the shape Typeless uses: the **Parley wordmark** on the left,
+Across the top, in the shape Typeless uses: the **SalesHunter Coach wordmark** on the left,
 and a two-segment control on the right — a waveform (voice) and `EN`. The
 selected segment gets a filled pill. **A left/right swipe across the pane body
 switches modes too**, on a `DragGesture` with a 24pt minimum distance and a 56pt
@@ -193,7 +193,7 @@ a dictating user actually reaches for — take that back, type an address, break
 the line — should not cost a trip through the EN pane.
 
 The mic pill is one of exactly two places the keyboard is allowed to look like
-Parley rather than iOS: idle it carries Pathors' brand gradient (`#1469D4` →
+SalesHunter Coach rather than iOS: idle it carries Pathors' brand gradient (`#1469D4` →
 `#2DB6F3`, top-leading to bottom-trailing); listening it goes flat recording red,
 so "armed" is never something you have to read out of a gradient. The other is
 the wordmark (`#1469D4` light, `#2DB6F3` dark). Everything else — caps, press
@@ -202,10 +202,10 @@ look like a keyboard reads as broken.
 
 ### No Bopomofo engine — 注音 is the system's job
 
-**Parley deliberately ships no Chinese input engine.** A keyboard extension
+**SalesHunter Coach deliberately ships no Chinese input engine.** A keyboard extension
 cannot reach the system's Chinese input engine, and bundling a Bopomofo engine
 (a phonetic table, a candidate bar, a user dictionary) is a product of its own,
-not a round of polish on a dictation keyboard. Chinese input in Parley is
+not a round of polish on a dictation keyboard. Chinese input in SalesHunter Coach is
 dictation; Chinese *typing* belongs to the system 注音 keyboard.
 
 That makes the globe load-bearing, so it is present **on every device**, not

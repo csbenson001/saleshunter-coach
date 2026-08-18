@@ -1232,7 +1232,7 @@ struct SonioxLogContext<'a> {
 }
 
 /// Write a reviewable JSON log of the raw Soniox transcript response plus the
-/// request context to `~/Documents/Parley/logs/soniox-<timestamp>.json`.
+/// request context to `~/Documents/Coach/logs/soniox-<timestamp>.json`.
 ///
 /// Best-effort: any failure (no HOME, IO error, …) is reported via `log::warn!`
 /// and swallowed — logging must NEVER fail the transcription.
@@ -1244,12 +1244,12 @@ fn write_soniox_log(ctx: SonioxLogContext) {
 
 /// Fallible inner half of `write_soniox_log`. Returns the absolute path written.
 fn try_write_soniox_log(ctx: &SonioxLogContext) -> Result<(), String> {
-    // Mirror commands.rs::save_transcript's ~/Documents/Parley layout, under a
+    // Mirror commands.rs::save_transcript's ~/Documents/Coach layout, under a
     // dedicated `logs/` subdirectory.
     let home = std::env::var("HOME").map_err(|_| "no HOME dir".to_string())?;
     let dir = std::path::Path::new(&home)
         .join("Documents")
-        .join("Parley")
+        .join("Coach")
         .join("logs");
     std::fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
 

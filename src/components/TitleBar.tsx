@@ -669,7 +669,7 @@ export function TitleBar({ fullscreen = false }: Readonly<{ fullscreen?: boolean
       {!fullscreen && <TrafficLights focused={focused} onAction={controlWindow} t={t} />}
 
       {/* Top-left: information, not brand (macOS's menu bar already says
-          Parley) — while recording, the session vitals (rec + elapsed + mic
+          Coach) — while recording, the session vitals (rec + elapsed + mic
           level). Where the meeting saves is decided by the folder picker, so a
           second folder chip here would be a silently-losing source of truth. */}
       <div data-tauri-drag-region className="flex min-w-0 items-center gap-2">

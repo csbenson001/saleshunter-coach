@@ -25,7 +25,7 @@ export async function openDiagnosticsWindow(): Promise<void> {
   log.info("diagnostics: open window");
   const win = new WebviewWindow("diagnostics", {
     url: "index.html#diagnostics",
-    title: "Parley — Field Log",
+    title: "SalesHunter Coach — Field Log",
     width: 900,
     height: 600,
     minWidth: 600,

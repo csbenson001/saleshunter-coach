@@ -1,18 +1,18 @@
 # Cloud, auth and upload — public API
 
 The `auth`, `cloud` and `upload` packages are everything the app needs to sign in
-to Parley Cloud and get a finished meeting off the device. They mirror the iOS
-app's contract exactly (`ios/ParleyKit/Sources/ParleyKit/CloudClient.swift`,
-`ios/App/Parley/MeetingUploader.swift`); where iOS and the desktop app disagree,
+to SalesHunter Coach Cloud and get a finished meeting off the device. They mirror the iOS
+app's contract exactly (`ios/CoachKit/Sources/CoachKit/CloudClient.swift`,
+`ios/App/SalesHunter Coach/MeetingUploader.swift`); where iOS and the desktop app disagree,
 iOS wins, because the phone is the precedent for a phone.
 
 Base URL: `https://api.parley.tw` (`CloudClient.DEFAULT_BASE_URL`).
 Everything is bearer-authenticated: `Authorization: Bearer <session token>`.
 
 ```
-com.pathors.parley
+com.saleshunter.coach
   auth/    AuthManager, AuthCallback, CustomTabsLauncher
-  cloud/   CloudClient, CloudException, CloudJson, ParleyHttp, Models.kt
+  cloud/   CloudClient, CloudException, CloudJson, CoachHttp, Models.kt
   upload/  PendingUploadQueue, PendingUpload, MeetingUploader, DrainResult
 ```
 
@@ -24,7 +24,7 @@ val cloud = auth.cloudClient()           // bearer + 401 → clearSession()
 val uploader = MeetingUploader.create(context, cloud)
 ```
 
-One `AuthManager` and one `CloudClient` per process. `ParleyHttp.shared` is the
+One `AuthManager` and one `CloudClient` per process. `CoachHttp.shared` is the
 single OkHttp client (one connection pool for auth, sync and uploads).
 
 ## Sign-in
@@ -46,8 +46,8 @@ when (val result = auth.handleAuthCallback(intent.data ?: return)) {
 
 | Member | Notes |
 | --- | --- |
-| `signInUrl(callback = "parley://auth-callback")` | `https://api.parley.tw/sign-in?to=<callback>`. The param is **`to`** — the backend's `validReturnTarget` (cloud `src/signin.ts`) reads `to` and allows any `parley://` target or an http loopback, falling back to `parley://auth-callback`. |
-| `isAuthCallback(uri)` | `parley://auth-callback` (the manifest intent filter) and `parley://auth/…` (the iOS form) both count. |
+| `signInUrl(callback = "saleshunter-coach://auth-callback")` | `https://api.parley.tw/sign-in?to=<callback>`. The param is **`to`** — the backend's `validReturnTarget` (cloud `src/signin.ts`) reads `to` and allows any `saleshunter-coach://` target or an http loopback, falling back to `saleshunter-coach://auth-callback`. |
+| `isAuthCallback(uri)` | `saleshunter-coach://auth-callback` (the manifest intent filter) and `saleshunter-coach://auth/…` (the iOS form) both count. |
 | `handleAuthCallback(uri)` | Extracts `?token=`, persists it. `?error=` → `Failure(code)`; no token → `Failure("no_token_in_callback")`. |
 | `tokenFlow: Flow<String?>` / `isSignedIn: Flow<Boolean>` | Whether a token is **stored** — not whether it is valid. |
 | `currentToken(): String?` | One-shot read. |
@@ -56,7 +56,7 @@ when (val result = auth.handleAuthCallback(intent.data ?: return)) {
 | `signOut()` | Clears locally **first**, then best-effort `POST /auth/sign-out`. Desktop order: a failed revoke must never leave the app looking signed in. |
 
 The token lives in a Preferences DataStore at
-`filesDir/datastore/parley_auth.preferences_pb` — app-private, and excluded from
+`filesDir/datastore/coach_auth.preferences_pb` — app-private, and excluded from
 backup by `android:allowBackup="false"`. (iOS uses the Keychain; Android has no
 equivalent that survives a reinstall, and the session is cheap to re-establish.)
 
@@ -259,10 +259,10 @@ user-assigned name, or null.
 | | iOS | Android |
 | --- | --- | --- |
 | Token store | Keychain | Preferences DataStore (app-private; no Android equivalent survives reinstall) |
-| Callback URL | `parley://auth/cb` | `parley://auth-callback` (the manifest filter; the backend accepts any `parley://`) |
+| Callback URL | `saleshunter-coach://auth/cb` | `saleshunter-coach://auth-callback` (the manifest filter; the backend accepts any `saleshunter-coach://`) |
 | `source` | always `"live"` | `"live"` or `"upload"` — Android imports audio files |
 | Queue manifest | `{id, startedAt, durationMs, segments, defaultSave}` | `{id, title, source, startedAtMs, durationMs, segments, folderId}` — the title is carried (an import is named after its file, and copy belongs to the UI); `defaultSave` is org-sharing, which Android does not surface |
 | Short recordings | dropped under 2 s | dropped under 2 s **for live capture only** — silently discarding a file the user deliberately imported would be a bug |
 | Audio upload | whole file in memory | streamed from disk |
 | Retries | one attempt per drain | 3 attempts with backoff, then the pass stops (same "don't spin" rule) |
-| Segment type | `ParleyKit.TranscriptSegment` | `cloud.TranscriptSegmentDto` — a wire DTO, deliberately separate from the `:parleykit` STT type so the on-the-wire names stay pinned. Map at the call site. |
+| Segment type | `CoachKit.TranscriptSegment` | `cloud.TranscriptSegmentDto` — a wire DTO, deliberately separate from the `:coachkit` STT type so the on-the-wire names stay pinned. Map at the call site. |

@@ -1,35 +1,34 @@
 # en-US App Store metadata
 
 Copy each field into the English (U.S.) localization in App Store Connect.
-English and Traditional Chinese are Parley's two primary markets — this copy is a
-peer of [`zh-Hant.md`](zh-Hant.md), not a source for it. (The App Store *primary
-locale* is currently zh-Hant, so regions without their own localization see the
-Chinese listing; flip the primary locale in App Store Connect if English should
-be the global default.)
+American English is SalesHunter Coach's only market and only localization.
+(**Action required:** the App Store *primary locale* was zh-Hant, so regions
+without their own localization would still be served a Chinese listing — set the
+primary locale to English (U.S.) in App Store Connect.)
 
 Character limits below are Apple's. Keep the punctuation as written — the em
 dashes and curly quotes are deliberate.
 
 | Field | Value |
 | --- | --- |
-| Name (≤ 30) | Parley: Dictation & Meetings |
+| Name (≤ 30) | SalesHunter Coach: Dictation & Meetings |
 | Subtitle (≤ 30) | Voice typing + meeting notes |
-| Promotional text (≤ 170) | Voice typing in any app: tap the mic on the Parley keyboard and your words land at the cursor. Or put the phone on the table and record the meeting as a live transcript. |
+| Promotional text (≤ 170) | Voice typing in any app: tap the mic on the SalesHunter Coach keyboard and your words land at the cursor. Or put the phone on the table and record the meeting as a live transcript. |
 | Keywords (≤ 100 bytes) | voice typing,dictation,meeting,transcript,sales,negotiation,interview,speech to text,minutes |
-| Support URL | https://parley.tw/support/ |
-| Marketing URL | https://parley.tw |
-| Privacy Policy URL | https://parley.tw/privacy/ |
+| Support URL | https://saleshunterlive.com/support/ |
+| Marketing URL | https://saleshunterlive.com |
+| Privacy Policy URL | https://saleshunterlive.com/privacy/ |
 | Copyright | © 2026 Pathors AI |
 
 ## Description (≤ 4,000 chars)
 
-Parley turns your voice into text on your iPhone two ways — and both run on the
-same transcription that powers Parley, your copilot for the high-stakes
+SalesHunter Coach turns your voice into text on your iPhone two ways — and both run on the
+same transcription that powers SalesHunter Coach, your copilot for the high-stakes
 conversations of sales, negotiation, and interviews.
 
 TYPE BY VOICE, ANYWHERE
 
-Switch to the Parley keyboard in any app — Messages, Mail, Notes, anything with a
+Switch to the SalesHunter Coach keyboard in any app — Messages, Mail, Notes, anything with a
 text field — tap the mic, and your words type themselves in at the cursor. Put it
 on the Action Button and dictation starts without even switching keyboards. Stop
 and pick it up again without being bounced out of the app you are in.
@@ -47,28 +46,27 @@ ALSO IN THE APP
 • A library of your recordings to browse, search, and file into folders
 • Personal and organization spaces, with sharing and moving between them
 • Finished recordings survive a dead network: they queue on the phone and sync themselves once you are back
-• English and Traditional Chinese throughout, following your iPhone's language
 • System, light, and dark appearance
 
 BRING YOUR OWN STACK
 
-Parley is open source, and the point is that the meeting layer stays yours. On
+SalesHunter Coach is open source, and the point is that the meeting layer stays yours. On
 the desktop you pick the transcription vendor and the model provider that fit
-your cost, privacy, language, and latency requirements — Parley is the interface,
+your cost, privacy, language, and latency requirements — SalesHunter Coach is the interface,
 not another closed AI bundle. On iPhone, signing in gets you hosted
 transcription with no API key to manage and a free tier that covers everyday use.
 
 ONE ACCOUNT, TWO DEVICES
 
-Recordings and transcripts sync to your Parley account, so a meeting you caught
+Recordings and transcripts sync to your SalesHunter Coach account, so a meeting you caught
 on the phone opens on the Mac app — where the deeper work happens: the report
 with clickable timestamps, what each side committed to, action items, deal
-intelligence, and a scorecard on how you delivered. Parley is a meeting copilot
+intelligence, and a scorecard on how you delivered. SalesHunter Coach is a meeting copilot
 built for sales, negotiation, and interviews; the phone is its capture end.
 
 WHAT IT DOES NOT DO
 
-Parley for iPhone is honest about the platform. iOS gives no third-party app
+SalesHunter Coach for iPhone is honest about the platform. iOS gives no third-party app
 access to system audio, so this app does not record phone calls, FaceTime, or
 sound from other apps, and it never pretends otherwise. Online meetings belong
 on the Mac app, which can capture system audio properly. The phone owns the room
@@ -80,7 +78,7 @@ Recording never starts until you confirm that everyone present has agreed to it.
 You can delete your account and personal data permanently from Settings →
 Account → Delete Account. The privacy policy has the full detail.
 
-Parley is Apache-2.0 licensed. Source: github.com/pathorsAI/parley
+SalesHunter Coach is Apache-2.0 licensed. Source: github.com/pathorsAI/parley
 
 ## What's New — 1.3
 
@@ -90,7 +88,7 @@ in the middle of dictating without leaving the mic: return, @, and delete.
 Swipe left or right across the keyboard to move between the two.
 
 The globe key is on every device now, so the system Chinese keyboard is one tap
-away and holding it opens the picker. Parley does not ship its own Bopomofo
+away and holding it opens the picker. SalesHunter Coach does not ship its own Bopomofo
 layout; the way out of this keyboard is no longer hidden on some phones.
 
 The keyboard also lines up with the screen. It used to paint its own background
@@ -107,28 +105,28 @@ of Pathors is set in.
 
 ## What's New — 1.1
 
-Voice typing comes to the phone. Add the Parley keyboard and dictate into any
+Voice typing comes to the phone. Add the SalesHunter Coach keyboard and dictate into any
 app — Messages, Mail, Notes, anything with a text field — using the same
 transcription that runs your meetings. Put it on the Action Button and it starts
 without a keyboard switch at all.
 
-Also in this release: the app now speaks English as well as Traditional Chinese
+Also in this release: the app ships in American English
 and follows your iPhone's language; a welcome screen explains what an account
 gets you before asking for one; and the record button is never dead — if a
 session expires it opens sign-in instead of doing nothing.
 
 ## What's New — 1.0 (superseded, kept for history)
 
-First release of Parley for iPhone: in-person meeting recording, live
+First release of SalesHunter Coach for iPhone: in-person meeting recording, live
 transcription, cloud sync, personal and organization libraries, offline retry,
 and account management.
 
 ## Notes on the choices here
 
-- **The name carries two search terms.** "Parley" alone tells the App Store
-  nothing about what the app is; "Parley: Meeting Recorder" keeps the brand
+- **The name carries two search terms.** "SalesHunter Coach" alone tells the App Store
+  nothing about what the app is; "SalesHunter Coach: Meeting Recorder" keeps the brand
   first and buys the two words people actually search. If the team would rather
-  ship the bare wordmark, use `Parley` and move "meeting recorder" to the front
+  ship the bare wordmark, use `SalesHunter Coach` and move "meeting recorder" to the front
   of the keyword list.
 - **The subtitle does not mention voice typing.** Thirty characters only buys
   one idea, and the recorder is the one the screenshots open on. Voice typing

@@ -38,7 +38,7 @@ export interface ProviderInfo {
     | "kimiApiKey"
     | "ollamaApiKey"
     | "openrouterApiKey"
-    | "parleyApiKey";
+    | "coachApiKey";
   keyPlaceholder: string;
   /** False for providers that run locally without an API key (Ollama). */
   requiresKey?: boolean;
@@ -173,23 +173,23 @@ export const PROVIDERS: ProviderInfo[] = [
   },
   {
     id: "parley",
-    label: "Parley",
-    note: "provider.note.parley",
+    label: "SalesHunter Coach",
+    note: "provider.note.saleshunter-coach",
     tag: { label: "provider.tag.hosted", tone: "value" },
-    // Parley's own brand mark — the hosted service is Parley's, so it must read
-    // as Parley, not as the upstream backend (Groq) it happens to route to.
-    icon: "/providers/parley.svg",
+    // Coach's own brand mark — the hosted service is Coach's, so it must read
+    // as Coach, not as the upstream backend (Groq) it happens to route to.
+    icon: "/providers/saleshunter-coach.svg",
     kind: "openai-compatible",
     // Literal so this registry stays dependency-free; provider.ts overrides the
     // baseURL with the live CLOUD_URL at model-build time.
     baseURL: "https://api.parley.tw/v1",
-    apiKeyField: "parleyApiKey",
+    apiKeyField: "coachApiKey",
     keyPlaceholder: "",
     requiresKey: false,
     // Mirror Groq (the hosted backend) — it accepts the OpenAI json_schema shape.
     supportsStructuredOutputs: true,
-    models: ["parley-fast", "parley-smart"],
-    defaults: { realtime: "parley-fast", deep: "parley-smart" },
+    models: ["saleshunter-coach-fast", "saleshunter-coach-smart"],
+    defaults: { realtime: "saleshunter-coach-fast", deep: "saleshunter-coach-smart" },
   },
 ];
 

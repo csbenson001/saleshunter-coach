@@ -1,4 +1,4 @@
-// Cloud (Parley Cloud) account + session types. The desktop app talks to the
+// Cloud (Coach Cloud) account + session types. The desktop app talks to the
 // backend over HTTP only (see ../cloud/client) — it never imports private code.
 
 export interface CloudUser {

@@ -34,7 +34,6 @@ import { useAnalysisEngine, listenForCacheClear } from "./lib/analysis/engine";
 import { initStudyPipeline } from "./lib/analysis/studyPipeline";
 import { listenForSpeakerCacheClear } from "./lib/speakers/namesCache";
 import { initHistoryPersistSync, listenForRecordingSaved } from "./lib/history/history";
-import { checkForUpdate } from "./lib/update";
 import {
   getPendingInstalledReleaseNotes,
   markReleaseNotesSeen,
@@ -43,7 +42,6 @@ import {
 import { refreshSession } from "./lib/cloud/client";
 import { CLOUD_ENABLED } from "./lib/flags";
 import { initVoiceTyping } from "./lib/voiceTyping/host";
-import { preloadZhConverter } from "./lib/zhConvert";
 import { log } from "./lib/log";
 
 /**
@@ -114,9 +112,6 @@ const App = () => {
         else fn();
       }).catch((error) => log.warn("app: listener registration failed", { error: String(error) }));
     };
-    // Warm the S→T dictionary now: paying its load on the FIRST transcript
-    // event delayed the opening caption of every meeting by the parse time.
-    preloadZhConverter();
     track(listenForTranscript());
     track(listenForProsody());
     track(listenForMeetingError());
@@ -160,29 +155,11 @@ const App = () => {
       .catch((error) => log.warn("update: installed release notes lookup failed", { error: String(error) }));
   }, []);
 
-  // Check for an app update shortly after launch, then keep re-checking on a slow
-  // interval so a long-running window still catches a release that lands while
-  // it's open. Surfaces a dismissible banner only; applying is always
-  // user-initiated, so it never interrupts a meeting. Also re-validate any stored
-  // cloud sign-in on launch.
+  // Re-validate any stored cloud sign-in on launch.
   useEffect(() => {
     if (CLOUD_ENABLED) {
       refreshSession().catch((error) => log.warn("cloud: session refresh failed", { error: String(error) }));
     }
-    // Skip update checks in dev — there are no updater artifacts and the banner
-    // just gets in the way while iterating.
-    if (import.meta.env.DEV) return;
-    const RECHECK_MS = 30 * 60 * 1000; // every 30 min while the app stays open
-    const first = setTimeout(() => {
-      checkForUpdate({ silent: true }).catch((error) => log.warn("update: check failed", { error: String(error) }));
-    }, 3000);
-    const recheck = setInterval(() => {
-      checkForUpdate({ silent: true }).catch((error) => log.warn("update: check failed", { error: String(error) }));
-    }, RECHECK_MS);
-    return () => {
-      clearTimeout(first);
-      clearInterval(recheck);
-    };
   }, []);
 
   // If the window is closed (or dev-reloaded via HMR) mid-meeting, tell Rust to

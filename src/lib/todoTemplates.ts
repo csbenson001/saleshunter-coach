@@ -5,7 +5,7 @@ import type { TranslationKey } from "../i18n/messages";
 type T = (key: TranslationKey) => string;
 
 /**
- * Built-in TODO/agenda templates. The first five mirror Parley's core
+ * Built-in TODO/agenda templates. The first five mirror Coach's core
  * use-cases (job interviews, salary negotiations, sales calls, deal-making,
  * diligence calls); the rest are extra starting points. Users can apply,
  * edit, or add their own.

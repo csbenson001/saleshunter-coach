@@ -12,7 +12,7 @@
 // this metadata are benign (worst case: one missed re-push or stale-detection,
 // self-healing on the next pass), so no locking.
 
-const KEY = "parley:cloudSync";
+const KEY = "saleshunter-coach:cloudSync";
 
 export interface SyncMeta {
   cloudUpdatedAt?: number;

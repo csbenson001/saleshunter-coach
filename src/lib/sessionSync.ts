@@ -50,11 +50,11 @@ function snapshot() {
     // Timeline-analysis findings, exposed verbatim so an MCP client can read,
     // overwrite, or edit them (see the *_finding tools / sessionCommands).
     findings: s.findings,
-    // Everything else Parley's own analysis has produced for the LOADED content
+    // Everything else Coach's own analysis has produced for the LOADED content
     // (the live meeting, or the recording under replay — the store holds
     // whichever is on screen). Mirrored so MCP clients always get the full
     // analyzed picture alongside the raw transcript, clearly labelled as
-    // Parley's prior analysis (context, not ground truth) on the MCP side.
+    // Coach's prior analysis (context, not ground truth) on the MCP side.
     brief: s.brief,
     actionItems: s.actionItems,
     deliveryAssessment: s.deliveryAssessment,

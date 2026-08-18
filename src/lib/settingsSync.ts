@@ -33,7 +33,7 @@ export async function openSettingsWindow(category?: SettingsCategory): Promise<v
   }
   const win = new WebviewWindow("settings", {
     url: `index.html#${hash}`,
-    title: "Parley Settings",
+    title: "SalesHunter Coach Settings",
     width: 880,
     height: 760,
     minWidth: 720,
@@ -50,7 +50,7 @@ export async function broadcastSettings(settings: Settings): Promise<void> {
 }
 
 /** localStorage key zustand persists settings under (see store `persist` name). */
-const PERSIST_KEY = "parley-settings";
+const PERSIST_KEY = "saleshunter-coach-settings";
 
 /** Pull settings out of a zustand-persist localStorage payload, if present. */
 function settingsFromPersist(raw: string | null): Settings | null {

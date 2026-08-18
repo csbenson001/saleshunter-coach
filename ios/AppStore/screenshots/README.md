@@ -9,7 +9,6 @@ ios/AppStore/capture-screenshots.sh
 | Directory | Upload to | Frames |
 | --- | --- | --- |
 | [`en-US/`](en-US) | English (U.S.) — the primary locale | 6 |
-| [`zh-Hant/`](zh-Hant) | Traditional Chinese | 6 |
 
 Captured on an **iPhone 17 Pro Max**, whose native 1320×2868 is exactly the App
 Store 6.9-inch slot — no rescaling, no aspect drift. The script verifies the
@@ -26,9 +25,9 @@ dimensions before it exits.
 
 ## How the frames are produced
 
-`App/Parley/ScreenshotDemo.swift` is a `#if DEBUG` demo mode. Launched with
-`-ParleyDemo signedIn` the app serves fixed fictional fixtures instead of the
-cloud, and it is navigated entirely by `parley://demo/…` URLs. So capturing
+`App/SalesHunter Coach/ScreenshotDemo.swift` is a `#if DEBUG` demo mode. Launched with
+`-CoachDemo signedIn` the app serves fixed fictional fixtures instead of the
+cloud, and it is navigated entirely by `saleshunter-coach://demo/…` URLs. So capturing
 needs **no review account, no network, and no taps** — which is the point:
 
 - The previous set could only be produced by signing a simulator into the live

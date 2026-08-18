@@ -1,7 +1,7 @@
 // Usage limits for the hosted "parley" provider — the service limits of the
 // official/cloud build. They apply ONLY when the signed-in user picks the
 // hosted "parley" provider; BYOK (bring-your-own-key) is uncapped because it
-// never touches the Parley backend. This is the single source of truth for the
+// never touches the Coach backend. This is the single source of truth for the
 // client-side enforcement and the copy that explains it.
 //
 // The per-user monthly quotas (STT hours, LLM credits) are metered and enforced

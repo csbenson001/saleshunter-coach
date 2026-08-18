@@ -1,5 +1,5 @@
 // Hosted-plan usage meter for the "parley" provider. Reads the signed-in user's
-// quota from Parley Cloud so Settings can show how much of the monthly STT-hours
+// quota from Coach Cloud so Settings can show how much of the monthly STT-hours
 // pool and LLM-credit allowance is left. The real cost accounting and quota
 // enforcement live server-side; this is a read-only view of the period counters.
 

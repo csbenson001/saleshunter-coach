@@ -62,10 +62,10 @@ export function getModel(
     return anthropic(modelId);
   }
 
-  // Hosted "parley" provider: route to Parley Cloud's OpenAI-compatible endpoint.
+  // Hosted "parley" provider: route to Coach Cloud's OpenAI-compatible endpoint.
   // The Better Auth session token rides as the SDK apiKey → `Authorization:
   // Bearer <token>`; the server forces the real Groq model behind the
-  // "parley-fast"/"parley-smart" ids. Guarded by CLOUD_ENABLED so the OSS build's
+  // "saleshunter-coach-fast"/"saleshunter-coach-smart" ids. Guarded by CLOUD_ENABLED so the OSS build's
   // dead-code elimination drops this branch entirely (it ships no cloud account).
   if (CLOUD_ENABLED && info.id === "parley") {
     const token = cloudToken();
@@ -75,16 +75,16 @@ export function getModel(
     // an actionable message instead of that silent no-op.
     if (!token) {
       throw new Error(
-        "Parley Cloud sign-in required — sign in from Settings → Account to use the Parley provider",
+        "SalesHunter Coach Cloud sign-in required — sign in from Settings → Account to use the SalesHunter Coach provider",
       );
     }
-    const parley = createOpenAICompatible({
+    const coach = createOpenAICompatible({
       name: info.id,
       baseURL: `${CLOUD_URL}/v1`,
       apiKey: token,
       supportsStructuredOutputs: opts?.forceJsonObject ? false : info.supportsStructuredOutputs ?? false,
     });
-    return parley.chatModel(modelId);
+    return coach.chatModel(modelId);
   }
 
   const client = createOpenAICompatible({

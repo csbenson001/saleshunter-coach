@@ -25,7 +25,7 @@ import { emit, listen, type UnlistenFn } from "@tauri-apps/api/event";
 import { isTauri } from "../tauriEvents";
 import { log } from "../log";
 
-const KEY = "parley:folders";
+const KEY = "saleshunter-coach:folders";
 const FOLDERS_UPDATED_EVENT = "history://folders-updated";
 
 /** A one-level personal folder. `createdAt` (epoch ms) gives a stable order. */

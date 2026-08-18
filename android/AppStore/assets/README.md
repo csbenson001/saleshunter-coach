@@ -25,8 +25,8 @@ launcher icons, not a redraw. It was produced with `rsvg-convert` (Homebrew
 
 ```bash
 # from the repo root
-sed 's/rx="232"/rx="0"/; s/rx="226"/rx="0"/' app-icon.svg > /tmp/parley-icon-square.svg
-rsvg-convert -w 512 -h 512 /tmp/parley-icon-square.svg -o android/AppStore/assets/icon-512.png
+sed 's/rx="232"/rx="0"/; s/rx="226"/rx="0"/' app-icon.svg > /tmp/saleshunter-coach-icon-square.svg
+rsvg-convert -w 512 -h 512 /tmp/saleshunter-coach-icon-square.svg -o android/AppStore/assets/icon-512.png
 magick android/AppStore/assets/icon-512.png -alpha set -define png:color-type=6 \
   png32:android/AppStore/assets/icon-512.png     # 32-bit RGBA, fully opaque
 ```
@@ -57,15 +57,13 @@ nothing load-bearing sits dead-centre or in the outer ~15%.
 | Locale | Upload |
 | --- | --- |
 | English (United States) | [`feature-graphic-1024x500-en.png`](feature-graphic-1024x500-en.png) |
-| Chinese (Traditional) – Taiwan | [`feature-graphic-1024x500-zh-TW.png`](feature-graphic-1024x500-zh-TW.png) |
 
-Vector sources live beside them (`feature-graphic-en.svg`,
-`feature-graphic-zh-TW.svg`); edit those, never the PNG. Re-render with:
+The vector source lives beside it (`feature-graphic-en.svg`); edit that, never
+the PNG. Re-render with:
 
 ```bash
 cd android/AppStore/assets
-rsvg-convert -w 1024 -h 500 feature-graphic-en.svg    -o feature-graphic-1024x500-en.png
-rsvg-convert -w 1024 -h 500 feature-graphic-zh-TW.svg -o feature-graphic-1024x500-zh-TW.png
+rsvg-convert -w 1024 -h 500 feature-graphic-en.svg -o feature-graphic-1024x500-en.png
 ```
 
 **Design notes**, so a later edit doesn't drift off-brand:
@@ -83,9 +81,6 @@ rsvg-convert -w 1024 -h 500 feature-graphic-zh-TW.svg -o feature-graphic-1024x50
   thumbnail — which a screenshot of the UI would not.
 - The tagline is deliberately short (Play renders this small); the full pitch
   belongs in the description, not here.
-- zh-TW sets the tagline in `PingFang TC` (the wordmark stays Latin). If you
-  re-render on a machine without it, check the tagline didn't fall back to a
-  font with no CJK coverage — the failure is silent tofu boxes.
 
 ## Phone screenshots — captured
 
@@ -98,32 +93,31 @@ Committed, both locales, ready to upload:
 | `03-meeting.png` | Live meeting | The transcript is already there while people are still talking. |
 | `04-account.png` | Account | Plan and usage, and that the account is the user's to delete. |
 
-`screenshots/en-US/` and `screenshots/zh-TW/`, 1080 × 2400 each, straight from a
-real debug build on the `parley-test` AVD — no mockups, no rendered device
+`screenshots/en-US/`, 1080 × 2400 each, straight from a
+real debug build on the `saleshunter-coach-test` AVD — no mockups, no rendered device
 frames, no invented UI.
 
 ### They come from demo mode, not a real account
 
-`com.pathors.parley.screenshot.DemoMode` is the Android counterpart of iOS's
+`com.saleshunter.coach.screenshot.DemoMode` is the Android counterpart of iOS's
 `ScreenshotDemo.swift`: fixed fictional fixtures, debug builds only, **no
 network at all**. That last part is the point — it means a capture run can never
 put a real customer's meeting on a public store page, and it works offline.
 
 ```bash
-adb shell am start -a android.intent.action.VIEW -d "'parley://demo/library'"
-adb shell am start -a android.intent.action.VIEW -d "'parley://demo/transcript'"
-adb shell am start -a android.intent.action.VIEW -d "'parley://demo/record'"
-adb shell am start -a android.intent.action.VIEW -d "'parley://demo/account'"
-adb shell am start -a android.intent.action.VIEW -d "'parley://demo/off'"    # back to reality
+adb shell am start -a android.intent.action.VIEW -d "'saleshunter-coach://demo/library'"
+adb shell am start -a android.intent.action.VIEW -d "'saleshunter-coach://demo/transcript'"
+adb shell am start -a android.intent.action.VIEW -d "'saleshunter-coach://demo/record'"
+adb shell am start -a android.intent.action.VIEW -d "'saleshunter-coach://demo/account'"
+adb shell am start -a android.intent.action.VIEW -d "'saleshunter-coach://demo/off'"    # back to reality
 ```
 
 **Keep the inner single quotes.** Without them the device shell eats everything
 from `?` onward, and the intent arrives with no path — the same trap that makes
-`parley://auth-callback?token=…` silently do nothing when tested by hand.
+`saleshunter-coach://auth-callback?token=…` silently do nothing when tested by hand.
 
-The fixtures are deliberately fictional (北風工業 / Northwind Industrial,
-晴光實驗室 / Sunlit Labs, 子午線 / Meridian) and exist in both languages, so the
-two locale sets tell the same story rather than being a translation of one walk.
+The fixtures are deliberately fictional (Northwind Industrial, Halcyon Labs,
+Meridian) — no real company, person, or customer data appears in a screenshot.
 
 To re-capture after a UI change, boot the AVD, install a **debug** build (demo
 mode is compiled out of release), fire the links above, and `adb exec-out
@@ -132,7 +126,7 @@ action items; scroll down first if you want a transcript-led frame instead.
 
 ### Emulator
 
-AVD **`parley-test` (Pixel 7, API 35) already exists on Jack's machine** — use
+AVD **`saleshunter-coach-test` (Pixel 7, API 35) already exists on Jack's machine** — use
 it. Pixel 7 is 1080 × 2400, so `screencap` output needs no rescaling to clear
 Play's 1080 px bar.
 
@@ -142,7 +136,7 @@ export ANDROID_HOME="/opt/homebrew/share/android-commandlinetools"   # Homebrew 
 export PATH="$ANDROID_HOME/emulator:$ANDROID_HOME/platform-tools:$PATH"
 
 # 1. boot it
-emulator -avd parley-test -no-snapshot-load &
+emulator -avd saleshunter-coach-test -no-snapshot-load &
 adb wait-for-device
 adb shell 'while [ "$(getprop sys.boot_completed)" != 1 ]; do sleep 1; done'
 
@@ -164,7 +158,7 @@ demo -e command notifications -e visible false
 ### Capture
 
 ```bash
-mkdir -p android/AppStore/assets/screenshots/{en-US,zh-TW}
+mkdir -p android/AppStore/assets/screenshots/en-US
 
 # drive the app by hand to each screen, then:
 adb exec-out screencap -p > android/AppStore/assets/screenshots/en-US/01-library.png
@@ -181,43 +175,9 @@ done
 `exec-out` (not `shell`) matters: `adb shell screencap` mangles the PNG with
 CRLF translation on some hosts, `exec-out` streams the bytes untouched.
 
-### The second locale
-
-The app follows the system language and has a full `values-zh-rTW` string table,
-so the Chinese set is the same walk with the app's locale switched. On API 33+
-this needs no root:
-
-```bash
-adb shell cmd locale set-app-locales com.pathors.parley --user current --locales zh-TW
-# … capture into screenshots/zh-TW/ …
-adb shell cmd locale set-app-locales com.pathors.parley --user current --locales en-US
-```
-
-Fallback, if that command is unavailable — switch the whole emulator (root works
-on an emulator image, not on a physical device):
-
-```bash
-adb root
-adb shell setprop persist.sys.locale zh-TW
-adb shell stop && adb shell start
-adb wait-for-device
-```
-
-### If Play's uploader complains about the aspect ratio
-
-Play documents 16:9 / 9:16 with each side 320–3,840 px. A Pixel 7 frame is
-1080 × 2400 (9:20), taller than 9:16; it is normally accepted, but if the
-uploader refuses it, pad to an exact 9:16 rather than squashing:
-
-```bash
-magick input.png -resize 1080x1920 -background '#0a0b0e' -gravity center \
-  -extent 1080x1920 output.png
-```
-
 ## When you change the UI
 
 Recapture. The screenshots are the one part of this listing that silently goes
-stale — the copy in [`../listing-en.md`](../listing-en.md) and
-[`../listing-zh-TW.md`](../listing-zh-TW.md) is reviewed on every release
-because it is text in a diff, but a screenshot of last quarter's library screen
+stale — the copy in [`../listing-en.md`](../listing-en.md) is reviewed on every
+release because it is text in a diff, but a screenshot of last quarter's library screen
 looks fine right up until a user notices the app does not look like that.

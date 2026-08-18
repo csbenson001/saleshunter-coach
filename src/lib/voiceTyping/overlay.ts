@@ -32,7 +32,7 @@ async function ensureOverlay(): Promise<void> {
   ensuring = (async () => {
     const win = new WebviewWindow(LABEL, {
       url: "index.html#voice-typing",
-      title: "Parley Voice Typing",
+      title: "SalesHunter Coach Voice Typing",
       width: WIDTH,
       height: HEIGHT,
       transparent: true,
@@ -158,7 +158,7 @@ async function positionBottomCenter(
 
 /** Reposition + show the overlay (creating it on first use). Shown natively via
  *  `orderFrontRegardless` so it floats above whatever app is frontmost without
- *  activating Parley or stealing keyboard focus. */
+ *  activating Coach or stealing keyboard focus. */
 export async function showOverlay(): Promise<void> {
   if (!isTauri()) return;
   await ensureOverlay();

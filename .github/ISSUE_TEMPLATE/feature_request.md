@@ -1,6 +1,6 @@
 ---
 name: Feature request
-about: Suggest something Parley should do
+about: Suggest something SalesHunter Coach should do
 labels: feature
 ---
 
@@ -8,7 +8,7 @@ labels: feature
 
 ## The problem
 
-<!-- What are you trying to do today, and where does Parley get in the way? -->
+<!-- What are you trying to do today, and where does SalesHunter Coach get in the way? -->
 
 ## What you'd like instead
 

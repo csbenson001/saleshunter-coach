@@ -1,11 +1,11 @@
-import ParleyKit
+import CoachKit
 import SwiftUI
 import UIKit
 
-/// The Parley dictation keyboard.
+/// The Coach dictation keyboard.
 ///
 /// A keyboard extension is forbidden from opening the microphone, so this
-/// keyboard doesn't try. Its mic button opens `parley://dictate`; the container
+/// keyboard doesn't try. Its mic button opens `saleshunter-coach://dictate`; the container
 /// app records and streams the transcript back through the App Group; this
 /// keyboard inserts the settled text with `textDocumentProxy.insertText`. The
 /// design and its constraints are written up in
@@ -170,7 +170,7 @@ final class KeyboardViewController: UIInputViewController {
     /// app hears the note whenever it is awake — foreground, or lingering in
     /// the background right after a previous dictation — and starts the mic
     /// there, so the user never leaves the app they're typing in. Only when
-    /// the ack never comes does `completion` hand back the `parley://dictate`
+    /// the ack never comes does `completion` hand back the `saleshunter-coach://dictate`
     /// URL for the visible round trip.
     func startDictation(completion: @escaping (URL?) -> Void) {
         guard hasFullAccess else { return }

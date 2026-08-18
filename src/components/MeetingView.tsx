@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 function buildMarkdown(): string {
   const { segments, findings, speakerNames, meetingContext } = useStore.getState();
   const now = new Date();
-  const lines = [`# Parley meeting — ${now.toLocaleString()}`, ""];
+  const lines = [`# Coach meeting — ${now.toLocaleString()}`, ""];
   if (meetingContext.trim()) {
     lines.push(`**Context:** ${meetingContext.trim()}`, "");
   }

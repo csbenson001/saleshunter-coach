@@ -1,0 +1,17 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "NSMicrophoneUsageDescription": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Coach records the meeting in the room so it can transcribe it live. Audio goes only to the transcription provider tied to your account."
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

@@ -5,13 +5,13 @@ declarations that will otherwise bounce the release: **App access** (the app is
 behind a sign-in wall) and **foreground service permissions** (the `microphone`
 type needs a demonstration video).
 
-Target: `com.pathors.parley`, versionName `0.1.0` / versionCode `1`
+Target: `com.saleshunter.coach`, versionName `0.1.0` / versionCode `1`
 (`android/app/build.gradle.kts`). minSdk 29 — a reviewer on anything older than
 Android 10 will not be offered the app.
 
 ## App access — the sign-in wall
 
-The app opens on a sign-in screen and there is no way past it: `ParleyRoot`
+The app opens on a sign-in screen and there is no way past it: `CoachRoot`
 renders the wall in front of the whole navigation graph while no token is
 stored. Play Console → App content → **App access** must therefore be set to
 "All or some functionality is restricted" with working credentials.
@@ -42,7 +42,7 @@ depend on a personal identity.
 
 ### Instructions to paste into the App access form
 
-> Parley requires a Parley Cloud account; there is no offline mode. Sign-in
+> SalesHunter Coach requires a SalesHunter Coach Cloud account; there is no offline mode. Sign-in
 > happens on our hosted page, which opens in a Chrome Custom Tab and hands the
 > session back to the app.
 >
@@ -50,13 +50,13 @@ depend on a personal identity.
 > 2. A browser tab opens `https://api.parley.tw/sign-in`. Enter the email and
 >    password supplied above. (The page also offers Google and Apple sign-in —
 >    please use the email/password account.)
-> 3. The browser returns to the app automatically via the `parley://auth-callback`
+> 3. The browser returns to the app automatically via the `saleshunter-coach://auth-callback`
 >    deep link, and the recordings library appears. No email confirmation, no
 >    second factor.
 
 ## Notes to the reviewer
 
-> Parley is a microphone-based recorder for meetings you have in person, plus a
+> SalesHunter Coach is a microphone-based recorder for meetings you have in person, plus a
 > transcriber for audio files you already have. It does **not** record phone
 > calls and does not capture the audio of other apps — it uses the device
 > microphone only, through `AudioRecord`.
@@ -98,7 +98,7 @@ declaration is rejected and the release cannot roll out.
 
 **Justification to enter:**
 
-> Parley records in-person meetings. Recording is started explicitly by the user
+> SalesHunter Coach records in-person meetings. Recording is started explicitly by the user
 > and must survive the app going to the background or the screen turning off —
 > a meeting is longer than the user's attention on the phone, and without a
 > microphone foreground service Android feeds a backgrounded app silence. The
@@ -133,7 +133,7 @@ transcript appearing is less convincing.
 - **Data safety** — the filled-in answer sheet is [`data-safety.md`](data-safety.md).
   It contains one unresolved blocker (no account-deletion route reachable from
   Android); read it before opening the form.
-- **Recording consent.** The listing copy frames Parley as a note-taker used
+- **Recording consent.** The listing copy frames SalesHunter Coach as a note-taker used
   with the room's knowledge and never suggests covert recording, which is the
   framing that passed App Store review. Note for anyone answering follow-up
   questions: **the Android app shows no consent prompt** — iOS does, and the
@@ -148,7 +148,7 @@ transcript appearing is less convincing.
 
 ## Before submitting
 
-- Test the whole flow on a **release** build, not debug: `parley://auth-callback`
+- Test the whole flow on a **release** build, not debug: `saleshunter-coach://auth-callback`
   after minification is the classic works-in-debug-only failure
   (`android/RELEASING.md`).
 - Confirm `https://api.parley.tw/sign-in` returns HTTP 200. A 404 there is

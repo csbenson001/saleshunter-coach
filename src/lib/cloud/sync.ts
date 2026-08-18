@@ -1,5 +1,5 @@
 // Cloud sync for meeting history. The desktop keeps the source of truth on disk
-// (src/lib/history); this module mirrors a signed-in account's entries to Parley
+// (src/lib/history); this module mirrors a signed-in account's entries to Coach
 // Cloud so the same account sees them on any device. Everything speaks the public
 // HTTP contract (see ../cloud/client + the parley-internal worker) — the OSS app
 // never imports private code.

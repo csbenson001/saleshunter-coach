@@ -1,12 +1,12 @@
-# Contributing to Parley
+# Contributing to SalesHunter Coach
 
-Thank you for your interest in contributing to Parley! We welcome community contributions to help improve the project.
+Thank you for your interest in contributing to SalesHunter Coach! We welcome community contributions to help improve the project.
 
 ## Language
 
 **English is the working language of this repository.** Issues, pull requests, commit messages, code comments, and release notes are all written in English so that anyone can read the history and join in.
 
-This applies to the repository only. The application itself ships in both Traditional Chinese and English — see `src/i18n/messages.ts`, where every user-facing string must have a `zh-TW` and an `en` entry. Never hard-code display text in a component.
+The application ships in American English. Every user-facing string lives in `src/i18n/messages.ts` — never hard-code display text in a component.
 
 ## How to Contribute
 

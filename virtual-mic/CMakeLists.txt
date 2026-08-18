@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16.0)
 
-project(ParleyVirtualMic CXX)
+project(CoachVirtualMic CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -8,12 +8,12 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 # Identity of the .driver bundle. DRIVER_UID must match the CFPlugInFactories key
 # in Info.plist.in; DRIVER_ENTRYPOINT is the C entry function in the source.
-set(DRIVER_NAME "ParleyMicrophone")
+set(DRIVER_NAME "CoachMicrophone")
 set(DRIVER_VERSION "0.1.0")
 set(DRIVER_COPYRIGHT "Copyright (c) Pathors")
-set(DRIVER_IDENTIFIER "com.pathors.parley.virtualmic")
+set(DRIVER_IDENTIFIER "com.saleshunter.coach.virtualmic")
 set(DRIVER_UID "1AFCCF31-DDB9-4D45-BA4A-1E0461B8C79D")
-set(DRIVER_ENTRYPOINT "ParleyVirtualMicEntryPoint")
+set(DRIVER_ENTRYPOINT "CoachVirtualMicEntryPoint")
 
 # Optional Developer ID for signing the bundle (empty = unsigned / ad-hoc later).
 set(CODESIGN_ID "" CACHE STRING "codesign identity for the .driver bundle")
@@ -33,7 +33,7 @@ FetchContent_MakeAvailable(libASPL)
 # --- the driver ----------------------------------------------------------------
 # MODULE → a Mach-O loadable bundle (the plugin binary), packed into a macOS
 # bundle directory named "${DRIVER_NAME}.driver".
-add_library(${DRIVER_NAME} MODULE src/ParleyVirtualMic.cpp)
+add_library(${DRIVER_NAME} MODULE src/CoachVirtualMic.cpp)
 
 target_link_libraries(${DRIVER_NAME} PRIVATE libASPL)
 

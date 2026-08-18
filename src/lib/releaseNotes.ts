@@ -6,8 +6,8 @@ export interface ReleaseNotes {
 }
 
 const LATEST_RELEASE_API = "https://api.github.com/repos/pathorsAI/parley/releases/latest";
-const PENDING_NOTES_KEY = "parley.pendingReleaseNotes";
-const SEEN_NOTES_KEY = "parley.seenReleaseNotesVersion";
+const PENDING_NOTES_KEY = "saleshunter-coach.pendingReleaseNotes";
+const SEEN_NOTES_KEY = "saleshunter-coach.seenReleaseNotesVersion";
 
 function normalizeVersion(version: string): string {
   return version.trim().replace(/^v/i, "");

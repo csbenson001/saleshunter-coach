@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// The Parley keyboard's face.
+/// The Coach keyboard's face.
 ///
 /// Two panes under one strip, in the shape dictation keyboards have settled on
 /// (Typeless, Wispr Flow): the wordmark and a two-way mode picker on top, then
@@ -65,7 +65,7 @@ struct KeyboardRootView: View {
 
     private var modeStrip: some View {
         HStack(spacing: 0) {
-            Text(verbatim: "Parley")
+            Text(verbatim: "Coach")
                 .font(.footnote.weight(.bold))
                 .foregroundStyle(KBTheme.wordmark(dark))
             Spacer(minLength: 8)
@@ -126,7 +126,7 @@ struct KeyboardRootView: View {
                 .accessibilityLabel(Text("At sign"))
             }
             HStack(spacing: 10) {
-                // Always here, on every device: Parley ships no Bopomofo
+                // Always here, on every device: Coach ships no Bopomofo
                 // engine, so this key is a 注音 user's only way out.
                 GlobeKey(controller: bridge.controller, dark: dark)
                     .frame(width: KBMetrics.quickKeyWidth, height: KBMetrics.quickRowHeight)
@@ -173,7 +173,7 @@ struct KeyboardRootView: View {
                     Text("Voice typing needs Full Access")
                         .font(.subheadline.weight(.semibold))
                         .foregroundStyle(KBTheme.ink(dark))
-                    Text("Settings › General › Keyboard › Keyboards › Parley → Allow Full Access. Your voice is sent to your Parley account to be transcribed.")
+                    Text("Settings › General › Keyboard › Keyboards › Coach → Allow Full Access. Your voice is sent to your Coach account to be transcribed.")
                         .font(.caption2)
                         .foregroundStyle(KBTheme.inkSoft(dark))
                         .multilineTextAlignment(.center)
@@ -229,7 +229,7 @@ struct KeyboardRootView: View {
     }
 
     /// Idle: Pathors' brand gradient, the one place on the keyboard where
-    /// Parley is allowed to look like Parley. Recording: the flat recording red,
+    /// Coach is allowed to look like Coach. Recording: the flat recording red,
     /// so "armed" is never something you have to read out of a gradient.
     /// Disabled (no Full Access): a key-coloured pill so it reads inert.
     private var micFill: AnyShapeStyle {

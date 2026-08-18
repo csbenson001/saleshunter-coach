@@ -12,7 +12,7 @@
 import { readJsonCache, writeJsonCache, clearCacheByPrefix } from "../cache";
 import type { ActionItem, DeliveryAssessment, TimelineEvent } from "../types";
 
-const PREFIX = "parley:study-cache:";
+const PREFIX = "saleshunter-coach:study-cache:";
 const key = (entryId: string) => `${PREFIX}${entryId}`;
 
 /** Everything the pipeline generates for a recording. All fields optional — the
@@ -62,7 +62,7 @@ export function writeStudyCache(entryId: string, patch: StudyCacheEntry): void {
   writeJsonCache(key(entryId), merged);
 }
 
-/** Drop every cached study output (`parley:study-cache:*`). */
+/** Drop every cached study output (`saleshunter-coach:study-cache:*`). */
 export function clearStudyCache(): number {
   memoId = null;
   memoEntry = null;

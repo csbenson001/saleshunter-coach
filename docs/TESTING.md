@@ -1,6 +1,6 @@
 # Testing
 
-Parley's automated tests cover the **application + domain layer** — the app's own
+SalesHunter Coach's automated tests cover the **application + domain layer** — the app's own
 logic and use-cases — not infrastructure and not "the model".
 
 ## What we test (and what we don't)

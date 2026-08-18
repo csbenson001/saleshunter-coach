@@ -14,7 +14,6 @@ import type { Settings, TranscriptSegment } from "../types";
 import { useStore } from "../store";
 import type { ReplaySession } from "./types";
 import { STT_BY_ID, sttApiKey } from "../transcription/providers";
-import { toTraditional } from "../zhConvert";
 import { log } from "../log";
 import { recordUsage } from "../usage/log";
 import { sttCostUsd } from "../usage/pricing";
@@ -235,7 +234,7 @@ export async function transcribeRecording(
       id: s.id,
       source: "them" as const,
       speaker: s.speaker,
-      text: await toTraditional(s.text),
+      text: s.text,
       isFinal: true,
       startMs: s.startMs,
       endMs: s.endMs,
@@ -288,9 +287,6 @@ function reportStage(opts: IngestOptions, p: IngestProgress): void {
 
 /** Derive BCP-47 language hints from settings; empty array = auto-detect. */
 function languageHintsFromSettings(settings: Settings): string[] {
-  // The UI language is the only locale signal we currently persist. Map it to a
-  // hint and pair it with English, which covers the common bilingual case.
-  if (settings.language === "zh-TW") return ["zh", "en"];
   if (settings.language === "en") return ["en"];
   return [];
 }

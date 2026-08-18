@@ -1,52 +1,50 @@
-name: Parley
+name: Coach
 options:
   bundleIdPrefix: com.pathors
   deploymentTarget:
     iOS: "17.0"
   xcodeVersion: "26.0"
-  # Source strings are English (repo convention); Traditional Chinese is a
-  # first-class translation, not an afterthought. Both have to be listed here
-  # or the String Catalogs compile to English only.
+  # The app ships in American English only — no second localization.
   developmentLanguage: en
 # knownRegions drives which localizations `Localizable.xcstrings` /
 # `InfoPlist.xcstrings` actually compile into the bundle.
-knownRegions: [en, zh-Hant, Base]
+knownRegions: [en, Base]
 packages:
-  ParleyKit:
-    path: ../ParleyKit
+  CoachKit:
+    path: ../CoachKit
 targets:
-  Parley:
+  Coach:
     type: application
     platform: iOS
-    sources: [Parley]
+    sources: [Coach]
     dependencies:
-      - package: ParleyKit
+      - package: CoachKit
       # Embeds the keyboard extension into the app bundle.
-      - target: ParleyKeyboard
+      - target: CoachKeyboard
     entitlements:
-      path: Parley/Parley.entitlements
+      path: Coach/Coach.entitlements
       properties:
         com.apple.developer.applesignin: [Default]
         # Shared with the keyboard extension: the dictation transcript handoff
         # lives in this App Group container (see DictationChannel).
-        com.apple.security.application-groups: [group.com.pathors.parley.ios]
+        com.apple.security.application-groups: [group.com.saleshunter.coach.ios]
     info:
-      path: Parley/Info.plist
+      path: Coach/Info.plist
       properties:
-        CFBundleDisplayName: Parley
+        CFBundleDisplayName: Coach
         CFBundleShortVersionString: "1.3"
         CFBundleVersion: "9"
         UILaunchScreen: {}
-        # Localized in Parley/InfoPlist.xcstrings; this is the fallback value.
-        NSMicrophoneUsageDescription: Parley records the meeting in the room so it can transcribe it live. Audio goes only to the transcription provider tied to your account.
+        # Localized in Coach/InfoPlist.xcstrings; this is the fallback value.
+        NSMicrophoneUsageDescription: Coach records the meeting in the room so it can transcribe it live. Audio goes only to the transcription provider tied to your account.
         UIBackgroundModes: [audio]
         ITSAppUsesNonExemptEncryption: false
         CFBundleURLTypes:
-          - CFBundleURLName: com.pathors.parley.ios.auth
-            CFBundleURLSchemes: [parley]
-        # The Pathors faces (see Parley/ParleyTypography.swift). UIAppFonts is
+          - CFBundleURLName: com.saleshunter.coach.ios.auth
+            CFBundleURLSchemes: [saleshunter-coach]
+        # The Pathors faces (see Coach/CoachTypography.swift). UIAppFonts is
         # all an app target needs — no runtime CTFontManager registration.
-        # Deliberately absent from ParleyKeyboard: the keyboard extension runs
+        # Deliberately absent from CoachKeyboard: the keyboard extension runs
         # under a hard memory cap and draws its own minimal UI.
         UIAppFonts:
           - DMSans-Regular.ttf
@@ -57,7 +55,7 @@ targets:
           - Alexandria-Bold.ttf
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.pathors.parley.ios
+        PRODUCT_BUNDLE_IDENTIFIER: com.saleshunter.coach.ios
         SWIFT_VERSION: "5.9"
         TARGETED_DEVICE_FAMILY: "1"
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
@@ -66,21 +64,21 @@ targets:
         # pass an App Store Connect API key with -allowProvisioningUpdates.
         DEVELOPMENT_TEAM: SXHVCQXJHZ
 
-  ParleyKeyboard:
+  CoachKeyboard:
     type: app-extension
     platform: iOS
     sources: [../Keyboard]
     dependencies:
-      - package: ParleyKit
+      - package: CoachKit
     entitlements:
-      path: ../Keyboard/ParleyKeyboard.entitlements
+      path: ../Keyboard/CoachKeyboard.entitlements
       properties:
-        com.apple.security.application-groups: [group.com.pathors.parley.ios]
+        com.apple.security.application-groups: [group.com.saleshunter.coach.ios]
     info:
       path: ../Keyboard/Info.plist
       properties:
         # Localized in ../Keyboard/InfoPlist.xcstrings; this is the fallback.
-        CFBundleDisplayName: Parley Voice
+        CFBundleDisplayName: Coach Voice
         CFBundleShortVersionString: "1.3"
         CFBundleVersion: "9"
         NSExtension:
@@ -94,13 +92,13 @@ targets:
             # multilingual rather than Chinese-only, which is how it read to an
             # English user before.
             PrimaryLanguage: mul
-            # Dictation streams audio to the Parley account for transcription,
+            # Dictation streams audio to the Coach account for transcription,
             # so the keyboard needs Full Access (network + App Group). Without
             # it the keyboard still offers the minimal key row (App Review 4.4.1).
             RequestsOpenAccess: true
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.pathors.parley.ios.keyboard
+        PRODUCT_BUNDLE_IDENTIFIER: com.saleshunter.coach.ios.keyboard
         SWIFT_VERSION: "5.9"
         TARGETED_DEVICE_FAMILY: "1"
         CODE_SIGN_STYLE: Automatic

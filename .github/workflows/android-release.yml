@@ -91,12 +91,12 @@ jobs:
             exit 1
           fi
 
-      # parleykit is pure JVM and the app's unit tests are Robolectric-free, so
+      # coachkit is pure JVM and the app's unit tests are Robolectric-free, so
       # both are cheap. There is no reason to ship a bundle whose segment logic
       # is broken.
       - name: Test
         working-directory: android
-        run: ./gradlew :parleykit:test :app:testDebugUnitTest
+        run: ./gradlew :coachkit:test :app:testDebugUnitTest
 
       # Written outside the workspace so it cannot be swept into the artifact
       # upload or a later checkout, and removed in an always() step below.
@@ -109,16 +109,16 @@ jobs:
           fi
           mkdir -p "$RUNNER_TEMP/signing"
           chmod 700 "$RUNNER_TEMP/signing"
-          printf '%s' "$PLAY_UPLOAD_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/signing/parley-upload.keystore"
-          chmod 600 "$RUNNER_TEMP/signing/parley-upload.keystore"
+          printf '%s' "$PLAY_UPLOAD_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/signing/saleshunter-coach-upload.keystore"
+          chmod 600 "$RUNNER_TEMP/signing/saleshunter-coach-upload.keystore"
 
       - name: Build the signed bundle
         working-directory: android
         env:
-          PARLEY_UPLOAD_KEYSTORE: ${{ runner.temp }}/signing/parley-upload.keystore
-          PARLEY_UPLOAD_KEYSTORE_PASSWORD: ${{ secrets.PLAY_UPLOAD_KEYSTORE_PASSWORD }}
-          PARLEY_UPLOAD_KEY_ALIAS: ${{ secrets.PLAY_UPLOAD_KEY_ALIAS }}
-          PARLEY_UPLOAD_KEY_PASSWORD: ${{ secrets.PLAY_UPLOAD_KEY_PASSWORD }}
+          COACH_UPLOAD_KEYSTORE: ${{ runner.temp }}/signing/saleshunter-coach-upload.keystore
+          COACH_UPLOAD_KEYSTORE_PASSWORD: ${{ secrets.PLAY_UPLOAD_KEYSTORE_PASSWORD }}
+          COACH_UPLOAD_KEY_ALIAS: ${{ secrets.PLAY_UPLOAD_KEY_ALIAS }}
+          COACH_UPLOAD_KEY_PASSWORD: ${{ secrets.PLAY_UPLOAD_KEY_PASSWORD }}
         run: ./gradlew bundleRelease
 
       # `signingConfig` is null when the credentials are absent and the build
@@ -143,7 +143,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: parley-android-${{ github.run_number }}
+          name: saleshunter-coach-android-${{ github.run_number }}
           path: |
             android/app/build/outputs/bundle/release/*.aab
             android/app/build/outputs/mapping/release/mapping.txt
@@ -154,7 +154,7 @@ jobs:
         uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
         with:
           tag_name: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
-          name: Parley for Android ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
+          name: Coach for Android ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
           files: |
             android/app/build/outputs/bundle/release/app-release.aab
           fail_on_unmatched_files: true
@@ -170,7 +170,7 @@ jobs:
         uses: r0adkll/upload-google-play@935ef9c68bb393a8e6116b1575626a7f5be3a7fb # v1.1.3
         with:
           serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
-          packageName: com.pathors.parley
+          packageName: com.saleshunter.coach
           releaseFiles: android/app/build/outputs/bundle/release/app-release.aab
           mappingFile: android/app/build/outputs/mapping/release/mapping.txt
           track: internal

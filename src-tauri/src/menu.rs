@@ -118,5 +118,5 @@ fn clear_cache_dir<R: Runtime>(app: &AppHandle<R>, name: &str) {
 
 /// Non-blocking confirmation dialog.
 fn notify<R: Runtime>(app: &AppHandle<R>, msg: &str) {
-    app.dialog().message(msg).title("Parley").show(|_| {});
+    app.dialog().message(msg).title("Coach").show(|_| {});
 }

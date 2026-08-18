@@ -2,11 +2,11 @@ import { isTauri } from "./tauriEvents";
 import { log } from "./log";
 
 /**
- * Webview zoom on ⌘+/⌘−/⌘0 (every Parley window, persisted). WKWebView has no
+ * Webview zoom on ⌘+/⌘−/⌘0 (every Coach window, persisted). WKWebView has no
  * built-in page-zoom shortcut, so we drive Tauri's setZoom ourselves.
  */
 
-const KEY = "parley:zoom";
+const KEY = "saleshunter-coach:zoom";
 const MIN = 0.6;
 const MAX = 1.8;
 const STEP = 0.1;

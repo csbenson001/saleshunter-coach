@@ -1,0 +1,386 @@
+<!doctype html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SalesHunter Coach — Browser Capture Probe</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #ffffff;
+        --fg: #111418;
+        --muted: #5c6773;
+        --line: #dfe4ea;
+        --card: #f7f9fb;
+        --ok: #0a7f3f;
+        --warn: #a8620a;
+        --bad: #b3261e;
+        --accent: #1c4ed8;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0f1216;
+          --fg: #e8ecf1;
+          --muted: #9aa7b4;
+          --line: #263039;
+          --card: #161b22;
+          --ok: #3fbf72;
+          --warn: #e0a33e;
+          --bad: #ff6b5e;
+          --accent: #7aa2ff;
+        }
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        padding: 24px;
+        background: var(--bg);
+        color: var(--fg);
+        font: 15px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+        max-width: 900px;
+        margin-inline: auto;
+      }
+      h1 { font-size: 22px; margin: 0 0 4px; letter-spacing: -0.01em; }
+      h2 { font-size: 15px; margin: 24px 0 8px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+      p.sub { margin: 0 0 20px; color: var(--muted); }
+      .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; margin-bottom: 12px; }
+      button {
+        font: inherit; font-weight: 600; padding: 9px 15px; border-radius: 8px;
+        border: 1px solid var(--line); background: var(--bg); color: var(--fg); cursor: pointer;
+      }
+      button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+      button:disabled { opacity: 0.45; cursor: not-allowed; }
+      .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+      label.chk { display: inline-flex; align-items: center; gap: 7px; color: var(--muted); font-size: 14px; }
+      .meter { height: 12px; background: var(--line); border-radius: 6px; overflow: hidden; margin-top: 6px; }
+      .meter > div { height: 100%; width: 0%; background: var(--accent); transition: width 60ms linear; }
+      .lbl { display: flex; justify-content: space-between; font-size: 13px; color: var(--muted); }
+      table { border-collapse: collapse; width: 100%; font-size: 14px; }
+      td, th { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+      th { color: var(--muted); font-weight: 600; width: 42%; }
+      code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 13px; }
+      .verdict { font-weight: 700; }
+      .ok { color: var(--ok); } .warn { color: var(--warn); } .bad { color: var(--bad); }
+      #log { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12.5px;
+             white-space: pre-wrap; max-height: 220px; overflow: auto; color: var(--muted); }
+      .big { font-size: 30px; font-weight: 700; font-variant-numeric: tabular-nums; }
+      ol { padding-left: 20px; color: var(--muted); } ol li { margin-bottom: 5px; }
+    </style>
+  </head>
+  <body>
+    <h1>Browser Capture Probe</h1>
+    <p class="sub">
+      Measures whether a browser can capture both sides of a call — your microphone and the
+      far end via system audio — and how badly the far end echoes back into the mic.
+    </p>
+
+    <div class="card">
+      <h2 style="margin-top:0">How to run</h2>
+      <ol>
+        <li>Start a call (or just play speech audio) in the app you want to test — Teams, Zoom, Meet.</li>
+        <li>Click <strong>Start capture</strong>. When the picker appears, choose <strong>Entire Screen</strong> and tick <strong>Share system audio</strong>.</li>
+        <li>Let it run ~20 seconds with the far end talking while you stay quiet, then talk yourself.</li>
+        <li>Run it twice: once on <strong>speakers</strong>, once on <strong>headphones</strong>.</li>
+      </ol>
+    </div>
+
+    <div class="card">
+      <div class="row">
+        <button id="start" class="primary">Start capture</button>
+        <button id="stop" disabled>Stop</button>
+        <label class="chk"><input type="checkbox" id="aec" checked /> Mic echo cancellation</label>
+      </div>
+    </div>
+
+    <h2>Live levels</h2>
+    <div class="card">
+      <div class="lbl"><span>Microphone (you)</span><span id="micTxt">—</span></div>
+      <div class="meter"><div id="micBar"></div></div>
+      <div class="lbl" style="margin-top:14px"><span>System audio (far end)</span><span id="sysTxt">—</span></div>
+      <div class="meter"><div id="sysBar"></div></div>
+    </div>
+
+    <h2>Echo measurement</h2>
+    <div class="card">
+      <div class="row" style="justify-content:space-between; align-items:flex-end">
+        <div>
+          <div class="lbl"><span>Peak correlation (system → mic)</span></div>
+          <div class="big" id="corr">—</div>
+        </div>
+        <div style="text-align:right">
+          <div class="lbl"><span>Verdict</span></div>
+          <div class="verdict" id="verdict">Not measured</div>
+        </div>
+      </div>
+      <p class="sub" style="margin:12px 0 0; font-size:13.5px">
+        Correlation is measured only while the far end is audible and you are silent — that is when
+        anything appearing on the mic must be echo. Above ~0.25 the far end is bleeding into your
+        mic and would be transcribed twice.
+      </p>
+    </div>
+
+    <h2>Environment</h2>
+    <div class="card"><table id="env"></table></div>
+
+    <h2>Log</h2>
+    <div class="card"><div id="log"></div></div>
+
+    <script>
+      const $ = (id) => document.getElementById(id);
+      const logEl = $("log");
+      function log(msg) {
+        const t = new Date().toISOString().slice(11, 19);
+        logEl.textContent += `[${t}] ${msg}\n`;
+        logEl.scrollTop = logEl.scrollHeight;
+      }
+
+      function renderEnv(rows) {
+        $("env").innerHTML = rows
+          .map(([k, v]) => `<tr><th>${k}</th><td>${v}</td></tr>`)
+          .join("");
+      }
+
+      const ua = navigator.userAgent;
+      const isChromium = /Chrome|Chromium|Edg/.test(ua) && !/OPR/.test(ua);
+      const platform = /Mac/.test(ua) ? "macOS" : /Windows/.test(ua) ? "Windows" : "other";
+      renderEnv([
+        ["Platform", platform],
+        ["Chromium-based", isChromium ? "yes" : "no — system audio will not work"],
+        ["getDisplayMedia", navigator.mediaDevices?.getDisplayMedia ? "available" : "MISSING"],
+        ["Secure context", window.isSecureContext ? "yes" : "NO — capture APIs are blocked"],
+        ["System audio track", "—"],
+        ["Mic echoCancellation", "—"],
+      ]);
+
+      // ── capture state ────────────────────────────────────────────────────────
+      // The echo baseline is measured at lags up to 1.5 s, so the analysis needs
+      // several seconds of CONTIGUOUS audio. AnalyserNode only exposes the most
+      // recent frame, which would leave gaps, so each stream is tapped with a
+      // processor node and appended into a ring buffer.
+      const WINDOW_SEC = 6;
+      let ctx = null, micStream = null, sysStream = null, raf = 0;
+      let micRing = null, sysRing = null, ringSize = 0, writeIdx = 0, filled = 0;
+      let nodes = [];
+      let bestCorr = 0, lastCalc = 0;
+      let micLevel = 0, sysLevel = 0;
+
+      function rms(buf) {
+        let s = 0;
+        for (let i = 0; i < buf.length; i++) s += buf[i] * buf[i];
+        return Math.sqrt(s / buf.length);
+      }
+
+      /** Ring buffer read out in chronological order. */
+      function ordered(ring) {
+        if (filled < ringSize) return ring.subarray(0, writeIdx);
+        const out = new Float32Array(ringSize);
+        out.set(ring.subarray(writeIdx), 0);
+        out.set(ring.subarray(0, writeIdx), ringSize - writeIdx);
+        return out;
+      }
+
+      /** Tap a stream into its ring buffer. Mic drives the write cursor so the
+       *  two buffers stay sample-aligned; the system tap only writes. */
+      function tap(stream, ring, isPrimary) {
+        const src = ctx.createMediaStreamSource(stream);
+        const proc = ctx.createScriptProcessor(4096, 1, 1);
+        proc.onaudioprocess = (e) => {
+          const inBuf = e.inputBuffer.getChannelData(0);
+          const start = isPrimary ? writeIdx : writeIdx;
+          for (let i = 0; i < inBuf.length; i++) ring[(start + i) % ringSize] = inBuf[i];
+          if (isPrimary) {
+            writeIdx = (writeIdx + inBuf.length) % ringSize;
+            filled = Math.min(ringSize, filled + inBuf.length);
+            micLevel = rms(inBuf);
+          } else {
+            sysLevel = rms(inBuf);
+          }
+        };
+        // A ScriptProcessor only runs when connected to the destination; route it
+        // through a silent gain node so nothing is actually played back.
+        const mute = ctx.createGain();
+        mute.gain.value = 0;
+        src.connect(proc);
+        proc.connect(mute);
+        mute.connect(ctx.destination);
+        nodes.push(src, proc, mute);
+      }
+
+      // ── echo detection ───────────────────────────────────────────────────────
+      // Echo means the MIC envelope follows the SYSTEM envelope at a short,
+      // physically plausible delay (speaker → air → mic). Correlating raw
+      // waveforms and taking the max over many lags does NOT work: scanning
+      // thousands of lags finds a spurious peak, and two unrelated speech
+      // signals then score ~0.85. So we correlate short-time ENERGY ENVELOPES,
+      // and score the peak inside the echo window MINUS a baseline measured at
+      // delays too long to be echo. Unrelated speech scores the same in both
+      // windows and cancels to ~0; a real echo spikes only in the near window.
+      const HOP = 128;
+
+      function envelope(x, hop = HOP) {
+        const n = Math.floor(x.length / hop);
+        const e = new Float32Array(n);
+        for (let i = 0; i < n; i++) {
+          let s = 0;
+          for (let j = 0; j < hop; j++) { const v = x[i * hop + j]; s += v * v; }
+          e[i] = Math.sqrt(s / hop);
+        }
+        return e;
+      }
+
+      function corrAt(a, b, lag, n) {
+        let ma = 0, mb = 0;
+        for (let i = 0; i < n; i++) { ma += a[i]; mb += b[i + lag]; }
+        ma /= n; mb /= n;
+        let num = 0, va = 0, vb = 0;
+        for (let i = 0; i < n; i++) {
+          const da = a[i] - ma, db = b[i + lag] - mb;
+          num += da * db; va += da * da; vb += db * db;
+        }
+        if (va <= 0 || vb <= 0) return 0;
+        return num / Math.sqrt(va * vb);
+      }
+
+      /** 0 = no echo, ≥0.35 = the far end is clearly bleeding into the mic. */
+      function echoScore(mic, sys, sampleRate) {
+        const em = envelope(mic), es = envelope(sys);
+        const envRate = sampleRate / HOP;
+        const maxEchoLag = Math.round(0.25 * envRate);
+        const nullFrom = Math.round(0.6 * envRate);
+        const nullTo = Math.round(1.5 * envRate);
+        const n = Math.min(em.length, es.length) - nullTo;
+        if (n <= 20) return 0;
+
+        let peak = 0;
+        for (let lag = 0; lag <= maxEchoLag; lag++) peak = Math.max(peak, corrAt(em, es, lag, n));
+        let sum = 0, cnt = 0;
+        for (let lag = nullFrom; lag <= nullTo; lag++) { sum += Math.abs(corrAt(em, es, lag, n)); cnt++; }
+        return Math.max(0, peak - (cnt ? sum / cnt : 0));
+      }
+
+      // Thresholds calibrated against synthetic references: an independent-speech
+      // mic (headphones) scores ~0.02, while a 0.35-gain speaker echo scores
+      // ~0.33. The gap is wide, so these sit well clear of both.
+      const ECHO_BAD = 0.25;
+      const ECHO_WARN = 0.12;
+
+      function setVerdict(c) {
+        const el = $("verdict");
+        if (c >= ECHO_BAD) {
+          el.textContent = "Echo present — far end bleeds into mic";
+          el.className = "verdict bad";
+        } else if (c >= ECHO_WARN) {
+          el.textContent = "Some bleed — borderline";
+          el.className = "verdict warn";
+        } else {
+          el.textContent = "Clean — no meaningful echo";
+          el.className = "verdict ok";
+        }
+      }
+
+      function tick() {
+        const pct = (v) => Math.min(100, Math.round(Math.sqrt(v) * 240));
+        $("micBar").style.width = pct(micLevel) + "%";
+        $("sysBar").style.width = pct(sysLevel) + "%";
+        $("micTxt").textContent = micLevel.toFixed(4);
+        $("sysTxt").textContent = sysLevel.toFixed(4);
+
+        // Recompute at most once a second — the analysis walks thousands of lags.
+        const now = performance.now();
+        if (filled >= ringSize && now - lastCalc > 1000 && sysLevel > 0.005) {
+          lastCalc = now;
+          const c = echoScore(ordered(micRing), ordered(sysRing), ctx.sampleRate);
+          // Report the worst case seen, but always render — a score of 0 is a
+          // real (good) result and must not leave the UI stuck on "Measuring…".
+          bestCorr = Math.max(bestCorr, c);
+          $("corr").textContent = bestCorr.toFixed(3);
+          setVerdict(bestCorr);
+        }
+        raf = requestAnimationFrame(tick);
+      }
+
+      async function start() {
+        bestCorr = 0;
+        $("corr").textContent = "—";
+        $("verdict").textContent = "Measuring…";
+        $("verdict").className = "verdict";
+        try {
+          const aec = $("aec").checked;
+          log("requesting microphone…");
+          micStream = await navigator.mediaDevices.getUserMedia({
+            audio: { echoCancellation: aec, noiseSuppression: false, autoGainControl: false },
+          });
+          const mt = micStream.getAudioTracks()[0];
+          log(`mic granted: ${mt.label || "(unlabeled)"}`);
+
+          log("requesting system audio — pick Entire Screen and tick share audio…");
+          sysStream = await navigator.mediaDevices.getDisplayMedia({
+            video: true,
+            audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false },
+          });
+          const st = sysStream.getAudioTracks()[0];
+
+          const rows = [
+            ["Platform", platform],
+            ["Chromium-based", isChromium ? "yes" : "no"],
+            ["getDisplayMedia", "available"],
+            ["Secure context", window.isSecureContext ? "yes" : "NO"],
+            ["System audio track", st ? `YES — ${st.label || "(unlabeled)"}` : "NONE — audio was not shared"],
+            ["Mic echoCancellation", JSON.stringify(mt.getSettings().echoCancellation ?? "unknown")],
+          ];
+          renderEnv(rows);
+
+          if (!st) {
+            log("NO system audio track. The far end cannot be heard. Re-run and tick 'share system audio'.");
+            $("verdict").textContent = "No system audio — cannot measure";
+            $("verdict").className = "verdict bad";
+            stop();
+            return;
+          }
+          log(`system audio granted: ${st.label || "(unlabeled)"}`);
+
+          ctx = new AudioContext();
+          ringSize = Math.round(ctx.sampleRate * WINDOW_SEC);
+          micRing = new Float32Array(ringSize);
+          sysRing = new Float32Array(ringSize);
+          writeIdx = 0;
+          filled = 0;
+          lastCalc = 0;
+          tap(micStream, micRing, true);
+          tap(new MediaStream([st]), sysRing, false);
+          log(`audio graph running at ${ctx.sampleRate} Hz, ${WINDOW_SEC}s window`);
+
+          // The user ending the share from the browser's own bar must stop us too.
+          st.addEventListener("ended", () => { log("system audio share ended by user"); stop(); });
+
+          $("start").disabled = true;
+          $("stop").disabled = false;
+          raf = requestAnimationFrame(tick);
+        } catch (err) {
+          log(`FAILED: ${err && err.name ? err.name : ""} ${err && err.message ? err.message : String(err)}`);
+          stop();
+        }
+      }
+
+      function stop() {
+        cancelAnimationFrame(raf);
+        raf = 0;
+        nodes.forEach((n) => { try { n.disconnect(); } catch {} });
+        nodes = [];
+        [micStream, sysStream].forEach((s) => s && s.getTracks().forEach((t) => t.stop()));
+        micStream = sysStream = null;
+        if (ctx) { ctx.close(); ctx = null; }
+        micLevel = sysLevel = 0;
+        $("start").disabled = false;
+        $("stop").disabled = true;
+        $("micBar").style.width = "0%";
+        $("sysBar").style.width = "0%";
+        if (bestCorr > 0) log(`stopped. peak correlation = ${bestCorr.toFixed(3)}`);
+      }
+
+      $("start").addEventListener("click", start);
+      $("stop").addEventListener("click", stop);
+      log(`ready — ${platform}, ${isChromium ? "Chromium" : "non-Chromium"}`);
+    </script>
+  </body>
+</html>

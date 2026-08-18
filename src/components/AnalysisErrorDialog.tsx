@@ -4,7 +4,6 @@ import { hasProviderKey } from "../lib/ai/settings";
 import { PROVIDER_BY_ID } from "../lib/ai/providers";
 import { openSettings } from "../lib/nav";
 import { runAnalysis } from "../lib/analysis/engine";
-import { useI18n } from "../i18n";
 import { log } from "../lib/log";
 
 /**
@@ -33,36 +32,26 @@ function classify(message: string, keyConfigured: boolean): Kind {
   return "generic";
 }
 
-const HINTS: Record<"zh-TW" | "en", Record<Kind, string>> = {
-  "zh-TW": {
-    missingKey: "目前這個供應商沒有 API 金鑰。請到設定填入金鑰後再試一次。",
-    auth: "API 金鑰無效或沒有權限（401/403）。請到設定確認金鑰是否正確、是否有這個模型的權限。",
-    model: "這個模型不可用或不存在。請到設定把「評估模型」換成可用的模型。",
-    rate: "達到速率或額度限制。稍等一下再試，或在設定換成別的模型／供應商。",
-    structured:
-      "這個模型可能不支援結構化輸出（評估與時間軸分析都需要）。建議在設定把「評估模型」換成支援的（例如 Claude、OpenAI、OpenRouter 的模型）。",
-    generic: "請看下方錯誤訊息；多半可在設定調整供應商、金鑰或模型後解決。",
-  },
-  en: {
-    missingKey: "No API key for this provider. Add one in Settings and try again.",
-    auth: "API key is invalid or lacks access (401/403). Check the key and model access in Settings.",
-    model: "This model is unavailable or doesn't exist. Switch the eval model in Settings.",
-    rate: "Hit a rate or quota limit. Wait and retry, or switch model/provider in Settings.",
-    structured:
-      "This model may not support structured output (evaluations + timeline need it). Switch the eval model in Settings to one that does (e.g. Claude, OpenAI, or an OpenRouter model).",
-    generic: "See the error below — usually fixable by adjusting the provider, key, or model in Settings.",
-  },
+const HINTS: Record<Kind, string> = {
+  missingKey: "No API key for this provider. Add one in Settings and try again.",
+  auth: "API key is invalid or lacks access (401/403). Check the key and model access in Settings.",
+  model: "This model is unavailable or doesn't exist. Switch the eval model in Settings.",
+  rate: "Hit a rate or quota limit. Wait and retry, or switch model/provider in Settings.",
+  structured:
+    "This model may not support structured output (evaluations + timeline need it). Switch the eval model in Settings to one that does (e.g. Claude, OpenAI, or an OpenRouter model).",
+  generic: "See the error below — usually fixable by adjusting the provider, key, or model in Settings.",
 };
 
 const LABELS = {
-  "zh-TW": { title: "分析失敗", provider: "供應商", model: "評估模型", openSettings: "開啟設定", dismiss: "關閉", retry: "重試" },
-  en: { title: "Analysis failed", provider: "Provider", model: "Eval model", openSettings: "Open Settings", dismiss: "Dismiss", retry: "Retry" },
+  title: "Analysis failed",
+  provider: "Provider",
+  model: "Eval model",
+  openSettings: "Open Settings",
+  dismiss: "Dismiss",
+  retry: "Retry",
 } as const;
 
 export function AnalysisErrorDialog() {
-  const { language } = useI18n();
-  const lang = language === "en" ? "en" : "zh-TW";
-
   const analysisError = useStore((s) => s.analysisError);
   const analysisStatus = useStore((s) => s.analysisStatus);
   // Analysis rides realtime live and deep in replay — show both when they differ.
@@ -83,9 +72,9 @@ export function AnalysisErrorDialog() {
   const message = analysisStatus === "error" ? analysisError : null;
   if (!message) return null;
 
-  const L = LABELS[lang];
+  const L = LABELS;
   const kind = classify(message, keyConfigured);
-  const hint = HINTS[lang][kind];
+  const hint = HINTS[kind];
 
   function dismiss() {
     setAnalysisError(null);

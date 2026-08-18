@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Parley iOS — App Store Readiness</title>
+  <title>SalesHunter Coach iOS — App Store Readiness</title>
   <style>
     :root {
       --ink: #11151e;
@@ -83,11 +83,11 @@
   <main class="shell">
     <header class="mast">
       <div>
-        <p class="eyebrow">Parley / iOS release readiness</p>
+        <p class="eyebrow">SalesHunter Coach / iOS release readiness</p>
         <h1>先把「可信」做成第一個畫面。</h1>
-        <p class="lede">這不是只補一張 icon。Parley 要帶著自己的聲音進 App Store：清楚說明怎麼錄、資料去哪裡、怎麼退出，並讓第一組 screenshots 看起來像同一個產品。</p>
+        <p class="lede">這不是只補一張 icon。SalesHunter Coach 要帶著自己的聲音進 App Store：清楚說明怎麼錄、資料去哪裡、怎麼退出，並讓第一組 screenshots 看起來像同一個產品。</p>
       </div>
-      <div class="signal"><img src="../../ios/App/Parley/Assets.xcassets/AppIcon.appiconset/AppIcon-1024.png" alt="Parley app icon"></div>
+      <div class="signal"><img src="../../ios/App/SalesHunter Coach/Assets.xcassets/AppIcon.appiconset/AppIcon-1024.png" alt="SalesHunter Coach app icon"></div>
     </header>
 
     <div class="summary">
@@ -125,7 +125,7 @@
           <span class="tag risk">Not advised now</span>
           <h3>Mono Utility</h3>
           <div class="preview mono"></div>
-          <p>純黑白 P.，像錄音工具。最快、最穩，但捨棄 Parley 已經擁有的辨識度，像一個新的、較冷的產品。</p>
+          <p>純黑白 P.，像錄音工具。最快、最穩，但捨棄 SalesHunter Coach 已經擁有的辨識度，像一個新的、較冷的產品。</p>
           <p class="effort">Minimal assets · weaker product continuity</p>
         </article>
       </div>
@@ -144,7 +144,7 @@
             <tr><td><span class="status watch">WATCH</span></td><td>錄音同意</td><td>目前點「開始錄音」就請求 mic，未提示與會者同意或雲端轉錄。</td><td>首次錄音 sheet：目的、資料流、與會者同意、可在 Settings 關閉；不影響後續一鍵錄音。</td></tr>
             <tr><td><span class="status watch">WATCH</span></td><td>資料韌性</td><td>停止錄音後若 upload 失敗，temp Ogg 會被刪除，不能重試。</td><td>改成 pending upload queue；顯示同步狀態、保留檔案直到成功或使用者刪除。</td></tr>
             <tr><td><span class="status watch">WATCH</span></td><td>Login review flow</td><td>Hosted auth 已有 email / Google / Apple；但 review test account 與 Notes 尚未提供。</td><td>建立可測試帳號、資料；Review Notes 說明 ASWebAuthenticationSession handoff 與 hosted STT。</td></tr>
-            <tr><td><span class="status ok">READY</span></td><td>App ID / SIWA</td><td><code>com.pathors.parley.ios</code> 已啟用 Sign in with Apple；hosted auth 已有 Apple 路徑。</td><td>保留，並以 TestFlight 真機驗完整登入。</td></tr>
+            <tr><td><span class="status ok">READY</span></td><td>App ID / SIWA</td><td><code>com.saleshunter.coach.ios</code> 已啟用 Sign in with Apple；hosted auth 已有 Apple 路徑。</td><td>保留，並以 TestFlight 真機驗完整登入。</td></tr>
             <tr><td><span class="status ok">READY</span></td><td>簽章 / Icon</td><td>Apple Distribution、Store profile、1024 PNG 無 alpha、TestFlight build 1.0 (1) 已上傳。</td><td>Night Signal 只做一致性 refine，不重做識別。</td></tr>
           </tbody>
         </table>

@@ -21,7 +21,7 @@ export interface SttProviderInfo {
    * request/response shape is verified against the vendor's API docs (Soniox,
    * Deepgram, AssemblyAI, OpenAI). Gemini stays `false` — its inline Ogg-Opus
    * support + model naming are unconfirmed and it returns no timestamps or
-   * diarization; hosted Parley stays `false` until a cloud batch endpoint exists.
+   * diarization; hosted Coach stays `false` until a cloud batch endpoint exists.
    */
   supportsFileUpload: boolean;
   /** Settings field holding this provider's API key. */
@@ -47,9 +47,9 @@ export const STT_PROVIDERS: SttProviderInfo[] = [
   { id: "assemblyai", label: "AssemblyAI", diarization: false, supportsFileUpload: true, apiKeyField: "assemblyaiApiKey", keyPlaceholder: "…", icon: "/providers/assemblyai.png" },
   { ...fromLlm("openai"), diarization: false, supportsFileUpload: true },
   { ...fromLlm("gemini"), diarization: false, supportsFileUpload: false },
-  // Hosted account mode: audio is relayed through Parley Cloud to Soniox (which
+  // Hosted account mode: audio is relayed through Coach Cloud to Soniox (which
   // diarizes), so no vendor is exposed and no key field is used — auth is the
-  // signed-in cloud session (see sttApiKey). Borrows the Parley brand from the
+  // signed-in cloud session (see sttApiKey). Borrows the Coach brand from the
   // LLM registry. The picker only offers it in the cloud build when signed in.
   // File upload needs a cloud batch endpoint (relaying to Soniox async) that
   // isn't wired yet — off until that exists and is verified.
@@ -58,7 +58,7 @@ export const STT_PROVIDERS: SttProviderInfo[] = [
     label: PROVIDER_BY_ID["parley"].label,
     diarization: true,
     supportsFileUpload: false,
-    apiKeyField: "parleyApiKey",
+    apiKeyField: "coachApiKey",
     keyPlaceholder: "",
     icon: PROVIDER_BY_ID["parley"].icon,
   },
@@ -85,7 +85,7 @@ export function sttApiKey(settings: Settings, id: SttProviderId): string {
 
 /**
  * The STT relay endpoint for a provider: hosted "parley" streams audio through
- * Parley Cloud (a `wss://` URL, authenticated with the session token from
+ * Coach Cloud (a `wss://` URL, authenticated with the session token from
  * `sttApiKey`), so the vendor key never lives on the client. BYOK providers
  * connect straight to their vendor — no relay. Every streaming start command
  * (meeting AND voice typing) must pass this alongside the key.

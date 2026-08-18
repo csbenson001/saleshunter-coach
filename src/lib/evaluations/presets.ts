@@ -3,7 +3,7 @@ import type { TranslationKey } from "../../i18n/messages";
 
 /**
  * Built-in evaluation definitions and the template library that ship with
- * Parley, covering the use-cases Parley markets: job interviews, salary
+ * Coach, covering the use-cases Coach markets: job interviews, salary
  * negotiations, sales calls, deal-making, and diligence calls — plus a
  * general-purpose set.
  *

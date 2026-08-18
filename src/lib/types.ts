@@ -1,4 +1,4 @@
-// Core domain types for Parley.
+// Core domain types for Coach.
 
 /**
  * Who produced a given chunk of speech. "mix" is the combined mic+system stream
@@ -145,7 +145,7 @@ export interface TimelineEvent {
   resolution?: string;
   /** Supporting verbatim quotes from the transcript. */
   quotes?: string[];
-  /** Which analyst wrote this marker: absent = Parley's own pipeline; an MCP
+  /** Which analyst wrote this marker: absent = Coach's own pipeline; an MCP
    *  client stamps its agent name (e.g. "claude") so external and built-in
    *  findings stay distinguishable side by side. */
   author?: string;
@@ -222,7 +222,7 @@ export interface ModelReasoningEfforts {
 }
 
 /** UI language. */
-export type AppLanguage = "zh-TW" | "en";
+export type AppLanguage = "en";
 
 /** UI color theme preference. */
 export type AppTheme = "light" | "dark" | "system";
@@ -292,7 +292,7 @@ export interface Settings {
   /** Unused — the hosted "parley" provider authenticates with the Better Auth
    *  session token, not an API key. Present so it satisfies the closed
    *  apiKeyField union (every provider has a key field). */
-  parleyApiKey: string;
+  coachApiKey: string;
   /** Reasoning depth per model role for reasoning-capable models. */
   reasoningEffort: ModelReasoningEfforts;
   /** Per-provider model ids (ids differ between Anthropic and OpenRouter). */
@@ -329,7 +329,7 @@ export interface Settings {
   todoTemplates: TodoTemplate[];
   /** Per-metric opt-in for live delivery coaching (see DeliveryToggles). */
   delivery: DeliveryToggles;
-  /** Whether to sync personal recordings + folders to Parley Cloud while signed in.
+  /** Whether to sync personal recordings + folders to Coach Cloud while signed in.
    *  Off → this device keeps everything local (no automatic push/pull); explicit
    *  org sharing still works. Default on (preserves the prior signed-in behavior). */
   syncEnabled: boolean;
@@ -394,7 +394,7 @@ export interface ProsodyMetrics {
   longestPauseMs: number;
   /** Whether the most recent frame was voiced. */
   speaking: boolean;
-  /** One-shot edge: a filled pause ("um/uh/呃/痾") was just detected acoustically
+  /** One-shot edge: a filled pause ("um"/"uh") was just detected acoustically
    *  (STT drops these, so this mic-derived flag is the only source). */
   filledPause: boolean;
   /** Whether the counterpart's (system-audio) stream is currently audible —
@@ -435,7 +435,7 @@ export type ToneVerdict = "neutral" | "warm" | "firm" | "sharp" | "aggressive" |
 export interface FillerAssessment {
   /** "frequent" only when fillers are dense enough to distract; else "ok". */
   level: "ok" | "frequent";
-  /** The actual tics observed (e.g. ["就是", "然後"] / ["um", "like"]). */
+  /** The actual tics observed (e.g. ["like", "you know"]). */
   examples: string[];
   /** Short human note about the dense stretch; empty when level is "ok". */
   note: string;

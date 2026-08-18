@@ -41,14 +41,14 @@ pub fn run() {
 
     tauri::Builder::default()
         // Registered FIRST so other plugins' logs are captured. Writes a rotating
-        // file to the OS app-log dir (macOS: ~/Library/Logs/com.pathors.parley/),
+        // file to the OS app-log dir (macOS: ~/Library/Logs/com.saleshunter.coach/),
         // plus stdout (dev) and the webview devtools. Captures Rust `log::` macros
         // and — via the frontend wrapper's attachConsole — webview console output.
         .plugin(
             tauri_plugin_log::Builder::new()
                 .targets([
                     Target::new(TargetKind::LogDir {
-                        file_name: Some("parley".into()),
+                        file_name: Some("saleshunter-coach".into()),
                     }),
                     Target::new(TargetKind::Stdout),
                     Target::new(TargetKind::Webview),
@@ -67,7 +67,6 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_process::init())
-        .plugin(tauri_plugin_updater::Builder::new().build())
         // Single source of truth for "who owns the mic" (meeting / mic test /
         // voice typing) — guarantees at most one live capture session.
         .manage(MicCoordinator::default())
@@ -90,7 +89,7 @@ pub fn run() {
             // unlock — Carbon hotkey registrations and CGEventTaps can come
             // back dead from a sleep cycle.
             hotkey::install_wake_observer(app.handle().clone());
-            log::info!("app: starting up (parley {})", env!("CARGO_PKG_VERSION"));
+            log::info!("app: starting up (saleshunter_coach {})", env!("CARGO_PKG_VERSION"));
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![

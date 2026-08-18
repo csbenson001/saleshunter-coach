@@ -57,7 +57,7 @@ export function LiveScreen() {
       layout === "coach" ? ["transcript", "feed", "todos"] : ["transcript", "findings"],
     [layout]
   );
-  const saved = useDefaultLayout({ id: "parley:live", panelIds, storage: window.localStorage });
+  const saved = useDefaultLayout({ id: "saleshunter-coach:live", panelIds, storage: window.localStorage });
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">

@@ -9,7 +9,7 @@
 
 ## 1. 動機與定位
 
-Parley 今天的錄音能力綁在 macOS 上，因為它靠 Core Audio process tap 拿線上會議的系統音訊（[`audio/system_macos.rs`](../../src-tauri/src/audio/system_macos.rs)）。這讓一整類會議完全落在產品之外：**咖啡廳、客戶辦公室、展場、飯桌上的面對面會議**——而那正是業務最關鍵的場合，也是最不可能開筆電的場合。
+SalesHunter Coach 今天的錄音能力綁在 macOS 上，因為它靠 Core Audio process tap 拿線上會議的系統音訊（[`audio/system_macos.rs`](../../src-tauri/src/audio/system_macos.rs)）。這讓一整類會議完全落在產品之外：**咖啡廳、客戶辦公室、展場、飯桌上的面對面會議**——而那正是業務最關鍵的場合，也是最不可能開筆電的場合。
 
 iOS 版不是「把桌機塞進手機」。它是補上另一半的會議形態：
 
@@ -19,7 +19,7 @@ iOS 版不是「把桌機塞進手機」。它是補上另一半的會議形態�
 | 音源 | mic + 系統音訊 process tap，雙聲道天然分離 | **只有 mic**（房間音），靠聲紋 diarization 分人 |
 | 角色 | 駕駛艙 + 深度分析引擎 | 口袋錄音機 + 二次注意力教練 + 隨身書房 |
 
-**定位鐵律**：iPhone 不試圖成為完整的 Parley。它做三件事——錄得到、當場看得到、事後查得到；**深度分析留在桌機**（D2）。
+**定位鐵律**：iPhone 不試圖成為完整的 SalesHunter Coach。它做三件事——錄得到、當場看得到、事後查得到；**深度分析留在桌機**（D2）。
 
 ## 2. 決策記錄
 
@@ -92,7 +92,7 @@ sync 合約目前只以註解形式散在 `src/lib/cloud/*`。iOS 是第二個�
 | 項目 | 現況 | 要改 |
 |---|---|---|
 | provider | 只有 Google（`apps/cloud/src/auth.ts:34`） | **加 Sign in with Apple**——App Store 審核 4.8 對有第三方登入的 app 是硬要求 |
-| redirect allowlist | 只允許 `^parley://` 與 `127.0.0.1/localhost` | 加 `parley-ios://auth`（或改用 Universal Link + ASWebAuthenticationSession） |
+| redirect allowlist | 只允許 `^saleshunter-coach://` 與 `127.0.0.1/localhost` | 加 `saleshunter-coach-ios://auth`（或改用 Universal Link + ASWebAuthenticationSession） |
 | token 生命週期 | 不透明 session token，**無 refresh**，過期即登出 | 加 refresh token 或延長 session + silent renew。手機不能每週重新登入 |
 | token 存放 | 桌機放 localStorage 明文 | iOS 一律 **Keychain**（`kSecAttrAccessibleAfterFirstUnlock`，背景錄音要能讀到） |
 
@@ -114,7 +114,7 @@ live findings 需要 eval templates 才有判準；scenario/stage bundles 決定
 
 ### 5.4 計費與額度（手機上線前必修，否則帳會爆）
 
-1. **feature 歸因**：server 已讀 `X-Parley-Feature` 與 `?feature=`，但**兩端都沒送**，所有 hosted 用量落到 `other`/`meeting`。手機上線後成本歸因會完全瞎掉——先讓 client 送
+1. **feature 歸因**：server 已讀 `X-SalesHunter Coach-Feature` 與 `?feature=`，但**兩端都沒送**，所有 hosted 用量落到 `other`/`meeting`。手機上線後成本歸因會完全瞎掉——先讓 client 送
 2. **STT stale session reconciler**：`stt.ts:56-59` 自己標了 TODO，`reconciled` 狀態預留但**沒有 cron**。手機被系統殺掉時 DO 可能來不及 `settle()`，留下 `open` 的 `stt_session` 佔用配額（且併發上限只有 4）——手機場景會頻繁觸發，必須補 cron sweeper
 3. **免費額度重算**：現在免費 20h/月 STT（Soniox $0.002/min ≈ $2.4/月）。手機把「錄音」的門檻從「開筆電」降到「按一下」，時數會數倍成長，額度與定價要重新算
 
@@ -137,7 +137,7 @@ live findings 需要 eval templates 才有判準；scenario/stage bundles 決定
 1. 開啟 `origin:"ios"` 且 `needsAnalysis` 的會議時自動跑 studyPipeline → 回寫雲端 → 清 flag
 2. History 加「來自 iPhone」標記 + 背景 delta pull（§5.2-5）
 3. 修 §3.2 的 `intel/extract.ts` mix→「對方」bug
-4. client 開始送 `X-Parley-Feature`（§5.4-1）
+4. client 開始送 `X-SalesHunter Coach-Feature`（§5.4-1）
 
 ## 8. 分期
 

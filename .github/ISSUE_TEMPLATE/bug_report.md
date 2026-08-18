@@ -1,6 +1,6 @@
 ---
 name: Bug report
-about: Something in Parley behaves incorrectly
+about: Something in SalesHunter Coach behaves incorrectly
 labels: bug
 ---
 
@@ -18,7 +18,7 @@ labels: bug
 
 ## Environment
 
-- Parley version:
+- SalesHunter Coach version:
 - macOS version:
 - Apple silicon or Intel:
 

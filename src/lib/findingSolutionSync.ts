@@ -34,7 +34,7 @@ export async function openFindingSolutionWindow(): Promise<void> {
   log.info("finding-solution: open window");
   const win = new WebviewWindow("finding-solution", {
     url: "index.html#finding-solution",
-    title: "Parley — How to reply",
+    title: "SalesHunter Coach — How to reply",
     width: 420,
     height: 640,
     minWidth: 320,

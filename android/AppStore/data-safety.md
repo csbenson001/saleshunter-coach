@@ -5,9 +5,9 @@ file that proves it. Play holds the developer to this form, not to the iOS
 privacy label, so where the two differ the difference is stated rather than
 smoothed over — see [Cross-check against the iOS label](#cross-check-against-the-ios-privacy-label).
 
-Scope: `com.pathors.parley`, the cloud edition as it ships. Base URL
+Scope: `com.saleshunter.coach`, the cloud edition as it ships. Base URL
 `https://api.parley.tw`, STT relay `wss://api.parley.tw/stt/stream`
-(`android/docs/api-cloud.md`, `android/docs/api-parleykit.md`).
+(`android/docs/api-cloud.md`, `android/docs/api-coachkit.md`).
 
 ## The three top-level questions
 
@@ -22,12 +22,12 @@ Scope: `com.pathors.parley`, the cloud edition as it ships. Base URL
 "Collected" in Play's sense means transmitted off the device. "Shared" means
 transferred to a third party — Play's definition excludes a service provider
 processing on the developer's behalf, which is what the hosted STT vendor is
-(`android/docs/api-parleykit.md`: relay → Soniox). So **no row is shared.**
+(`android/docs/api-coachkit.md`: relay → Soniox). So **no row is shared.**
 
 Nothing here is used for advertising, analytics, personalization, or fraud
 prevention: the app has no analytics, ads, or crash-reporting dependency at all
 (`android/app/build.gradle.kts` — Compose, DataStore, Browser, OkHttp,
-coroutines, serialization, and the local `:parleykit`, nothing else).
+coroutines, serialization, and the local `:coachkit`, nothing else).
 
 | Data type (Play taxonomy) | Collected | Shared | Optional? | Purposes | Evidence |
 | --- | --- | --- | --- | --- | --- |
@@ -59,7 +59,7 @@ reasonably ask:
 
 Every row is marked "Data collection is required" rather than "Users can choose
 whether this data is collected": the app is behind a sign-in wall
-(`ui/ParleyRoot.kt`) and a recording is transcribed by the hosted relay, so
+(`ui/CoachRoot.kt`) and a recording is transcribed by the hosted relay, so
 there is no configuration of the app in which it functions without sending
 these. Recording is of course still user-initiated — `RECORD_AUDIO` is a
 runtime permission and a meeting starts only when the user taps record.
@@ -90,7 +90,7 @@ submitted.** The facts:
 - The Android app also has **no in-app deletion of a single recording**.
   `CloudClient.deleteRecording` exists but has no caller outside the client
   itself — the library screen offers no delete action.
-- The iOS app *does* ship account deletion (`ios/App/Parley/SettingsView.swift`
+- The iOS app *does* ship account deletion (`ios/App/SalesHunter Coach/SettingsView.swift`
   → `AppState.deleteAccount()` → `DELETE /me`), and `ios/AppStore/review-notes.md`
   tells Apple it is at Settings → Account → Delete Account.
 - `website/privacy/index.html` says, verbatim, that an account can be deleted
@@ -131,7 +131,7 @@ backend, so the story has to match; where it does not, the reason is here.
 | 3 | `User Content → Other User Content` includes "folders … and organization placement" | Android surfaces neither. Folders and organizations are explicitly out of scope (`android/docs/app-structure.md`, "Known gaps"; `api-cloud.md`, "Not implemented"). `folderId` exists in the wire shape but nothing sets it. | Nothing to fix — Android collects a strict subset. Do not copy the words "folders" or "organization" into the Play form. |
 | 4 | The label covers recordings the user makes | Android also transmits the audio of **files the user imports** — a source iOS does not have (`ImportSession`, `source: "upload"`). | Covered by *Voice or sound recordings*; just do not describe the row as "recordings made in the app". |
 | 5 | Deletion is in-app (iOS Settings → Account → Delete Account) | No in-app deletion on Android, of an account or of a recording. | The blocker above. **This is the one real contradiction between the two stores.** |
-| 6 | Keyboard extension section (Full Access, no extra data type) | No Android equivalent exists — there is no Parley keyboard in this app. | Ignore that section entirely; it is iOS-only. |
+| 6 | Keyboard extension section (Full Access, no extra data type) | No Android equivalent exists — there is no SalesHunter Coach keyboard in this app. | Ignore that section entirely; it is iOS-only. |
 
 Rows 1–4 are wording differences that come from the two apps genuinely doing
 different things. Row 5 is a gap in the product.

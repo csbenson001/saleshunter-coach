@@ -37,7 +37,7 @@ interface LogLine {
 
 /**
  * tauri-plugin-log lines carry a bracketed level token, e.g.
- *   [2026-06-21][12:34:56][parley::lib][INFO] app: starting up
+ *   [2026-06-21][12:34:56][saleshunter_coach::lib][INFO] app: starting up
  * Pull it out for colouring + filtering; default to "info" when absent.
  */
 function parseLevel(line: string): Level {
@@ -65,7 +65,7 @@ function parseLogLines(text: string): LogLine[] {
 
 /**
  * Standalone, movable Field Log window (Tauri multi-window, like Settings).
- * Tails the rotating `parley.log` written by tauri-plugin-log, with a level
+ * Tails the rotating `saleshunter-coach.log` written by tauri-plugin-log, with a level
  * filter, search, autoscroll, and a "reveal in Finder" affordance.
  */
 export function DiagnosticsApp() {
@@ -93,7 +93,7 @@ export function DiagnosticsApp() {
   useEffect(() => {
     if (!isTauri()) return;
     appLogDir()
-      .then((d) => join(d, "parley.log"))
+      .then((d) => join(d, "saleshunter-coach.log"))
       .then(setLogPath)
       .catch((error) => log.warn("diagnostics: resolve log path failed", { error: String(error) }));
   }, []);
@@ -189,7 +189,7 @@ export function DiagnosticsApp() {
           onClick={async () => {
             try {
               const dir = await appLogDir();
-              const file = await join(dir, "parley.log");
+              const file = await join(dir, "saleshunter-coach.log");
               log.info("diagnostics: reveal requested");
               await revealItemInDir(file);
             } catch (e) {

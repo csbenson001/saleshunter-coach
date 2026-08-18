@@ -10,8 +10,7 @@ import { log } from "../lib/log";
 import { shortcutCaps } from "../settings/VoiceTypingSettings";
 import { PROVIDERS, PROVIDER_BY_ID } from "../lib/ai/providers";
 import { STT_PROVIDERS, STT_BY_ID } from "../lib/transcription/providers";
-import { useI18n, LANGUAGE_OPTIONS } from "../i18n";
-import { Flag } from "./ui/flag";
+import { useI18n } from "../i18n";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
@@ -22,13 +21,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { AppLanguage, LlmProvider, Settings, SttProviderId } from "../lib/types";
+import type { LlmProvider, Settings, SttProviderId } from "../lib/types";
 
 // systemAudio: unknown | granted | denied | unsupported (macOS < 14.2).
 type Perms = { microphone: string; systemAudio: string };
 
 type StepId =
-  | "lang"
   | "welcome"
   | "login"
   | "llm"
@@ -39,11 +37,10 @@ type StepId =
   | "voiceTyping"
   | "done";
 
-// Ordered onboarding steps. The Parley sign-in step only exists in the official
+// Ordered onboarding steps. The Coach sign-in step only exists in the official
 // (cloud) build — it offers the free hosted STT + LLM. CLOUD_ENABLED is a
 // compile-time constant, so the OSS build never ships the step at all.
 const STEPS: StepId[] = [
-  "lang",
   "welcome",
   ...(CLOUD_ENABLED ? (["login"] as StepId[]) : []),
   "llm",
@@ -140,33 +137,6 @@ export function Onboarding() {
 
         {/* Body */}
         <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5">
-          {current === "lang" && (
-            <div className="flex flex-col gap-3">
-              <h2 className="text-lg font-semibold tracking-tight">{t("onboarding.lang.title")}</h2>
-              <p className="text-sm leading-relaxed text-muted-foreground">{t("onboarding.lang.body")}</p>
-              <div className="mt-1 grid gap-2">
-                {LANGUAGE_OPTIONS.map((lang) => (
-                  <button
-                    key={lang.value}
-                    type="button"
-                    onClick={() => patch({ language: lang.value as AppLanguage })}
-                    className={`flex items-center justify-between rounded-lg border px-3 py-2.5 text-left text-sm transition-colors ${
-                      settings.language === lang.value
-                        ? "border-primary bg-primary/10"
-                        : "hover:bg-muted/50"
-                    }`}
-                  >
-                    <span className="flex items-center gap-2">
-                      <Flag code={lang.flag} className="size-5" />
-                      {lang.nativeLabel}
-                    </span>
-                    {settings.language === lang.value && <Check className="size-4 text-primary" />}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
           {current === "welcome" && (
             <div className="flex flex-col gap-3">
               <h2 className="text-lg font-semibold tracking-tight">{t("onboarding.welcome.title")}</h2>
@@ -441,7 +411,7 @@ export function Onboarding() {
 }
 
 /**
- * Official-build-only sign-in step. Signing in unlocks Parley's free hosted STT
+ * Official-build-only sign-in step. Signing in unlocks Coach's free hosted STT
  * + LLM; on success we default both providers to "parley" so the next two steps
  * come pre-configured (and now list "parley" as an option). Fully skippable —
  * Next advances regardless, and BYOK keys still work.
@@ -459,7 +429,7 @@ function LoginStep() {
     try {
       const { signInWithGoogle } = await import("../lib/cloud/client");
       await signInWithGoogle();
-      // Signed in → default to Parley's free hosted STT + LLM so onboarding is
+      // Signed in → default to Coach's free hosted STT + LLM so onboarding is
       // done in one tap; the LLM/STT pickers now surface "parley" too.
       patch({ llmProviders: { realtime: "parley", deep: "parley" }, transcriptionProvider: "parley" });
     } catch (e) {

@@ -1,4 +1,4 @@
-// Parley website — light progressive enhancement, no dependencies.
+// SalesHunter Coach website — light progressive enhancement, no dependencies.
 
 // Sticky nav state on scroll
 const nav = document.getElementById("nav");
@@ -98,7 +98,7 @@ function tryNext(target, name, exts, i) {
 function mountImage(target, url, name) {
   const img = document.createElement("img");
   img.src = url;
-  img.alt = `Parley — ${name.replace(/showcase-?/, "").replaceAll("-", " ")}`.trim();
+  img.alt = `SalesHunter Coach — ${name.replace(/showcase-?/, "").replaceAll("-", " ")}`.trim();
   img.loading = "lazy";
   target.replaceChildren(img);
   target.style.border = "0";

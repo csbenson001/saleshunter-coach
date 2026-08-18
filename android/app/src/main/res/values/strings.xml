@@ -1,11 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-  Every user-visible string lives here AND in values-zh-rTW/strings.xml.
-  Traditional Chinese is first-class in Parley, not a translation afterthought:
-  a string that exists in only one of the two files is a bug.
--->
+<!-- Every user-visible string lives here. The app ships in American English. -->
 <resources>
-    <string name="app_name">Parley</string>
+    <string name="app_name">SalesHunter Coach</string>
 
     <!-- Shared actions -->
     <string name="action_close">Close</string>
@@ -55,7 +51,7 @@
     <string name="account_delete">Delete account</string>
     <string name="account_delete_in_progress">Deleting account…</string>
     <string name="account_delete_confirm_title">Delete your account permanently?</string>
-    <string name="account_delete_confirm_body">This permanently deletes your Parley account and every recording synced to it — audio, transcripts, summaries, folders and usage history. It cannot be undone, and nothing can be recovered afterwards. Recordings still waiting to upload on this device are discarded too. If you own a shared organization, transfer or delete it first.</string>
+    <string name="account_delete_confirm_body">This permanently deletes your Coach account and every recording synced to it — audio, transcripts, summaries, folders and usage history. It cannot be undone, and nothing can be recovered afterwards. Recordings still waiting to upload on this device are discarded too. If you own a shared organization, transfer or delete it first.</string>
     <string name="account_delete_confirm_action">Delete my account and data</string>
     <string name="account_delete_error_owns_organizations">You still own at least one organization. Transfer or delete it in the desktop app first, then delete your account.</string>
     <string name="account_delete_error_failed">Your account was not deleted. Check your connection and try again.</string>
@@ -63,7 +59,7 @@
     <!-- Meeting -->
     <string name="meeting_title">Meeting</string>
     <string name="meeting_permission_title">Microphone access needed</string>
-    <string name="meeting_permission_body">Parley records the meeting on this device and streams it for live transcription.</string>
+    <string name="meeting_permission_body">Coach records the meeting on this device and streams it for live transcription.</string>
     <string name="meeting_permission_grant">Allow microphone</string>
     <string name="meeting_permission_denied">Microphone permission was denied. Turn it on in system settings to record.</string>
     <string name="meeting_connecting">Connecting…</string>
@@ -116,7 +112,7 @@
 
     <!-- Foreground service notification -->
     <string name="notification_channel_name">Meeting recording</string>
-    <string name="notification_channel_description">Shows while Parley is recording a meeting.</string>
+    <string name="notification_channel_description">Shows while Coach is recording a meeting.</string>
     <string name="notification_title">Recording a meeting</string>
-    <string name="notification_text">Tap to return to Parley.</string>
+    <string name="notification_text">Tap to return to Coach.</string>
 </resources>

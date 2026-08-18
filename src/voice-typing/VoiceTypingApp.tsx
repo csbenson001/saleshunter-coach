@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { listen, emit } from "@tauri-apps/api/event";
 import { Check, Loader2, Mic } from "lucide-react";
-import { preloadZhConverter, toTraditional } from "../lib/zhConvert";
 import { useI18n, type TranslationKey } from "../i18n";
 import { useThemePreference } from "../lib/theme";
 import { log } from "../lib/log";
@@ -78,9 +77,9 @@ function instantWaveform(level: number): number[] {
 
 /**
  * The floating dictation overlay. Listens to the same realtime transcription
- * events as a meeting (tagged source "voice-typing"), converts Simplified →
- * Traditional for display, and reports the current text back to the host so the
- * clipboard matches what's shown. A waveform tracks the live mic level.
+ * events as a meeting (tagged source "voice-typing") and reports the current
+ * text back to the host so the clipboard matches what's shown. A waveform
+ * tracks the live mic level.
  */
 export const VoiceTypingApp = () => {
   const { t } = useI18n();
@@ -100,9 +99,6 @@ export const VoiceTypingApp = () => {
 
   const finalsRef = useRef<Map<string, string>>(new Map());
   const interimRef = useRef("");
-  // Cache the Simplified→Traditional conversion per final segment so a long
-  // dictation doesn't re-convert the whole transcript on every incoming token.
-  const convertedRef = useRef<Map<string, { raw: string; conv: string }>>(new Map());
   // Stable per-position keys for the waveform bars (values shift, positions don't).
   const barKeys = useRef(Array.from({ length: BAR_COUNT }, (_, i) => `bar-${i}`));
 
@@ -122,26 +118,12 @@ export const VoiceTypingApp = () => {
     };
   }, []);
 
-  // Recompute display text from the raw refs, convert, and publish to the host.
-  // Final segments are converted once and cached; only the live interim tail is
-  // converted every token, so cost stays flat no matter how long the dictation.
+  // Recompute display text from the raw refs and publish to the host.
   const publish = useRef(async () => {});
   publish.current = async () => {
     const entries = [...finalsRef.current.entries()].sort((a, b) => idIndex(a[0]) - idIndex(b[0]));
-    let finals = "";
-    for (const [id, raw] of entries) {
-      const cached = convertedRef.current.get(id);
-      let conv: string;
-      if (cached && cached.raw === raw) {
-        conv = cached.conv;
-      } else {
-        conv = await toTraditional(raw);
-        convertedRef.current.set(id, { raw, conv });
-      }
-      finals += conv;
-    }
-    const interim = interimRef.current ? await toTraditional(interimRef.current) : "";
-    const full = (finals + interim).trim();
+    const finals = entries.map(([, raw]) => raw).join("");
+    const full = (finals + (interimRef.current ?? "")).trim();
     setText(full);
     emit("voicetyping://text", { text: full }).catch((error) =>
       log.warn("voice typing overlay: text publish failed", { error: String(error) }),
@@ -165,10 +147,6 @@ export const VoiceTypingApp = () => {
         log.warn("voice typing overlay: listener setup failed", { error: String(error) }),
       );
     };
-
-    // Warm the S→T dictionary while the overlay is prewarmed/idle, so the
-    // first dictation's publish doesn't stall on the dictionary parse.
-    preloadZhConverter();
 
     track(
       listen<SegPayload>("transcript://segment", (e) => {
@@ -201,7 +179,6 @@ export const VoiceTypingApp = () => {
         const { phase: p, message } = e.payload;
         if (p === "start") {
           finalsRef.current.clear();
-          convertedRef.current.clear();
           interimRef.current = "";
           setText("");
           setError(null);

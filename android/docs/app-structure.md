@@ -1,19 +1,19 @@
 # The app layer — screens, sessions, service
 
-What sits on top of the four documented layers (`api-parleykit.md`,
+What sits on top of the four documented layers (`api-coachkit.md`,
 `api-cloud.md`, `api-audio.md`): the Compose UI, the two capture *sessions*, and
 the foreground service that keeps a live meeting alive.
 
 ```
-com.pathors.parley
-  ParleyApplication.kt   AppContainer — the whole dependency graph, one per process
-  MainActivity.kt        the single activity; also the parley:// sign-in hand-off
+com.saleshunter.coach
+  CoachApplication.kt   AppContainer — the whole dependency graph, one per process
+  MainActivity.kt        the single activity; also the saleshunter-coach:// sign-in hand-off
   meeting/
     MeetingService.kt    foreground service (type=microphone) + its notification
     MeetingSession.kt    live capture: mic → encoder + relay → segments → upload
     ImportSession.kt     imported file: decoder → encoder + relay → … → upload
   ui/
-    ParleyRoot.kt        sign-in wall, NavHost, the SAF picker
+    CoachRoot.kt        sign-in wall, NavHost, the SAF picker
     SignInScreen.kt      Custom Tab hand-off
     HomeScreen.kt        library + pending queue + the two "add" actions
     HomeViewModel.kt     library state, account state, sign-out
@@ -28,11 +28,11 @@ com.pathors.parley
 ## Dependency wiring
 
 `AppContainer` is a hand-written service locator built in
-`ParleyApplication.onCreate`. There is no DI framework: the graph is
+`CoachApplication.onCreate`. There is no DI framework: the graph is
 `AuthManager` → `CloudClient` → `PendingUploadQueue` → `MeetingUploader`, plus an
 application-scoped `CoroutineScope` and the "currently running import" holder.
 Composables reach it through `rememberContainer()`; the service through
-`context.parleyContainer`.
+`context.coachContainer`.
 
 `AppContainer.appScope` exists for work that must outlive whoever asked for it:
 the pending-upload drain on launch, and the tail end of stopping a meeting (which
@@ -123,17 +123,17 @@ It is driven entirely by deep links, because input automation on an emulator is
 unreliable and `am start` is not:
 
 ```bash
-adb shell am start -a android.intent.action.VIEW -d "'parley://demo/library'"
+adb shell am start -a android.intent.action.VIEW -d "'saleshunter-coach://demo/library'"
 #                                                    ^ the inner quotes matter
 ```
 
 | URL | Screen |
 | --- | --- |
-| `parley://demo/library` | The recordings list, populated |
-| `parley://demo/transcript` | The featured recording: transcript, findings, action items |
-| `parley://demo/record` | The live meeting, mid-transcript (alias: `meeting`) |
-| `parley://demo/account` | The library with the account sheet open (alias: `settings`) |
-| `parley://demo/off` | Leave demo mode |
+| `saleshunter-coach://demo/library` | The recordings list, populated |
+| `saleshunter-coach://demo/transcript` | The featured recording: transcript, findings, action items |
+| `saleshunter-coach://demo/record` | The live meeting, mid-transcript (alias: `meeting`) |
+| `saleshunter-coach://demo/account` | The library with the account sheet open (alias: `settings`) |
+| `saleshunter-coach://demo/off` | Leave demo mode |
 
 Three invariants, all worth keeping: **no network** (every call site is guarded,
 so an offline machine captures the same frames), **no writes** (nothing reaches
@@ -145,7 +145,7 @@ cannot be talked into serving fixtures.
 
 Fixture copy is written separately in English and Traditional Chinese and picked
 by the device locale, because the screenshot sets are captured per-locale —
-switch with `adb shell cmd locale set-app-locales com.pathors.parley --locales
+switch with `adb shell cmd locale set-app-locales com.saleshunter.coach --locales
 zh-TW`.
 
 ## Known gaps

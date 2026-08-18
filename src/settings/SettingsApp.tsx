@@ -8,11 +8,10 @@ import { toast } from "sonner";
 import { log } from "../lib/log";
 import { Check, Download, Loader2, LogIn, LogOut, Monitor, Moon, PlugZap, Plus, ScrollText, Sun, Trash2 } from "lucide-react";
 import { useStore } from "../lib/store";
-import { LANGUAGE_OPTIONS, useI18n, type TranslationKey } from "../i18n";
+import { useI18n, type TranslationKey } from "../i18n";
 import { broadcastSettings, SETTINGS_NAVIGATE_EVENT } from "../lib/settingsSync";
 import { signInWithGoogle, signOut, CloudError } from "../lib/cloud/client";
 import { CLOUD_ENABLED } from "../lib/flags";
-import { Flag } from "../components/ui/flag";
 import {
   createOrg,
   listMyOrgs,
@@ -60,7 +59,7 @@ const PROVIDER_TAG_TONES: Record<ProviderTagTone, string> = {
   value: "bg-sky-500/15 text-sky-600 dark:text-sky-300",
   default: "bg-muted text-muted-foreground",
 };
-import type { AppLanguage, AppTheme, EvalDef, LlmProvider,
+import type { AppTheme, EvalDef, LlmProvider,
   LlmWorkload, ReasoningEffort, Settings, SttProviderId } from "../lib/types";
 import { VoiceTypingSettings } from "./VoiceTypingSettings";
 import { OrgSharePicker } from "../components/OrgSharePicker";
@@ -158,10 +157,8 @@ export function SettingsApp() {
   const [mcpInfo, setMcpInfo] = useState<McpServerInfo | null>(null);
   const [mcpActivity, setMcpActivity] = useState<McpActivityInfo | null>(null);
   const [logPath, setLogPath] = useState("");
-  const [updateChecking, setUpdateChecking] = useState(false);
   const [releaseNotesLoading, setReleaseNotesLoading] = useState(false);
   const [releaseNotes, setReleaseNotes] = useState<ReleaseNotes | null>(null);
-  const [updateMsg, setUpdateMsg] = useState("");
   const [appVersion, setAppVersion] = useState("");
   const cloudAuth = useStore((s) => s.cloudAuth);
   const [signingIn, setSigningIn] = useState(false);
@@ -220,7 +217,7 @@ export function SettingsApp() {
         log.warn("settings: templates path lookup failed", { error: String(error) }),
       );
     appLogDir()
-      .then((d) => join(d, "parley.log"))
+      .then((d) => join(d, "saleshunter-coach.log"))
       .then(setLogPath)
       .catch((error) => log.warn("settings: log path lookup failed", { error: String(error) }));
     const refreshMcpInfo = () => {
@@ -447,21 +444,6 @@ export function SettingsApp() {
               />
               <p className="max-w-sm text-[11px] text-muted-foreground">{t("settings.basic.backgroundHelp")}</p>
             </Field>
-            <Field label={t("settings.basic.language")}>
-              <Select value={settings.language} onValueChange={(v) => patch({ language: v as AppLanguage })}>
-                <SelectTrigger className="w-full max-w-sm">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {LANGUAGE_OPTIONS.map((language) => (
-                    <SelectItem key={language.value} value={language.value}>
-                      <Flag code={language.flag} />
-                      {language.nativeLabel}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </Field>
             <Field label={t("settings.basic.theme")}>
               <div className="grid max-w-sm grid-cols-3 rounded-md bg-muted p-0.5">
                 {(
@@ -520,26 +502,6 @@ export function SettingsApp() {
               )}
               <div className="flex items-center gap-2">
                 <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-8 w-fit text-xs"
-                  disabled={updateChecking}
-                  onClick={async () => {
-                    setUpdateChecking(true);
-                    setUpdateMsg("");
-                    try {
-                      const { checkForUpdate } = await import("../lib/update");
-                      const r = await checkForUpdate({ silent: false });
-                      setUpdateMsg(r ? t("update.found", { version: r.version }) : t("update.upToDate"));
-                    } finally {
-                      setUpdateChecking(false);
-                    }
-                  }}
-                >
-                  {updateChecking ? <Loader2 className="size-3.5 animate-spin" /> : <Download className="size-3.5" />}
-                  {t("settings.update.check")}
-                </Button>
-                <Button
                   variant="ghost"
                   size="sm"
                   className="h-8 w-fit text-xs"
@@ -558,7 +520,6 @@ export function SettingsApp() {
                   {releaseNotesLoading ? <Loader2 className="size-3.5 animate-spin" /> : <ScrollText className="size-3.5" />}
                   {t("settings.update.releaseLogs")}
                 </Button>
-                {updateMsg && <span className="text-[11px] text-muted-foreground">{updateMsg}</span>}
               </div>
               <p className="max-w-sm text-[11px] text-muted-foreground">{t("settings.update.help")}</p>
             </Field>
@@ -618,7 +579,7 @@ export function SettingsApp() {
                     // Hosted provider: no key, no model picker — the server forces
                     // the real model. Just confirm who the usage bills to.
                     <p className="text-[11px] text-muted-foreground">
-                      {t("settings.account.useParley.note", { email: cloudAuth?.user.email ?? "" })}
+                      {t("settings.account.useCoach.note", { email: cloudAuth?.user.email ?? "" })}
                     </p>
                   ) : (
                     <>
@@ -690,7 +651,7 @@ export function SettingsApp() {
                 user-entered key — show whose account it bills to instead. */}
             {settings.transcriptionProvider === "parley" ? (
               <p className="max-w-md text-[11px] text-muted-foreground">
-                {t("settings.account.useParley.note", { email: cloudAuth?.user.email ?? "" })}
+                {t("settings.account.useCoach.note", { email: cloudAuth?.user.email ?? "" })}
               </p>
             ) : (
               <Field label={t("settings.transcription.apiKey", { provider: sttInfo.label })}>
@@ -1072,14 +1033,14 @@ export function SettingsApp() {
                 <CopyButton
                   className="h-8 gap-1"
                   value={() =>
-                    `claude mcp add --transport http parley ${mcpInfo?.endpoint || "http://127.0.0.1:3011/mcp"}`
+                    `claude mcp add --transport http saleshunter-coach ${mcpInfo?.endpoint || "http://127.0.0.1:3011/mcp"}`
                   }
                   label={t("settings.mcp.copyCommand")}
                 />
               </div>
               <p className="text-[11px] text-muted-foreground">{t("settings.mcp.claudeCodeHelp")}</p>
               <pre className="rounded bg-muted p-2.5 font-mono text-xs text-foreground overflow-x-auto border">
-                {`claude mcp add --transport http parley ${mcpInfo?.endpoint || "http://127.0.0.1:3011/mcp"}`}
+                {`claude mcp add --transport http saleshunter-coach ${mcpInfo?.endpoint || "http://127.0.0.1:3011/mcp"}`}
               </pre>
             </div>
 
@@ -1092,7 +1053,7 @@ export function SettingsApp() {
                     JSON.stringify(
                       {
                         mcpServers: {
-                          "parley": {
+                          "saleshunter-coach": {
                             type: "http",
                             url: mcpInfo?.endpoint || "http://127.0.0.1:3011/mcp",
                           },
@@ -1109,7 +1070,7 @@ export function SettingsApp() {
               <pre className="rounded bg-muted p-2.5 font-mono text-xs text-foreground overflow-x-auto border">
                 {`{
   "mcpServers": {
-    "parley": {
+    "saleshunter-coach": {
       "type": "http",
       "url": "${mcpInfo?.endpoint || "http://127.0.0.1:3011/mcp"}"
     }
@@ -1136,7 +1097,7 @@ export function SettingsApp() {
                 onClick={async () => {
                   try {
                     const dir = await appLogDir();
-                    const file = await join(dir, "parley.log");
+                    const file = await join(dir, "saleshunter-coach.log");
                     log.info("logs: reveal requested");
                     await revealItemInDir(file);
                   } catch (e) {

@@ -189,7 +189,7 @@ pub fn start_meeting(
     language_hints: Option<Vec<String>>,
     diarization: Option<bool>,
     input_device: Option<String>,
-    // Hosted "parley" mode: the cloud STT relay's `wss://` URL. When set,
+    // Hosted "saleshunter_coach" mode: the cloud STT relay's `wss://` URL. When set,
     // `api_key` is the cloud Bearer token (not a vendor key) and the adapter
     // relays through this URL. Absent for BYOK providers.
     relay_url: Option<String>,
@@ -203,7 +203,7 @@ pub fn start_meeting(
     // accepts — streaming it straight to the vendor dies with an opaque
     // in-band auth error. Refuse loudly instead (a call site that forgot
     // relayUrl is a frontend bug).
-    if provider == SttProvider::Parley && relay_endpoint.is_none() {
+    if provider == SttProvider::Coach && relay_endpoint.is_none() {
         return Err("hosted transcription requires the cloud relay URL".into());
     }
     // Claim the mic. A meeting outranks the Settings mic test and voice typing,
@@ -537,7 +537,7 @@ pub fn cancel_meeting(
 /// orphan in the temp dir.
 ///
 /// Guarded: only removes a file under the OS temp dir whose name matches our own
-/// `parley-recording-*.ogg`, so it can never be coerced into deleting an
+/// `saleshunter_coach-recording-*.ogg`, so it can never be coerced into deleting an
 /// arbitrary path.
 #[tauri::command]
 pub fn discard_recording(path: String) {
@@ -546,7 +546,7 @@ pub fn discard_recording(path: String) {
     let looks_like_ours = p
         .file_name()
         .and_then(|f| f.to_str())
-        .is_some_and(|f| f.starts_with("parley-recording-") && f.ends_with(".ogg"));
+        .is_some_and(|f| f.starts_with("saleshunter_coach-recording-") && f.ends_with(".ogg"));
     if in_temp && looks_like_ours {
         match std::fs::remove_file(p) {
             Ok(()) => log::info!("recording: discarded unsaved {path}"),
@@ -557,12 +557,12 @@ pub fn discard_recording(path: String) {
     }
 }
 
-/// Save a meeting transcript (markdown) to ~/Documents/Parley and return the
+/// Save a meeting transcript (markdown) to ~/Documents/Coach and return the
 /// absolute path written. Creates the folder if needed.
 #[tauri::command]
 pub fn save_transcript(filename: String, contents: String) -> Result<String, String> {
     let home = std::env::var("HOME").map_err(|_| "no HOME dir".to_string())?;
-    let dir = std::path::Path::new(&home).join("Documents").join("Parley");
+    let dir = std::path::Path::new(&home).join("Documents").join("Coach");
     std::fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
     // Sanitize the filename to a single path component.
     let safe = filename.replace(['/', '\\'], "-");
@@ -660,10 +660,10 @@ pub fn start_oauth_loopback(app: AppHandle) -> Result<u16, String> {
                             _ => {}
                         }
                     }
-                    let body = "<!doctype html><meta charset=utf-8><title>Parley</title>\
+                    let body = "<!doctype html><meta charset=utf-8><title>Coach</title>\
 <body style=\"font-family:system-ui;padding:3rem;text-align:center;color:#333\">\
-<h2>Parley</h2><p>登入完成，可以關閉這個分頁回到 Parley。</p>\
-<p>You're signed in — close this tab and return to Parley.</p></body>";
+<h2>Coach</h2><p>登入完成，可以關閉這個分頁回到 Coach。</p>\
+<p>You're signed in — close this tab and return to Coach.</p></body>";
                     let resp = format!(
                         "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=utf-8\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
                         body.len(),
@@ -758,7 +758,7 @@ pub fn get_templates_path(app: AppHandle) -> Result<String, String> {
     Ok(path.to_string_lossy().into_owned())
 }
 
-/// Read the tail of the rotating field log (`<app_log_dir>/parley.log`) for the
+/// Read the tail of the rotating field log (`<app_log_dir>/saleshunter-coach.log`) for the
 /// live in-app log viewer. Returns at most `max_bytes` from the end; a partial
 /// first line (from cutting mid-line) is dropped so callers always get whole
 /// lines. Empty string if the file doesn't exist yet.
@@ -767,7 +767,7 @@ pub fn read_log_tail(app: AppHandle, max_bytes: u64) -> Result<String, String> {
     use std::io::{Read, Seek, SeekFrom};
 
     let dir = app.path().app_log_dir().map_err(|e| e.to_string())?;
-    let path = dir.join("parley.log");
+    let path = dir.join("saleshunter-coach.log");
     let mut file = match std::fs::File::open(&path) {
         Ok(f) => f,
         Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(String::new()),

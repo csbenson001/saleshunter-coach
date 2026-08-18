@@ -3,22 +3,22 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Parley — Real-time AI coaching for sales & negotiation calls</title>
+    <title>SalesHunter Coach — Real-time AI coaching for sales & negotiation calls</title>
     <meta
       name="description"
-      content="Parley is an open-source macOS app that coaches you during the call, not after: live suggestions while you talk, a deep debrief when it ends, and system-wide voice typing in any app. Local-first, bring your own AI providers."
+      content="SalesHunter Coach is an open-source macOS app that coaches you during the call, not after: live suggestions while you talk, a deep debrief when it ends, and system-wide voice typing in any app. Local-first, bring your own AI providers."
     />
-    <meta name="keywords" content="sales coaching, negotiation coaching, real-time AI coach, meeting copilot, realtime transcription, sales call analysis, meeting search, voice typing, push to talk dictation, open source, macOS, Pathors AI" />
-    <meta name="author" content="Pathors AI" />
+    <meta name="keywords" content="sales coaching, negotiation coaching, real-time AI coach, meeting copilot, realtime transcription, sales call analysis, meeting search, voice typing, push to talk dictation, open source, macOS, SalesHunter" />
+    <meta name="author" content="SalesHunter" />
     <meta name="robots" content="index, follow" />
     <link rel="canonical" href="https://parley.tw/" />
 
     <!-- Open Graph -->
-    <meta property="og:site_name" content="Parley by Pathors AI" />
-    <meta property="og:title" content="Parley — Real-time AI coaching for sales & negotiation calls" />
+    <meta property="og:site_name" content="SalesHunter Coach" />
+    <meta property="og:title" content="SalesHunter Coach — Real-time AI coaching for sales & negotiation calls" />
     <meta
       property="og:description"
-      content="Note-takers tell you what happened after it's over. Parley coaches you while you can still act — live suggestions, deep debrief after, and voice typing anywhere on your Mac. Open source, native macOS."
+      content="Note-takers tell you what happened after it's over. SalesHunter Coach coaches you while you can still act — live suggestions, deep debrief after, and voice typing anywhere on your Mac. Open source, native macOS."
     />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://parley.tw/" />
@@ -26,36 +26,35 @@
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Parley — Real-time AI coaching for sales & negotiation calls" />
-    <meta name="twitter:description" content="Live suggestions while you talk, deep debrief after, voice typing anywhere. Local-first macOS app, bring your own keys. Open source by Pathors AI." />
+    <meta name="twitter:title" content="SalesHunter Coach — Real-time AI coaching for sales & negotiation calls" />
+    <meta name="twitter:description" content="Live suggestions while you talk, deep debrief after, voice typing anywhere. Local-first macOS app, bring your own keys. Open source." />
     <meta name="twitter:image" content="https://parley.tw/assets/og.png" />
 
     <link rel="icon" type="image/svg+xml" href="assets/logo.svg" />
 
-    <!-- Structured data: ties Parley to Pathors AI and links back to pathors.com -->
+    <!-- Structured data: SalesHunter Coach (fork of Parley by Pathors AI) -->
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
         "@graph": [
           {
             "@type": "Organization",
-            "@id": "https://pathors.com/#org",
-            "name": "Pathors AI",
-            "url": "https://pathors.com",
+            "@id": "#org",
+            "name": "SalesHunter",
             "logo": "https://parley.tw/assets/og.png",
             "sameAs": ["https://github.com/pathorsAI"]
           },
           {
             "@type": "SoftwareApplication",
-            "name": "Parley",
+            "name": "SalesHunter Coach",
             "applicationCategory": "BusinessApplication",
             "operatingSystem": "macOS",
             "url": "https://parley.tw/",
             "description": "Real-time AI coaching for sales and negotiation calls: live suggestions while you talk, a deep debrief after, searchable meeting history, and system-wide voice typing. Open source, local-first, with your own AI and transcription providers.",
             "license": "https://www.apache.org/licenses/LICENSE-2.0",
             "isAccessibleForFree": true,
-            "publisher": { "@id": "https://pathors.com/#org" },
-            "author": { "@id": "https://pathors.com/#org" },
+            "publisher": { "@id": "#org" },
+            "author": { "@id": "#org" },
             "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
           }
         ]
@@ -81,19 +80,19 @@
 
     <!-- Nav -->
     <header class="nav" id="nav">
-      <a class="nav__brand" href="#top" aria-label="Parley home">
+      <a class="nav__brand" href="#top" aria-label="SalesHunter Coach home">
         <img src="assets/logo.svg" alt="" width="28" height="28" />
-        <span>Parley</span>
+        <span>SalesHunter Coach</span>
       </a>
       <nav class="nav__links" aria-label="Primary">
-        <a href="#features">Why Parley</a>
+        <a href="#features">Why SalesHunter Coach</a>
         <a href="#how">Workflow</a>
         <a href="#showcase">Showcase</a>
         <a href="#voice-typing">Voice typing</a>
         <a href="#iphone">iPhone</a>
         <a href="#mcp">MCP</a>
         <a href="#stack">Open source</a>
-        <a href="https://pathors.com" target="_blank" rel="noopener">Pathors AI ↗</a>
+        <a href="https://github.com/pathorsAI/parley" target="_blank" rel="noopener">Built on Parley ↗</a>
       </nav>
       <div class="nav__actions">
         <a class="btn btn--ghost" href="https://github.com/pathorsAI/parley" target="_blank" rel="noopener">
@@ -102,7 +101,7 @@
         </a>
         <a class="btn btn--primary" href="https://api.parley.tw/download" target="_blank" rel="noopener">
           <svg class="apple" viewBox="0 0 384 512" width="13" height="16" aria-hidden="true" fill="currentColor"><path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/></svg>
-          <span>Get Parley</span>
+          <span>Get SalesHunter Coach</span>
         </a>
       </div>
       <button class="nav__burger" id="burger" aria-label="Toggle menu" aria-expanded="false">
@@ -123,12 +122,12 @@
             Real-time AI coaching for <span class="grad">high-stakes calls</span>.
           </h1>
           <p class="hero__sub">
-            Note-takers tell you what happened after it's over. Parley listens live, flags what just happened, and suggests what to say next — while you can still act.
+            Note-takers tell you what happened after it's over. SalesHunter Coach listens live, flags what just happened, and suggests what to say next — while you can still act.
           </p>
           <div class="hero__cta">
             <a class="btn btn--primary btn--lg" href="https://api.parley.tw/download" target="_blank" rel="noopener">
               <svg class="apple" viewBox="0 0 384 512" width="15" height="18" aria-hidden="true" fill="currentColor"><path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/></svg>
-              <span>Get Parley for macOS</span>
+              <span>Get SalesHunter Coach for macOS</span>
             </a>
             <a class="btn btn--ghost btn--lg" href="https://github.com/pathorsAI/parley" target="_blank" rel="noopener">Star on GitHub</a>
           </div>
@@ -143,7 +142,7 @@
         <figure class="window reveal" data-media="showcase-hero">
           <div class="window__bar">
             <span class="traffic"><i></i><i></i><i></i></span>
-            <span class="window__title">Parley — Meeting in progress</span>
+            <span class="window__title">SalesHunter Coach — Meeting in progress</span>
           </div>
           <div class="media-slot media-slot--hero">
             <div class="media-slot__hint">
@@ -173,7 +172,7 @@
         <p class="providers__lead">Powered by the providers <em>you</em> choose</p>
         <p class="providers__sub">
           No lock-in. Bring your own keys and swap any provider as models improve, costs change, or
-          privacy requirements shift — Parley stays the meeting layer.
+          privacy requirements shift — SalesHunter Coach stays the meeting layer.
         </p>
         <div class="providers__group">
           <span class="providers__label">AI models</span>
@@ -205,9 +204,9 @@
       <!-- Features -->
       <section class="section" id="features">
         <div class="section__head reveal">
-          <span class="eyebrow">Why Parley</span>
+          <span class="eyebrow">Why SalesHunter Coach</span>
           <h2>A meeting note platform you can shape around the job</h2>
-          <p>Most meeting tools ship a fixed note format and a fixed model. Parley is built for teams that need their own prompts, their own providers, and their own definition of what matters.</p>
+          <p>Most meeting tools ship a fixed note format and a fixed model. SalesHunter Coach is built for teams that need their own prompts, their own providers, and their own definition of what matters.</p>
         </div>
 
         <div class="grid">
@@ -256,7 +255,7 @@
           <li class="step reveal">
             <span class="step__n">01</span>
             <h3>Choose your stack</h3>
-            <p>Pick the STT provider and model provider you want. Parley stays the meeting layer, not another closed AI bundle.</p>
+            <p>Pick the STT provider and model provider you want. SalesHunter Coach stays the meeting layer, not another closed AI bundle.</p>
           </li>
           <li class="step reveal">
             <span class="step__n">02</span>
@@ -284,7 +283,7 @@
             <div class="feature-row__copy">
               <span class="eyebrow eyebrow--sm">Live transcript</span>
               <h3>A clean record before analysis</h3>
-              <p>Parley separates speakers, keeps names editable, and gives every downstream insight something concrete to cite.</p>
+              <p>SalesHunter Coach separates speakers, keeps names editable, and gives every downstream insight something concrete to cite.</p>
               <ul class="checklist">
                 <li>Speaker-aware transcript</li>
                 <li>Editable names and context</li>
@@ -364,7 +363,7 @@
         <div class="section__head reveal">
           <span class="eyebrow">Beyond the meeting</span>
           <h2>Voice typing, anywhere on your Mac</h2>
-          <p>Parley isn't only for calls. Hold your push-to-talk key in any app, speak, and release — your words are transcribed with your own provider and dropped right where your cursor is.</p>
+          <p>SalesHunter Coach isn't only for calls. Hold your push-to-talk key in any app, speak, and release — your words are transcribed with your own provider and dropped right where your cursor is.</p>
         </div>
 
         <div class="feature-rows">
@@ -374,7 +373,7 @@
               <h3>Hold a key. Talk. It types.</h3>
               <p>The same fast, private transcription that powers your meetings, available system-wide — fire off a message, a note, or a prompt without touching the keyboard.</p>
               <ul class="checklist">
-                <li>Works in any app, not just Parley</li>
+                <li>Works in any app, not just SalesHunter Coach</li>
                 <li>Record any shortcut — or hold a single key</li>
                 <li>Auto-pastes where your cursor is</li>
                 <li>Your own transcription provider — nothing in between</li>
@@ -403,7 +402,7 @@
         <div class="section__head reveal">
           <span class="eyebrow">On your phone</span>
           <h2>The meetings you have in person</h2>
-          <p>Not every meeting happens on a call. Parley for iPhone records the room you are sitting in — the coffee shop, the customer's office, the table where nobody is opening a laptop — and the transcript arrives while people are still talking.</p>
+          <p>Not every meeting happens on a call. SalesHunter Coach for iPhone records the room you are sitting in — the coffee shop, the customer's office, the table where nobody is opening a laptop — and the transcript arrives while people are still talking.</p>
         </div>
 
         <div class="feature-rows">
@@ -415,9 +414,8 @@
               <ul class="checklist">
                 <li>Live transcript with automatic speaker separation</li>
                 <li>Consent prompt before every session</li>
-                <li>Voice typing into any app, from the Parley keyboard or the Action Button</li>
-                <li>English and Traditional Chinese, following your phone's language</li>
-              </ul>
+                <li>Voice typing into any app, from the SalesHunter Coach keyboard or the Action Button</li>
+                              </ul>
             </div>
             <figure class="media-slot media-slot--wide" data-media="showcase-iphone">
               <div class="media-slot__hint">
@@ -431,11 +429,11 @@
             <div class="feature-row__copy">
               <span class="eyebrow eyebrow--sm">One account, two devices</span>
               <h3>Caught on the phone, worked on the Mac</h3>
-              <p>Recordings and transcripts sync to the same Parley account, so a meeting you captured at a table opens on the desktop with the full report behind it — timestamps, action items, delivery scorecard.</p>
+              <p>Recordings and transcripts sync to the same SalesHunter Coach account, so a meeting you captured at a table opens on the desktop with the full report behind it — timestamps, action items, delivery scorecard.</p>
               <ul class="checklist">
                 <li>Hosted transcription on sign-in — no API key on the phone</li>
                 <li>Personal and organization libraries, shared or moved between them</li>
-                <li>No phone calls, no FaceTime, no other apps' audio — iOS offers no such API and Parley does not pretend otherwise</li>
+                <li>No phone calls, no FaceTime, no other apps' audio — iOS offers no such API and SalesHunter Coach does not pretend otherwise</li>
               </ul>
             </div>
             <figure class="media-slot media-slot--wide" data-media="showcase-iphone-sync">
@@ -447,7 +445,7 @@
           </div>
         </div>
 
-        <p class="cta__note">Parley for iPhone is in App Store review. This page gets the listing link the day it is approved.</p>
+        <p class="cta__note">SalesHunter Coach for iPhone is in App Store review. This page gets the listing link the day it is approved.</p>
       </section>
 
       <!-- MCP: connect your own AI client to the live meeting -->
@@ -455,7 +453,7 @@
         <div class="section__head reveal">
           <span class="eyebrow">Built-in MCP server</span>
           <h2>Ask the meeting from your own AI</h2>
-          <p>Parley runs a local Model Context Protocol server. Point Claude — or any MCP client — at it and query the live call as it happens, with the AI app you already use.</p>
+          <p>SalesHunter Coach runs a local Model Context Protocol server. Point Claude — or any MCP client — at it and query the live call as it happens, with the AI app you already use.</p>
         </div>
 
         <div class="feature-rows">
@@ -463,7 +461,7 @@
             <div class="feature-row__copy">
               <span class="eyebrow eyebrow--sm">Model Context Protocol</span>
               <h3>Your AI, wired into the live call</h3>
-              <p>No extra key inside Parley — connect the assistant you already pay for and let it read the running transcript, then ask <em>"what did they commit to?"</em> or <em>"what haven't I asked yet?"</em> grounded in the meeting.</p>
+              <p>No extra key inside SalesHunter Coach — connect the assistant you already pay for and let it read the running transcript, then ask <em>"what did they commit to?"</em> or <em>"what haven't I asked yet?"</em> grounded in the meeting.</p>
               <ul class="checklist">
                 <li>Reads the live, speaker-labelled transcript</li>
                 <li>Can drive the agenda, evaluations, and timeline</li>
@@ -471,9 +469,9 @@
               </ul>
             </div>
             <div class="codeblock reveal">
-              <button class="copy" data-copy="claude mcp add --transport http parley http://127.0.0.1:3011/mcp">Copy</button>
-              <pre><code><span class="c-cmt"># Connect your MCP client — keep Parley open</span>
-claude mcp add --transport http parley \
+              <button class="copy" data-copy="claude mcp add --transport http saleshunter-coach http://127.0.0.1:3011/mcp">Copy</button>
+              <pre><code><span class="c-cmt"># Connect your MCP client — keep SalesHunter Coach open</span>
+claude mcp add --transport http saleshunter-coach \
   http://127.0.0.1:3011/mcp</code></pre>
             </div>
           </div>
@@ -486,7 +484,7 @@ claude mcp add --transport http parley \
         <div class="section__head reveal">
           <span class="eyebrow">Why it matters</span>
           <h2>Open source meeting intelligence, without provider lock-in</h2>
-          <p>Use Parley as the interface layer for meeting notes and analysis. Swap providers as models improve, costs change, or privacy requirements shift.</p>
+          <p>Use SalesHunter Coach as the interface layer for meeting notes and analysis. Swap providers as models improve, costs change, or privacy requirements shift.</p>
         </div>
         <div class="stack-grid">
           <div class="stack-card reveal"><span class="stack-card__k">Open source</span><span class="stack-card__v">Self-hostable, inspectable, and free to extend instead of another paid black box.</span></div>
@@ -494,7 +492,7 @@ claude mcp add --transport http parley \
           <div class="stack-card reveal"><span class="stack-card__k">Native &amp; fast</span><span class="stack-card__v">Built in Rust for a small, quick app that feels genuinely native on macOS.</span></div>
           <div class="stack-card reveal"><span class="stack-card__k">Customization</span><span class="stack-card__v">Bring your own evaluation templates, meeting context, checklists, and model choices.</span></div>
           <div class="stack-card reveal"><span class="stack-card__k">Cost control</span><span class="stack-card__v">Route fast questions to cheaper models and deeper analysis to stronger ones.</span></div>
-          <div class="stack-card reveal"><span class="stack-card__k">License</span><span class="stack-card__v">Apache 2.0 · © Pathors AI</span></div>
+          <div class="stack-card reveal"><span class="stack-card__k">License</span><span class="stack-card__v">Apache 2.0 · fork of Parley</span></div>
         </div>
       </section>
 
@@ -504,7 +502,7 @@ claude mcp add --transport http parley \
           <div class="cta__glow" aria-hidden="true"></div>
           <span class="eyebrow">Get started</span>
           <h2>Build your own meeting note stack</h2>
-          <p>Download Parley for macOS, add the providers you want in Settings, and start shaping it around your meetings. Free and open source.</p>
+          <p>Download SalesHunter Coach for macOS, add the providers you want in Settings, and start shaping it around your meetings. Free and open source.</p>
           <div class="cta__actions">
             <a class="btn btn--primary btn--lg" href="https://api.parley.tw/download" target="_blank" rel="noopener">
               <svg class="apple" viewBox="0 0 384 512" width="15" height="18" aria-hidden="true" fill="currentColor"><path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/></svg>
@@ -521,10 +519,10 @@ claude mcp add --transport http parley \
       <div class="footer__top">
         <a class="nav__brand" href="#top">
           <img src="assets/logo.svg" alt="" width="26" height="26" />
-          <span>Parley</span>
+          <span>SalesHunter Coach</span>
         </a>
         <nav class="footer__links" aria-label="Footer">
-          <a href="#features">Why Parley</a>
+          <a href="#features">Why SalesHunter Coach</a>
           <a href="#how">Workflow</a>
           <a href="#stack">Open source</a>
           <a href="https://github.com/pathorsAI/parley" target="_blank" rel="noopener">GitHub</a>
@@ -532,12 +530,12 @@ claude mcp add --transport http parley \
           <a href="privacy/">Privacy</a>
           <a href="support/">Support</a>
           <a href="account-deletion/">Delete account</a>
-          <a href="https://pathors.com" target="_blank" rel="noopener">Pathors AI</a>
+          <a href="https://github.com/pathorsAI/parley" target="_blank" rel="noopener">Parley (Pathors AI)</a>
         </nav>
       </div>
       <div class="footer__bottom">
-        <p>© 2026 Pathors AI · Apache 2.0</p>
-        <p>A <a href="https://pathors.com" target="_blank" rel="noopener">Pathors AI</a> open source project</p>
+        <p>© 2026 SalesHunter · Apache 2.0</p>
+        <p>Based on <a href="https://github.com/pathorsAI/parley" target="_blank" rel="noopener">Parley</a>, an open-source project by Pathors AI</p>
       </div>
     </footer>
 

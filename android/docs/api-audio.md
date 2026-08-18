@@ -1,4 +1,4 @@
-# Audio layer API — `com.pathors.parley.audio`
+# Audio layer API — `com.saleshunter.coach.audio`
 
 Everything in the app speaks one internal format: **16 kHz mono s16le PCM**
 (`Pcm.SAMPLE_RATE`, little-endian signed 16-bit). It is what the desktop app

@@ -183,7 +183,7 @@ writeJson("src-tauri/tauri.conf.json", tauriConfig);
 replacePackageVersion("src-tauri/Cargo.toml", nextVersion);
 
 run("bun", ["install", "--lockfile-only"]);
-run("cargo", ["update", "-p", "parley", "--manifest-path", "src-tauri/Cargo.toml"]);
+run("cargo", ["update", "-p", "saleshunter-coach", "--manifest-path", "src-tauri/Cargo.toml"]);
 
 const notesDir = path.join(root, ".github", "release-notes");
 if (!existsSync(notesDir)) {

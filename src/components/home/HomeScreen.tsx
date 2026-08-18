@@ -17,13 +17,13 @@ import type { LibraryTree } from "../shell/useLibraryTree";
  * (start / recent recordings / import).
  */
 export function HomeScreen({ tree }: Readonly<{ tree: LibraryTree }>) {
-  const { t, language } = useI18n();
+  const { t } = useI18n();
   const userName = useStore((s) => s.settings.userName);
 
   const folderName = (id: string | null | undefined) =>
     id ? tree.personalFolders.find((f) => f.id === id)?.name : undefined;
   const recent = tree.summaries.slice(0, 6);
-  const locale = language === "en" ? "en-US" : "zh-TW";
+  const locale = "en-US";
 
   // Staged entrance: sections land in reading order (start → recent), then the
   // recent rows cascade. Delays are inline so the sequence stays put

@@ -2,7 +2,7 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <!--
   Export options for the App Store / TestFlight channel. Used with:
-    xcodebuild -exportArchive -archivePath build/Parley.xcarchive \
+    xcodebuild -exportArchive -archivePath build/Coach.xcarchive \
       -exportOptionsPlist ExportOptions.plist -exportPath build/export \
       -allowProvisioningUpdates
   Signing is Xcode-managed (see project.yml DEVELOPMENT_TEAM); on CI pass an

@@ -327,7 +327,7 @@ fn build_opus_head() -> Vec<u8> {
 
 /// Build the `OpusTags` comment header packet: vendor string + zero comments.
 fn build_opus_tags() -> Vec<u8> {
-    let vendor = b"parley";
+    let vendor = b"saleshunter_coach";
     let mut tags = Vec::with_capacity(8 + 4 + vendor.len() + 4);
     tags.extend_from_slice(b"OpusTags");
     tags.extend_from_slice(&(vendor.len() as u32).to_le_bytes());
@@ -338,14 +338,14 @@ fn build_opus_tags() -> Vec<u8> {
 
 /// A unique temp path for the compressed output.
 fn unique_temp_path() -> PathBuf {
-    std::env::temp_dir().join(format!("parley-compressed-{}.ogg", uuid::Uuid::new_v4()))
+    std::env::temp_dir().join(format!("saleshunter_coach-compressed-{}.ogg", uuid::Uuid::new_v4()))
 }
 
 /// A unique temp path for a freshly encoded live recording. The caller (stop
 /// meeting) hands this path to `save_history_entry`, which moves it into the
 /// entry folder, so it only ever lives in the temp dir briefly.
 pub(crate) fn unique_recording_path() -> PathBuf {
-    std::env::temp_dir().join(format!("parley-recording-{}.ogg", uuid::Uuid::new_v4()))
+    std::env::temp_dir().join(format!("saleshunter_coach-recording-{}.ogg", uuid::Uuid::new_v4()))
 }
 
 /// A pseudo-unique Ogg stream serial derived from a fresh UUID.
@@ -372,7 +372,7 @@ mod tests {
     fn compress_produces_valid_opus_ogg() {
         // Synthesize a stereo 44.1 kHz, 5s WAV; bail (skip) if ffmpeg is absent.
         let dir = std::env::temp_dir();
-        let wav = dir.join(format!("parley-test-{}.wav", uuid::Uuid::new_v4()));
+        let wav = dir.join(format!("saleshunter_coach-test-{}.wav", uuid::Uuid::new_v4()));
         let made = Command::new("ffmpeg")
             .args([
                 "-y",
@@ -394,8 +394,8 @@ mod tests {
         assert!(status.success(), "ffmpeg failed to synthesize test wav");
 
         // Derive mp3 + m4a variants to cover more decoders.
-        let mp3 = dir.join(format!("parley-test-{}.mp3", uuid::Uuid::new_v4()));
-        let m4a = dir.join(format!("parley-test-{}.m4a", uuid::Uuid::new_v4()));
+        let mp3 = dir.join(format!("saleshunter_coach-test-{}.mp3", uuid::Uuid::new_v4()));
+        let m4a = dir.join(format!("saleshunter_coach-test-{}.m4a", uuid::Uuid::new_v4()));
         for (out, args) in [(&mp3, ["-c:a", "libmp3lame"]), (&m4a, ["-c:a", "aac"])] {
             let ok = Command::new("ffmpeg")
                 .args(["-y", "-i", wav.to_str().unwrap()])

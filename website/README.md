@@ -1,6 +1,6 @@
-# Parley website
+# SalesHunter Coach website
 
-The official landing page for Parley. It's a **zero-build static site** — plain
+The official landing page for SalesHunter Coach. It's a **zero-build static site** — plain
 HTML, CSS, and a little vanilla JS — so it has no dependencies and deploys
 anywhere that can serve files.
 
@@ -55,7 +55,7 @@ publishes this folder automatically.
 1. In the repo: **Settings → Pages → Build and deployment → Source: GitHub Actions**.
 2. Push to `main` (any change under `website/`) — the workflow builds and deploys.
    You can also run it manually from the **Actions** tab (`Deploy website`).
-3. The default URL will be `https://pathorsai.github.io/parley/`.
+3. The default URL will be `https://pathorsai.github.io/saleshunter-coach/`.
 
 ## Custom domain with Cloudflare
 
@@ -75,8 +75,8 @@ To reproduce or move it:
      `pathorsai.github.io` (Cloudflare flattens this automatically), or use
      GitHub's four A records: `185.199.108.153`, `185.199.109.153`,
      `185.199.110.153`, `185.199.111.153`.
-   - **Subdomain** (e.g. `parley`): add a `CNAME` record
-     `parley` → `pathorsai.github.io`.
+   - **Subdomain** (e.g. `saleshunter-coach`): add a `CNAME` record
+     `saleshunter-coach` → `pathorsai.github.io`.
 
 3. **Proxy + SSL.** You can leave the record **Proxied** (orange cloud). Set
    Cloudflare **SSL/TLS → Overview → Full** (not Flexible — Flexible causes

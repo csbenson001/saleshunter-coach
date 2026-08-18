@@ -1,5 +1,5 @@
 // Shared localStorage JSON-cache helpers. Callers own their key namespace
-// (e.g. "parley:analysis:", "parley:study-cache:"); these own the try/parse
+// (e.g. "saleshunter-coach:analysis:", "saleshunter-coach:study-cache:"); these own the try/parse
 // boilerplate so quota- and serialization-error handling lives in one place.
 // Caching is best-effort by design — every failure degrades to "no cache".
 

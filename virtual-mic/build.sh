@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build the Parley Microphone virtual audio driver into build/ParleyMicrophone.driver.
+# Build the Coach Microphone virtual audio driver into build/CoachMicrophone.driver.
 #
 #   ./build.sh                         # unsigned build (dev)
 #   CODESIGN_ID="Developer ID Application: … (TEAMID)" ./build.sh   # signed
@@ -19,5 +19,5 @@ cmake "${CMAKE_ARGS[@]}"
 cmake --build build --config Release -j
 
 echo ""
-echo "Built: $(pwd)/build/ParleyMicrophone.driver"
+echo "Built: $(pwd)/build/CoachMicrophone.driver"
 echo "Install for local testing with: ./install-dev.sh"

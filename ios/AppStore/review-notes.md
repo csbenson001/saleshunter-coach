@@ -1,6 +1,6 @@
 # App Review information
 
-Current target: **1.3 (build 9)** — the Parley Voice keyboard gains a full
+Current target: **1.3 (build 9)** — the SalesHunter Coach Voice keyboard gains a full
 English typing layout, and the app is restyled.
 
 ## Contact
@@ -11,7 +11,7 @@ number in this repository.
 
 ## Sign-in required
 
-Create a non-expiring email/password review account in the hosted Parley auth
+Create a non-expiring email/password review account in the hosted SalesHunter Coach auth
 service. Enter its email and password directly in App Store Connect; store the
 credentials only in the approved secret manager.
 
@@ -32,7 +32,7 @@ Google or Apple identity.
 
 ## Notes to App Review
 
-> Parley is a microphone-based recorder for in-person meetings, plus a voice
+> SalesHunter Coach is a microphone-based recorder for in-person meetings, plus a voice
 > keyboard that dictates into other apps. It does not record phone calls,
 > FaceTime, or other apps’ audio — iOS provides no such API and the app does not
 > attempt it. Recording begins only after the reviewer taps Start Recording and
@@ -48,9 +48,9 @@ Google or Apple identity.
 > recording and tap it for the transcript.
 >
 > **To test the voice keyboard:** Settings › General › Keyboard › Keyboards ›
-> Add New Keyboard › Parley Voice, then tap it and enable "Allow Full Access".
-> In any app with a text field (Notes works), switch to the Parley keyboard with
-> the globe key and tap the microphone button. Parley opens, records, and the
+> Add New Keyboard › SalesHunter Coach Voice, then tap it and enable "Allow Full Access".
+> In any app with a text field (Notes works), switch to the SalesHunter Coach keyboard with
+> the globe key and tap the microphone button. SalesHunter Coach opens, records, and the
 > transcript types into the field you started from.
 >
 > The keyboard has two panes, chosen with the toggle at the top right or by
@@ -60,7 +60,7 @@ Google or Apple identity.
 > needs Full Access, and the keyboard says so in place of the microphone.
 >
 > The globe key is present on every device and in both panes. Tap it to move to
-> the next keyboard, hold it for the system keyboard picker. Parley ships no
+> the next keyboard, hold it for the system keyboard picker. SalesHunter Coach ships no
 > Chinese input layout of its own, so this is how a Chinese-language reviewer
 > reaches the system's 注音 keyboard.
 >

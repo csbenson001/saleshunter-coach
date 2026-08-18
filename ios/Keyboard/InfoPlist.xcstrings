@@ -7,13 +7,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Parley Voice"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Parley 語音"
+            "value": "Coach Voice"
           }
         }
       }

@@ -1,9 +1,9 @@
 # kotlinx.serialization
 -keepattributes *Annotation*, InnerClasses
 -dontnote kotlinx.serialization.**
--keepclassmembers class com.pathors.parley.** {
+-keepclassmembers class com.saleshunter.coach.** {
     *** Companion;
 }
--keepclasseswithmembers class com.pathors.parley.** {
+-keepclasseswithmembers class com.saleshunter.coach.** {
     kotlinx.serialization.KSerializer serializer(...);
 }

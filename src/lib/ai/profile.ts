@@ -33,16 +33,15 @@ export function profileContext(settings: Settings): string {
 }
 
 /**
- * Instruction forcing user-facing analysis output into the app's configured UI
- * language, independent of the transcript's language — so a user who set the UI
- * to 繁中 doesn't get an English debrief. Append to the system prompt of analysis
- * outputs (debrief / evaluations / timeline). Verbatim transcript quotes stay in
- * their original language.
+ * Instruction forcing user-facing analysis output into English, independent of
+ * the transcript's language — so a call held in another language still produces
+ * an English debrief. Append to the system prompt of analysis outputs (debrief /
+ * evaluations / timeline). Verbatim transcript quotes stay in their original
+ * language.
  */
-export function outputLanguageInstruction(settings: Settings): string {
-  const lang = settings.language === "zh-TW" ? "Traditional Chinese (繁體中文)" : "English";
+export function outputLanguageInstruction(_settings: Settings): string {
   return (
-    `\n\nWrite ALL of your prose output (summaries, titles, explanations, advice) in ${lang}, ` +
+    `\n\nWrite ALL of your prose output (summaries, titles, explanations, advice) in American English, ` +
     `regardless of the language spoken in the transcript. Keep any VERBATIM quotes you cite from ` +
     `the transcript in their original language.`
   );

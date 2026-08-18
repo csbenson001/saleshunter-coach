@@ -15,14 +15,14 @@ import UIKit
 /// colour, the corner treatment and the extent line up with the system
 /// keyboard on every device and in every host app.
 enum KBTheme {
-    /// Parley's accent, matching the app's design tokens. Used for the accented
+    /// Coach's accent, matching the app's design tokens. Used for the accented
     /// return key (Go / Send / Search / Done), the way iOS tints it.
     static let accent = Color(red: 0.04, green: 0.52, blue: 1.0)
     static let recording = Color(red: 0.90, green: 0.27, blue: 0.24)
 
     /// Pathors' two brand blues, mirroring the tokens on the landing site
     /// (`#1469D4` deep and `#2DB6F3` sky). They are used sparingly and only
-    /// where the keyboard is allowed to be Parley rather than iOS: the mic pill
+    /// where the keyboard is allowed to be Coach rather than iOS: the mic pill
     /// and the wordmark. The key caps stay system-coloured, because a keyboard
     /// that doesn't look like a keyboard reads as broken.
     static let brand = Color(red: 0.078, green: 0.412, blue: 0.831)
@@ -83,7 +83,7 @@ enum KBTheme {
 /// rows, 6pt between keys, a 3pt margin at the screen edge. Everything else is
 /// derived so a change to one number moves the whole pane together.
 enum KBMetrics {
-    /// The Parley wordmark + mode picker above the keys.
+    /// The Coach wordmark + mode picker above the keys.
     static let strip: CGFloat = 38
 
     static let keyHeight: CGFloat = 42

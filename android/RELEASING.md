@@ -1,4 +1,4 @@
-# Releasing Parley for Android
+# Releasing SalesHunter Coach for Android
 
 Google Play equivalent of `../ios/RELEASING.md`. One-time setup first, then the
 per-release loop.
@@ -15,7 +15,7 @@ commands):
 | --------------------------------- | ------------------------ | ------------------------------- |
 | `PLAY_UPLOAD_KEYSTORE_BASE64`     | signing the bundle       | **set** — keystore created (§2) |
 | `PLAY_UPLOAD_KEYSTORE_PASSWORD`   | signing the bundle       | **set**                         |
-| `PLAY_UPLOAD_KEY_ALIAS`           | signing the bundle       | **set** — `parley-upload`       |
+| `PLAY_UPLOAD_KEY_ALIAS`           | signing the bundle       | **set** — `saleshunter-coach-upload`       |
 | `PLAY_UPLOAD_KEY_PASSWORD`        | signing the bundle       | **set**                         |
 | `PLAY_SERVICE_ACCOUNT_JSON`       | uploading to Play        | blocked on verification (§7)    |
 
@@ -54,8 +54,8 @@ nothing here belongs in the repo):
 ```bash
 cd ~/  # anywhere outside the repo
 keytool -genkeypair -v \
-  -keystore parley-upload.keystore \
-  -alias parley-upload \
+  -keystore saleshunter-coach-upload.keystore \
+  -alias saleshunter-coach-upload \
   -keyalg RSA -keysize 4096 -validity 10000 \
   -dname "CN=Pathors, O=Pathors, C=TW"
 ```
@@ -74,20 +74,20 @@ and `android/local.properties` second (that file is gitignored, as is
 
 | Environment variable              | `local.properties` key            |
 | --------------------------------- | --------------------------------- |
-| `PARLEY_UPLOAD_KEYSTORE`          | `parley.upload.keystore`          |
-| `PARLEY_UPLOAD_KEYSTORE_PASSWORD` | `parley.upload.keystore.password` |
-| `PARLEY_UPLOAD_KEY_ALIAS`         | `parley.upload.key.alias`         |
-| `PARLEY_UPLOAD_KEY_PASSWORD`      | `parley.upload.key.password`      |
+| `COACH_UPLOAD_KEYSTORE`          | `saleshunter-coach.upload.keystore`          |
+| `COACH_UPLOAD_KEYSTORE_PASSWORD` | `saleshunter-coach.upload.keystore.password` |
+| `COACH_UPLOAD_KEY_ALIAS`         | `saleshunter-coach.upload.key.alias`         |
+| `COACH_UPLOAD_KEY_PASSWORD`      | `saleshunter-coach.upload.key.password`      |
 
 ```properties
 # android/local.properties — never committed
-parley.upload.keystore=/Users/you/parley-upload.keystore
-parley.upload.keystore.password=…
-parley.upload.key.alias=parley-upload
-parley.upload.key.password=…
+saleshunter-coach.upload.keystore=/Users/you/saleshunter-coach-upload.keystore
+saleshunter-coach.upload.keystore.password=…
+saleshunter-coach.upload.key.alias=saleshunter-coach-upload
+saleshunter-coach.upload.key.password=…
 ```
 
-Parley is open source, so **the build must work with none of this set**, and it
+SalesHunter Coach is open source, so **the build must work with none of this set**, and it
 does: without a usable keystore the release signing config is simply not
 created, `assembleRelease`/`bundleRelease` emit an *unsigned*
 `app-release-unsigned.apk` / `app-release.aab`, and Gradle logs a warning
@@ -102,10 +102,10 @@ repository secrets. Run these from the repo root, once:
 ```bash
 # The keystore is binary, so it travels as base64. macOS `base64` does not wrap
 # by default; on Linux use `base64 -w0`.
-base64 -i ~/parley-upload.keystore | gh secret set PLAY_UPLOAD_KEYSTORE_BASE64
+base64 -i ~/saleshunter-coach-upload.keystore | gh secret set PLAY_UPLOAD_KEYSTORE_BASE64
 
 gh secret set PLAY_UPLOAD_KEYSTORE_PASSWORD   # paste the keystore password
-gh secret set PLAY_UPLOAD_KEY_ALIAS           # parley-upload
+gh secret set PLAY_UPLOAD_KEY_ALIAS           # saleshunter-coach-upload
 gh secret set PLAY_UPLOAD_KEY_PASSWORD        # paste the key password
 ```
 
@@ -113,14 +113,14 @@ Verify with `gh secret list`. To confirm the round trip before relying on it:
 
 ```bash
 gh secret list | grep PLAY_UPLOAD
-base64 -i ~/parley-upload.keystore | base64 --decode | cmp - ~/parley-upload.keystore && echo "base64 round-trips"
+base64 -i ~/saleshunter-coach-upload.keystore | base64 --decode | cmp - ~/saleshunter-coach-upload.keystore && echo "base64 round-trips"
 ```
 
 ### 3. Create the app in Play Console
 
-- App name **Parley**, default language, App or Game → App, Free.
+- App name **SalesHunter Coach**, default language, App or Game → App, Free.
 - Package name is fixed forever once the first bundle is uploaded:
-  **`com.pathors.parley`**.
+  **`com.saleshunter.coach`**.
 
 ### 4. Store listing (Grow → Store presence)
 
@@ -186,12 +186,12 @@ When verification clears:
    rather than reusing an app's project; a Play account links exactly one
    project and moving it later is a pain.
 3. **Create service account** → this bounces to the Cloud Console IAM page.
-   Name it `parley-play-publisher`, no project-level roles needed, then
+   Name it `saleshunter-coach-play-publisher`, no project-level roles needed, then
    **Keys → Add key → Create new key → JSON** and download it.
 4. Back in Play Console → API access the account appears under *Service
    accounts*. **Grant access** → give it the **Release manager** role (upload
    and release to testing tracks and production, but no access to payments or
-   account settings), restrict it to the Parley app under *App permissions*,
+   account settings), restrict it to the SalesHunter Coach app under *App permissions*,
    then **Invite user**.
 5. Push the JSON into GitHub and delete the local copy:
 
@@ -239,7 +239,7 @@ are easy to get wrong:
   ```bash
   cd android
   ./gradlew assembleDebug assembleRelease bundleRelease \
-    :parleykit:test :app:testDebugUnitTest \
+    :coachkit:test :app:testDebugUnitTest \
     --write-verification-metadata sha256
   ```
 
@@ -290,6 +290,6 @@ are easy to get wrong:
 - **Recording consent**: the listing/description should not suggest covert
   recording; frame it as meeting notes with participants' knowledge (same
   framing that passed App Store review).
-- **Broken deep link**: test `parley://auth-callback` on the *release* build —
+- **Broken deep link**: test `saleshunter-coach://auth-callback` on the *release* build —
   minification or a missing intent-filter change is the classic
   works-in-debug-only failure.

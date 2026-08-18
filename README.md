@@ -1,7 +1,7 @@
-# Parley
+# SalesHunter Coach
 
 <p align="center">
-  <img src="src-tauri/icons/128x128.png" alt="Parley Logo" width="80" height="80" />
+  <img src="src-tauri/icons/128x128.png" alt="SalesHunter Coach Logo" width="80" height="80" />
 </p>
 
 <p align="center">
@@ -17,28 +17,27 @@
 </p>
 
 <p align="center">
-  <img src="website/assets/showcase-hero.png" alt="Parley — live transcript, coach feed, and the agenda checklist during a call" width="900" />
+  <img src="website/assets/showcase-hero.png" alt="SalesHunter Coach — live transcript, coach feed, and the agenda checklist during a call" width="900" />
 </p>
 
-Note-takers tell you what happened in a call after it's over — when it's too late to change the outcome. Parley coaches you **while you can still act**: it listens to the meeting, flags what just happened, and suggests what to say next, live.
+Note-takers tell you what happened in a call after it's over — when it's too late to change the outcome. SalesHunter Coach coaches you **while you can still act**: it listens to the meeting, flags what just happened, and suggests what to say next, live.
 
 - 🎙️ **Coached, live** — a real-time feed of alerts and suggested replies, beside an agenda checklist that ticks itself off as you cover it.
-- 🌐 **In any language** — speak your language; the meeting hears the other one, through Parley's own virtual microphone.
 - 📼 **Debriefed, after** — commitments, missed moments, and a delivery scorecard for the next round.
 - 🗂️ **Filed, between** — one folder per customer, so every call with them sits together.
 
-**Local-first, bring your own keys.** Audio and transcripts go directly to the STT and LLM providers *you* configure (Claude, OpenAI, Gemini, Soniox, Deepgram, …). No Pathors proxy, no telemetry, everything stored on your machine.
+**Local-first, bring your own keys.** Audio and transcripts go directly to the STT and LLM providers _you_ configure (Claude, OpenAI, Gemini, Soniox, Deepgram, …). No Pathors proxy, no telemetry, everything stored on your machine.
 
 > [!NOTE]
-> **macOS only (for now).** Parley uses a Core Audio process tap for system-audio capture and ships a CoreAudio virtual-microphone driver.
+> **macOS only (for now).** SalesHunter Coach uses a Core Audio process tap for system-audio capture.
 
 ---
 
 ## 📥 Install
 
-Download the latest build from the [**Releases page**](https://github.com/pathorsAI/parley/releases/latest), open the `.dmg`, and drag **Parley** into Applications. Builds are signed and notarized — no Gatekeeper hoops.
+Download the latest build from the [**Releases page**](https://github.com/pathorsAI/parley/releases/latest), open the `.dmg`, and drag **SalesHunter Coach** into Applications. Builds are signed and notarized — no Gatekeeper hoops.
 
-Then paste your API keys in **Settings**: one STT provider for transcription, one LLM for coaching. For live translation, add a Gemini key and install the Parley Microphone with one click.
+Then paste your API keys in **Settings**: one STT provider for transcription, one LLM for coaching. For live translation, add a Gemini key and install the SalesHunter Coach Microphone with one click.
 
 ---
 
@@ -48,9 +47,9 @@ Then paste your API keys in **Settings**: one STT provider for transcription, on
   <img src="website/assets/showcase-transcript.png" alt="Live diarized transcript with speaker labels" width="820" />
 </p>
 
-Parley captures both sides — your mic and the meeting's system audio — and transcribes them live, diarized as `me` / `them`.
+SalesHunter Coach captures both sides — your mic and the meeting's system audio — and transcribes them live, diarized as `me` / `them`.
 
-On top of the transcript, the **coach feed** raises evaluation alerts (negotiation risk, qualification gaps, red flags, or your own rubric), each with a drill-down into *how to reply*. Ask it anything from the input bar and get answers grounded in the conversation so far.
+On top of the transcript, the **coach feed** raises evaluation alerts (negotiation risk, qualification gaps, red flags, or your own rubric), each with a drill-down into _how to reply_. Ask it anything from the input bar and get answers grounded in the conversation so far.
 
 <p align="center">
   <img src="website/assets/showcase-eval.png" alt="Evaluation playbooks and extracted findings" width="820" />
@@ -59,16 +58,6 @@ On top of the transcript, the **coach feed** raises evaluation alerts (negotiati
 Beside the feed sits the **agenda checklist** — the things you meant to cover, ticked off automatically as the conversation covers them, from a reusable template or typed in on the spot. Plus live delivery nudges (pace, pitch, pauses) measured on your mic only.
 
 Describe the meeting in its **context field** — who is in the room, what is at stake, what you want the analysis to watch for — and that description goes verbatim into every analysis prompt for the call.
-
----
-
-## 🌐 Live voice translation
-
-Speak Mandarin; the meeting hears English — live, in 70+ languages, with your intonation preserved.
-
-Flip one switch and your side of the call runs through Gemini speech-to-speech translation, out through the **Parley Microphone** — a signed CoreAudio virtual mic that installs with one click. Select it as your mic in Google Meet, Zoom, or Teams, and the translation is what they hear. The other side stays on your regular transcription pipeline, and the bilingual transcript feeds the coach like any other meeting.
-
-A slim **interpreter strip** shows the live original → translation line, a running cost ticker, and a pause switch; a standalone **quick interpreter** window covers in-person conversations.
 
 ---
 
@@ -81,7 +70,7 @@ A slim **interpreter strip** shows the live original → translation line, a run
 Stopping a meeting lands on its debrief. Any recording — just finished, from history, or dragged in as an audio file — opens in two views:
 
 - **Report** — one scroll: the debrief with clickable timestamps, both sides' commitments, action items, and your delivery scorecard (measured pace, talk share, filler sounds).
-- **Replay** — the full player: scrub to any moment and re-run the analysis *as of that point*, review the other side's moves and your missed moments side-by-side with the transcript, and ask anything about the call from a drawer that follows you across tabs.
+- **Replay** — the full player: scrub to any moment and re-run the analysis _as of that point_, review the other side's moves and your missed moments side-by-side with the transcript, and ask anything about the call from a drawer that follows you across tabs.
 
 Everything generates once and saves with the recording — reopen it a month later and the whole report loads instantly, no extra LLM calls. Plus **LLM speaker re-attribution** fixes diarization drift by conversational context.
 
@@ -97,7 +86,7 @@ An MCP client can search across them: `list_folders`, `list_recordings`, `get_tr
 
 ## 🔒 Privacy
 
-Conversation content is sensitive, so Parley runs straight from your machine:
+Conversation content is sensitive, so SalesHunter Coach runs straight from your machine:
 
 - **Direct connections** — audio and transcripts go only to the providers you configure, under your own keys.
 - **Local storage** — recordings, transcripts, and templates stay in your local app directory.
@@ -109,7 +98,6 @@ Conversation content is sensitive, so Parley runs straight from your machine:
 
 - **Voice typing** — system-wide push-to-talk dictation in any app, using your configured STT provider. Hold a key (default <kbd>Option+Space</kbd>), speak, release — the text pastes into the frontmost app.
 - **Built-in MCP server** — connect Claude (or any MCP client) to the live meeting: read the transcript, manage agenda TODOs, edit the timeline analysis.
-- **Traditional Chinese** — full zh-TW UI and on-the-fly conversion of transcribed text.
 
 ---
 
@@ -119,12 +107,12 @@ Requires **Rust** (stable) and **Bun** (or Node.js):
 
 ```bash
 git clone https://github.com/pathorsAI/parley.git
-cd parley
+cd saleshunter-coach
 bun install
 bun run tauri dev
 ```
 
-*(optional)* Build and install the virtual-microphone driver for translation into meetings:
+_(optional)_ Build and install the virtual-microphone driver for translation into meetings:
 
 ```bash
 cd virtual-mic && ./build.sh && ./install-dev.sh
@@ -138,4 +126,6 @@ Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for how to rep
 
 ## 📄 License
 
-Licensed under the [Apache License 2.0](LICENSE). Copyright 2026 Pathors AI.
+Licensed under the [Apache License 2.0](LICENSE).
+
+SalesHunter Coach is a rebranded fork of [Parley](https://github.com/pathorsAI/parley) by Pathors AI (Copyright 2026 Pathors AI). Modifications copyright 2026 SalesHunter.

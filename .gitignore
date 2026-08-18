@@ -32,14 +32,16 @@ src-tauri/gen/schemas
 
 # ONNX Runtime dylib (fetched at build time, not committed — see src-tauri/scripts/fetch-onnxruntime.sh)
 src-tauri/onnxruntime/*.dylib
-# Parley Microphone installer pkg (built by CI from virtual-mic/, or a dev placeholder from build.rs)
+# CAM++ speaker model, fetched only to re-host it — see src-tauri/scripts/fetch-speaker-model.sh
+src-tauri/models/
+# Coach Microphone installer pkg (built by CI from virtual-mic/, or a dev placeholder from build.rs)
 src-tauri/virtualmic/
 src-tauri/tauri.dev.conf.json
 .gstack/
 
 # iOS (ios/)
-ios/App/Parley.xcodeproj
+ios/App/Coach.xcodeproj
 ios/App/build/
 # Derived data for the App Store screenshot run (ios/AppStore/capture-screenshots.sh)
 ios/App/.build-screenshots/
-ios/ParleyKit/.build/
+ios/CoachKit/.build/

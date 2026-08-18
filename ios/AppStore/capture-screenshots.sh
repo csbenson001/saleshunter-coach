@@ -6,8 +6,8 @@
 #   ios/AppStore/capture-screenshots.sh --no-build      # reuse the last build
 #   ios/AppStore/capture-screenshots.sh --device "iPhone 17 Pro Max"
 #
-# Frames come out of a DEBUG-only demo mode (App/Parley/ScreenshotDemo.swift):
-# the app is launched with `-ParleyDemo signedIn -ParleyDemoRoute <route>`,
+# Frames come out of a DEBUG-only demo mode (App/Coach/ScreenshotDemo.swift):
+# the app is launched with `-CoachDemo signedIn -CoachDemoRoute <route>`,
 # serves fixed fictional fixtures instead of the cloud, and lands on the screen
 # the frame needs before it draws. Nothing here needs the review account, a
 # network, or a single tap — so the same command reproduces the same pixels next
@@ -20,7 +20,7 @@ set -euo pipefail
 
 DEVICE="iPhone 17 Pro Max"
 BUILD=1
-BUNDLE_ID="com.pathors.parley.ios"
+BUNDLE_ID="com.saleshunter.coach.ios"
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 IOS_DIR="$(dirname "$HERE")"
 DERIVED="$IOS_DIR/App/.build-screenshots"
@@ -36,7 +36,6 @@ done
 # locale key : AppleLanguages : AppleLocale
 LOCALES=(
   "en-US:en:en_US"
-  "zh-Hant:zh-Hant:zh_TW"
 )
 
 # file name : demo route ("-" = no route, capture whatever the app opens on)
@@ -66,15 +65,15 @@ xcrun simctl boot "$UDID" 2>/dev/null || true
 xcrun simctl bootstatus "$UDID" -b
 
 if [[ $BUILD -eq 1 ]]; then
-  say "Building Parley (Debug — demo mode is #if DEBUG)"
+  say "Building Coach (Debug — demo mode is #if DEBUG)"
   (cd "$IOS_DIR/App" && xcodegen generate >/dev/null)
-  xcodebuild -project "$IOS_DIR/App/Parley.xcodeproj" -scheme Parley \
+  xcodebuild -project "$IOS_DIR/App/Coach.xcodeproj" -scheme Coach \
     -destination "id=$UDID" -derivedDataPath "$DERIVED" \
     -quiet build
 fi
 
-APP="$(find "$DERIVED/Build/Products" -name 'Parley.app' -maxdepth 3 | head -1)"
-[[ -n "$APP" ]] || { echo "no Parley.app under $DERIVED — run without --no-build" >&2; exit 1; }
+APP="$(find "$DERIVED/Build/Products" -name 'SalesHunter Coach.app' -maxdepth 3 | head -1)"
+[[ -n "$APP" ]] || { echo "no SalesHunter Coach.app under $DERIVED — run without --no-build" >&2; exit 1; }
 
 say "Installing $APP"
 xcrun simctl install "$UDID" "$APP"
@@ -115,14 +114,14 @@ for entry in "${LOCALES[@]}"; do
     #
     # DO NOT "optimise" this back into one launch plus five `simctl openurl`
     # calls. It was written that way, and as of the iOS 26.5 simulator runtime
-    # SpringBoard interposes an "Open in "Parley"?" confirmation on every
+    # SpringBoard interposes an "Open in "Coach"?" confirmation on every
     # incoming URL. `simctl` cannot dismiss it, so all five routed frames came
     # out as the launch tab dimmed behind a modal — at the right dimensions,
     # which is precisely why nobody noticed. A launch argument is read inside
     # the process; SpringBoard never gets a say. Relaunching costs ~4s a frame.
-    launch_args=(-ParleyDemo "$mode" -AppleLanguages "($lang)" -AppleLocale "$region")
+    launch_args=(-CoachDemo "$mode" -AppleLanguages "($lang)" -AppleLocale "$region")
     if [[ "$route" != "-" ]]; then
-      launch_args+=(-ParleyDemoRoute "$route")
+      launch_args+=(-CoachDemoRoute "$route")
     fi
 
     xcrun simctl terminate "$UDID" "$BUNDLE_ID" 2>/dev/null || true
@@ -153,7 +152,7 @@ python3 - "${verify_args[@]}" <<'PY'
 #
 # The old version checked 1320×2868 and "not a uniform white rectangle", and
 # that is how a whole release's worth of frames came out as the same Record
-# screen behind an "Open in "Parley"?" alert and still passed. Right size, not
+# screen behind an "Open in "Coach"?" alert and still passed. Right size, not
 # blank, completely wrong picture. So the checks below are relative — every
 # frame is compared against the others, which is what makes "they are all the
 # same screen" visible without teaching the script what any screen looks like.
@@ -162,7 +161,7 @@ python3 - "${verify_args[@]}" <<'PY'
 # blank launch screen; two frames of the same locale that are the same picture
 # (routing silently not applied, a modal pinning several frames to one screen,
 # a stale file left behind by a partial run); and a locale pair where the same
-# frame is pixel-for-pixel identical across en-US and zh-Hant, which means the
+# frame is pixel-for-pixel identical across locales, which means the
 # language argument did not take.
 #
 # Does NOT catch: a modal or a wrong screen that happens to differ from every

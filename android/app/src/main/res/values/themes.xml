@@ -8,7 +8,7 @@
   the app deliberately has no `com.google.android.material` dependency.
 -->
 <resources>
-    <style name="Theme.Parley" parent="@android:style/Theme.DeviceDefault.DayNight">
+    <style name="Theme.Coach" parent="@android:style/Theme.DeviceDefault.DayNight">
         <item name="android:windowActionBar">false</item>
         <item name="android:windowNoTitle">true</item>
         <item name="android:windowBackground">?android:attr/colorBackground</item>

@@ -52,7 +52,7 @@ export interface DeliveryThresholds {
   paceZ: number;
   /** Absolute syllables/sec ceiling — a floor under the relative test so a slow
    *  baseline can't make any speed acceptable. On the live speaking-rate signal
-   *  ~4.0/s ≈ 240 字/分 reads as fast; kept in step with the DeliveryPanel gauge's
+   *  ~4.0/s reads as fast; kept in step with the DeliveryPanel gauge's
    *  FAST_HZ so the nudge and the meter agree. */
   paceAbsHz: number;
   /** F0 spread (semitones) below which sustained speech reads as monotone. */
@@ -176,7 +176,7 @@ export class DeliveryCoach {
   }
 
   /**
-   * Filled pause ("um/uh/呃/痾"): a one-shot edge from the mic DSP, already
+   * Filled pause ("um"/"uh"): a one-shot edge from the mic DSP, already
    * de-duped per occurrence in Rust — so gate on cooldown ONLY (no sustain;
    * `gate` would never fire on a single-sample edge). A burst of ums yields one
    * gentle nudge; the running count surfaces every one. Grouped under `pauses`.

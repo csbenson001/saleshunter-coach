@@ -1,5 +1,4 @@
 import { useStore } from "./store";
-import { toTraditional } from "./zhConvert";
 import type { Source } from "./types";
 
 /**
@@ -53,16 +52,14 @@ export function startMockStream() {
       wordIdx++;
       const partial = words.slice(0, wordIdx).join(" ");
       const isFinal = wordIdx >= words.length;
-      void toTraditional(partial).then((text) => {
-        useStore.getState().upsertSegment({
-          id,
-          source,
-          speaker,
-          text,
-          isFinal,
-          startMs,
-          endMs: Date.now() - base,
-        });
+      useStore.getState().upsertSegment({
+        id,
+        source,
+        speaker,
+        text: partial,
+        isFinal,
+        startMs,
+        endMs: Date.now() - base,
       });
       if (!isFinal) {
         timer = setTimeout(emitWord, 90 + Math.random() * 120); // NOSONAR — non-cryptographic jitter for mock stream timing, not security-sensitive

@@ -128,7 +128,7 @@ struct RepeatingKey<Content: View>: View {
 
 /// The globe.
 ///
-/// Parley ships no Bopomofo engine — a keyboard extension can't reach the
+/// Coach ships no Bopomofo engine — a keyboard extension can't reach the
 /// system Chinese input engine and we are not bundling our own — so a user who
 /// wants 注音 has to be able to leave, on *every* device rather than only where
 /// `needsInputModeSwitchKey` is true. That makes this key load-bearing.

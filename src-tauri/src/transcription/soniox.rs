@@ -24,7 +24,7 @@ const TOKEN_FIN: &str = "<fin>";
 
 #[derive(Serialize)]
 struct SonioxConfig<'a> {
-    /// Omitted in hosted "parley" relay mode — the relay injects the master key
+    /// Omitted in hosted "saleshunter_coach" relay mode — the relay injects the master key
     /// server-side, so the Soniox key never rides in the client's config frame.
     #[serde(skip_serializing_if = "Option::is_none")]
     api_key: Option<&'a str>,
@@ -75,7 +75,7 @@ pub async fn run_session(
     source: &'static str,
     mut pcm_rx: UnboundedReceiver<Vec<i16>>,
 ) -> Result<()> {
-    // Hosted "parley" relay (config.relay_endpoint set): connect to the cloud
+    // Hosted "saleshunter_coach" relay (config.relay_endpoint set): connect to the cloud
     // WSS with a Bearer token instead of the vendor with an api_key. Otherwise
     // BYOK: straight to Soniox. Both yield the same Soniox wire protocol below.
     let ws = match &config.relay_endpoint {

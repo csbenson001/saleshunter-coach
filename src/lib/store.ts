@@ -63,7 +63,7 @@ function relocalizeBuiltins(settings: Settings): Settings {
 // Built-in templates are seeded in the default language; the persist `merge`
 // (rehydrate) and `relocalizeBuiltins` (on language change) re-resolve them to
 // the active language afterward.
-const tDefault = tFor("zh-TW");
+const tDefault = tFor("en");
 
 /**
  * #131: map legacy single-provider settings (provider + {ask,eval} model roles)
@@ -111,7 +111,7 @@ export function migrateLlmSettings(
 }
 
 const DEFAULT_SETTINGS: Settings = {
-  language: "zh-TW",
+  language: "en",
   theme: "system",
   layout: "coach",
   onboarded: false,
@@ -130,7 +130,7 @@ const DEFAULT_SETTINGS: Settings = {
   qwenApiKey: "",
   kimiApiKey: "",
   ollamaApiKey: "",
-  parleyApiKey: "",
+  coachApiKey: "",
   reasoningEffort: { realtime: "low", deep: "medium" },
   models: DEFAULT_MODELS,
   transcriptionProvider: "soniox",
@@ -189,7 +189,7 @@ export type LibrarySelection =
 
 /**
  * Everything the user sets up FOR one meeting, reset as one unit by
- * {@link ParleyState.resetPrep}. Keeping the list in one place is why "the
+ * {@link CoachState.resetPrep}. Keeping the list in one place is why "the
  * previous call's setup silently followed you into the next meeting" can't come
  * back: one explicit reset clears the slice wholesale.
  *
@@ -204,7 +204,7 @@ const CLEARED_PREP_SLICE = {
   meetingTarget: "",
   meetingFloor: "",
   todos: [] as TodoItem[],
-} satisfies Partial<ParleyState>;
+} satisfies Partial<CoachState>;
 
 /** Lifecycle status of an async pass (analysis, delivery assessment, action items). */
 export type AsyncTaskStatus = "idle" | "running" | "done" | "error";
@@ -217,7 +217,7 @@ export type AsyncTaskStatus = "idle" | "running" | "done" | "error";
  * lists are exactly how the old analysis-gate leak happened).
  */
 const CLEARED_STUDY_SLICE: Pick<
-  ParleyState,
+  CoachState,
   | "findings"
   | "analysisStatus"
   | "analysisError"
@@ -260,7 +260,7 @@ export interface ReplayTrim {
   endMs: number;
 }
 
-interface ParleyState {
+interface CoachState {
   /**
    * "live" = capturing mic/system audio now; "replay" = analyzing an uploaded
    * recording. In replay mode the uploaded transcript is loaded into `segments`,
@@ -338,7 +338,7 @@ interface ParleyState {
   /** Absolute path of the picked recording, set when the wizard opens. */
   ingestAudioPath: string | null;
   openIngestWizard: (audioPath: string) => void;
-  setIngestWizardStep: (step: ParleyState["ingestWizardStep"], error?: string | null) => void;
+  setIngestWizardStep: (step: CoachState["ingestWizardStep"], error?: string | null) => void;
   closeIngestWizard: () => void;
 
   // ── Transcript import (issue #130 text-ingest: .txt → history entry) ────────
@@ -374,7 +374,7 @@ interface ParleyState {
    *  meeting report (read the outcome) or the replay workbench (check the
    *  evidence). */
   studyTab: "report" | "replay";
-  setStudyTab: (tab: ParleyState["studyTab"]) => void;
+  setStudyTab: (tab: CoachState["studyTab"]) => void;
   /** The study brief (重點 debrief markdown) for the loaded recording. Lives in
    *  the store (not component state) so tab switches don't lose it, and is
    *  persisted onto the loaded entry so reopening never regenerates it. */
@@ -392,7 +392,7 @@ interface ParleyState {
   /** Delete a single finding by id (MCP/external edit), clearing any selection
    *  or cached solution that pointed at it. */
   removeFinding: (id: string) => void;
-  setAnalysisStatus: (status: ParleyState["analysisStatus"]) => void;
+  setAnalysisStatus: (status: CoachState["analysisStatus"]) => void;
   setAnalysisError: (error: string | null) => void;
   /** Drop findings + action items outside the replay keep-window. Applied when a
    *  trim is committed — clears over-time results without re-running the analysis. */
@@ -455,7 +455,7 @@ interface ParleyState {
   /** Mainly for REPLAY: drives the post-call delivery section's spinner. */
   deliveryStatus: AsyncTaskStatus;
   setDeliveryAssessment: (a: DeliveryAssessment | null) => void;
-  setDeliveryStatus: (s: ParleyState["deliveryStatus"]) => void;
+  setDeliveryStatus: (s: CoachState["deliveryStatus"]) => void;
 
   // ── Action items (REPLAY post-meeting follow-ups) ───────────────────────────
   /** Generated from the analysis findings + transcript; ephemeral, replay-only. */
@@ -463,7 +463,7 @@ interface ParleyState {
   actionItemsStatus: AsyncTaskStatus;
   actionItemsError: string | null;
   setActionItems: (items: ActionItem[]) => void;
-  setActionItemsStatus: (status: ParleyState["actionItemsStatus"]) => void;
+  setActionItemsStatus: (status: CoachState["actionItemsStatus"]) => void;
   setActionItemsError: (error: string | null) => void;
   toggleActionItem: (id: string) => void;
 
@@ -532,7 +532,7 @@ interface ParleyState {
   highlightMs: number | null;
   setHighlightMs: (ms: number | null) => void;
 
-  /** Parley Cloud sign-in (Google). Persisted so you stay signed in. null = signed out. */
+  /** Coach Cloud sign-in (Google). Persisted so you stay signed in. null = signed out. */
   cloudAuth: CloudAuth | null;
   setCloudAuth: (auth: CloudAuth | null) => void;
 
@@ -577,7 +577,7 @@ interface ParleyState {
   applySettings: (settings: Settings) => void;
 }
 
-export const useStore = create<ParleyState>()(
+export const useStore = create<CoachState>()(
   persist(
     (set) => ({
       appMode: "home",
@@ -1038,7 +1038,7 @@ export const useStore = create<ParleyState>()(
       // Tally filler sounds ("um/嗯…") from the USER'S OWN speech, live. Interim
       // segments grow and rewrite as they finalize, so re-count this segment and
       // fold in only the delta versus what we already counted for its id.
-      let fillerPatch: Partial<ParleyState> = {};
+      let fillerPatch: Partial<CoachState> = {};
       if (segment.source === "me") {
         const prev = state.filledPauseCounted[segment.id] ?? 0;
         const now = countFillerSounds(segment.text);
@@ -1085,7 +1085,7 @@ export const useStore = create<ParleyState>()(
     })),
     }),
     {
-      name: "parley-settings",
+      name: "saleshunter-coach-settings",
       version: 3,
       // Persist settings + the cloud sign-in — transcript/eval state is per-session.
       partialize: (state) => ({ settings: state.settings, cloudAuth: state.cloudAuth }),
@@ -1171,7 +1171,7 @@ export function isMeetingActive(status: MeetingStatus): boolean {
  * axis line up with segment timestamps instead of drifting ahead over pauses.
  */
 export function meetingElapsedMs(
-  s: Pick<ParleyState, "meetingStartedAt" | "meetingPausedAt" | "meetingPausedTotalMs">,
+  s: Pick<CoachState, "meetingStartedAt" | "meetingPausedAt" | "meetingPausedTotalMs">,
   now: number = Date.now()
 ): number {
   if (s.meetingStartedAt == null) return 0;

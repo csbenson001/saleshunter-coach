@@ -36,7 +36,7 @@ const schema = z.object({
     ),
   filler_examples: z
     .array(z.string())
-    .describe("The specific tics you actually heard the user overuse (e.g. ['就是','然後'] / ['um','like']); [] when ok."),
+    .describe("The specific tics you actually heard the user overuse (e.g. ['like','you know']); [] when ok."),
   filler_note: z
     .string()
     .describe("One short line about the over-frequent stretch (where/what); empty when level is 'ok'."),
@@ -60,7 +60,7 @@ const SYSTEM = (live: boolean) =>
   "contemptuous wording; firm disagreement or pushback is 'firm', not aggressive. When uncertain, " +
   "prefer the milder label.\n" +
   "2) FILLER WORDS / VERBAL CRUTCHES — consider ONLY the lexical words/phrases in the provided watchlist. " +
-  "Do NOT consider non-lexical hesitation sounds (um, uh, er, 呃, 啊, 嗯) — speech-to-text usually drops them, " +
+  "Do NOT consider non-lexical hesitation sounds (um, uh, er) — speech-to-text usually drops them, " +
   "so they won't be in the transcript. Filler use is normal and human: flag 'frequent' ONLY when the user " +
   "leans on watchlist words as crutches densely enough to distract a listener; never flag ordinary, " +
   "meaningful uses of those same words, and never flag mere presence.\n" +

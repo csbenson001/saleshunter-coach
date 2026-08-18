@@ -1,7 +1,7 @@
-# Parley for Android
+# SalesHunter Coach for Android
 
 Native Android companion app, mirroring the iOS app's scope (`../ios/`): sign in
-to Parley Cloud, record meetings with live transcription through the hosted STT
+to SalesHunter Coach Cloud, record meetings with live transcription through the hosted STT
 relay, **import existing audio recordings for transcription**, and sync finished
 recordings to the cloud. Deep analysis (report, action items) runs on the
 desktop app when a recording syncs down — same division of labor as iOS.
@@ -10,12 +10,12 @@ desktop app when a recording syncs down — same division of labor as iOS.
 
 ```
 android/
-  app/         com.pathors.parley — Compose UI, auth, cloud sync, audio pipeline
-  parleykit/   pure-JVM Kotlin port of ios/ParleyKit (SegmentBuilder,
+  app/         com.saleshunter.coach — Compose UI, auth, cloud sync, audio pipeline
+  coachkit/   pure-JVM Kotlin port of ios/CoachKit (SegmentBuilder,
                SonioxProtocol, SttRelayClient) — same semantics, same tests
 ```
 
-- **Auth**: Custom Tab → `https://api.parley.tw/sign-in?to=parley://auth-callback`
+- **Auth**: Custom Tab → `https://api.parley.tw/sign-in?to=saleshunter-coach://auth-callback`
   → deep link back with the session token → `Authorization: Bearer` everywhere.
 - **Live meeting**: `AudioRecord` (16 kHz mono s16le) → `SttRelayClient`
   (`wss://api.parley.tw/stt/stream`) → `SegmentBuilder` → live transcript UI.
@@ -37,7 +37,7 @@ Requires JDK 17+ and the Android SDK (API 35).
 
 ```bash
 cd android
-./gradlew :parleykit:test        # core unit tests (pure JVM)
+./gradlew :coachkit:test        # core unit tests (pure JVM)
 ./gradlew assembleDebug          # debug APK
 ./gradlew installDebug           # onto a connected device/emulator
 ```

@@ -43,7 +43,7 @@ async function start(): Promise<void> {
   } else if (settings.transcriptionProvider === "parley") {
     // Hosted STT selected but no usable cloud session — never fake it with a
     // mock transcript; tell the user to sign in and back out of "recording".
-    log.info("meeting: start blocked (parley, no session)");
+    log.info("meeting: start blocked (saleshunter-coach, no session)");
     useStore.getState().stopMeeting();
     toast.error(t("meeting.error.signin"));
   } else {
@@ -65,7 +65,7 @@ async function openCaptureSession(settings: Settings, sttKey: string): Promise<v
     pipeline: "real",
   });
   try {
-    // Hosted "parley" STT: relay audio through Parley Cloud (cloud WSS URL +
+    // Hosted "parley" STT: relay audio through Coach Cloud (cloud WSS URL +
     // the session token as apiKey, via sttApiKey). BYOK providers send no
     // relay URL and connect straight to their vendor.
     await invoke("start_meeting", {

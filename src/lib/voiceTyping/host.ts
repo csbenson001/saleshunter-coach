@@ -19,7 +19,7 @@ import { appendVoiceEntry } from "./history";
 
 /** localStorage flag: the boot-time Accessibility prompt has been shown once
  *  for this install (see initVoiceTyping — later launches must not re-nag). */
-const AX_BOOT_PROMPTED_KEY = "parley:ax-boot-prompted";
+const AX_BOOT_PROMPTED_KEY = "saleshunter-coach:ax-boot-prompted";
 
 // After the key is released we keep the session open and wait for the STT to
 // flush its final tokens. FAST PATH: the backend emits `stt://closed` once the

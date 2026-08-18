@@ -38,9 +38,37 @@ use crate::replay_audio::decode_to_16k_mono;
 /// metadata declares `feature_normalize_type=global-mean`, which knf-rs already
 /// applies (it subtracts the per-utterance mean over time inside `compute_fbank`).
 const MODEL_FILE: &str = "campplus_zh_en_16k.onnx";
-const MODEL_URL: &str = "https://github.com/k2-fsa/sherpa-onnx/releases/download/speaker-recongition-models/3dspeaker_speech_campplus_sv_zh_en_16k-common_advanced.onnx";
+/// Upstream copy, on a THIRD-PARTY release we do not control. Kept only as the
+/// last-resort fallback: if that release is ever retired, every new install
+/// silently loses diarization. Set `COACH_MODEL_MIRROR` at build time to a copy
+/// we host so the common path never depends on it.
+const MODEL_URL_UPSTREAM: &str = "https://github.com/k2-fsa/sherpa-onnx/releases/download/speaker-recongition-models/3dspeaker_speech_campplus_sv_zh_en_16k-common_advanced.onnx";
+/// Our mirror, baked in at compile time (see `scripts/fetch-speaker-model.sh`).
+/// Either a full URL to the file, or a base ending in `/` to join with
+/// [`MODEL_FILE`]. Empty/unset simply means "no mirror configured".
+const MODEL_URL_MIRROR: Option<&str> = option_env!("COACH_MODEL_MIRROR");
 const MODEL_SHA256: &str = "aa3cfc16963a10586a9393f5035d6d6b57e98d358b347f80c2a30bf4f00ceba2";
 const MODEL_BYTES: u64 = 28_281_164;
+
+/// Download candidates in priority order. The checksum is verified either way,
+/// so a wrong or hostile mirror cannot substitute a different model — the worst
+/// it can do is waste one request before the upstream fallback runs.
+fn model_urls_from(mirror: Option<&str>) -> Vec<String> {
+    let mut urls = Vec::new();
+    if let Some(m) = mirror.map(str::trim).filter(|m| !m.is_empty()) {
+        urls.push(if m.ends_with('/') {
+            format!("{m}{MODEL_FILE}")
+        } else {
+            m.to_string()
+        });
+    }
+    urls.push(MODEL_URL_UPSTREAM.to_string());
+    urls
+}
+
+fn model_urls() -> Vec<String> {
+    model_urls_from(MODEL_URL_MIRROR)
+}
 
 /// Model output tensor name (the input tensor is `x`; see the doc comment above).
 const OUTPUT_NAME: &str = "embedding";
@@ -1052,16 +1080,43 @@ async fn ensure_model(app: &AppHandle) -> Result<PathBuf> {
         }
     }
 
-    log::info!("diarize: downloading speaker model (~27 MB)…");
-    let resp = reqwest::get(MODEL_URL)
+    let tmp = path.with_extension("part");
+    let urls = model_urls();
+    let mut last_err = None;
+    for (i, url) in urls.iter().enumerate() {
+        log::info!(
+            "diarize: downloading speaker model (~27 MB) from source {}/{}…",
+            i + 1,
+            urls.len()
+        );
+        match download_model_to(app, url, &tmp).await {
+            Ok(received) => {
+                std::fs::rename(&tmp, &path).context("finalize model file")?;
+                log::info!("diarize: speaker model ready ({received} bytes)");
+                return Ok(path);
+            }
+            Err(e) => {
+                let _ = std::fs::remove_file(&tmp);
+                log::warn!("diarize: speaker model source {} failed: {e:#}", i + 1);
+                last_err = Some(e);
+            }
+        }
+    }
+    Err(last_err.unwrap_or_else(|| anyhow::anyhow!("no speaker model source configured")))
+}
+
+/// Stream one candidate URL to `tmp`, verifying the checksum before it counts as
+/// a success. Returns the byte count. Any failure (network, status, checksum)
+/// is the caller's cue to try the next source.
+async fn download_model_to(app: &AppHandle, url: &str, tmp: &Path) -> Result<u64> {
+    let resp = reqwest::get(url)
         .await
         .context("request speaker model")?
         .error_for_status()
         .context("speaker model download")?;
     let total = resp.content_length().unwrap_or(MODEL_BYTES);
 
-    let tmp = path.with_extension("part");
-    let mut file = std::fs::File::create(&tmp).context("create model temp file")?;
+    let mut file = std::fs::File::create(tmp).context("create model temp file")?;
     let mut hasher = Sha256::new();
     let mut received: u64 = 0;
     let mut stream = resp.bytes_stream();
@@ -1084,12 +1139,9 @@ async fn ensure_model(app: &AppHandle) -> Result<PathBuf> {
 
     let got = to_hex(&hasher.finalize());
     if got != MODEL_SHA256 {
-        let _ = std::fs::remove_file(&tmp);
         bail!("speaker model checksum mismatch (expected {MODEL_SHA256}, got {got})");
     }
-    std::fs::rename(&tmp, &path).context("finalize model file")?;
-    log::info!("diarize: speaker model ready ({} bytes)", received);
-    Ok(path)
+    Ok(received)
 }
 
 /// SHA-256 of a file as lowercase hex, read in chunks.
@@ -1111,6 +1163,32 @@ fn to_hex(bytes: &[u8]) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// The mirror must be tried BEFORE the upstream release, and upstream must
+    /// always remain as a fallback so a mis-set mirror cannot brick diarization
+    /// for new installs. A blank/unset mirror yields upstream alone.
+    #[test]
+    fn model_urls_prefer_mirror_then_fall_back_upstream() {
+        assert_eq!(model_urls_from(None), vec![MODEL_URL_UPSTREAM]);
+        assert_eq!(model_urls_from(Some("   ")), vec![MODEL_URL_UPSTREAM]);
+        assert_eq!(
+            model_urls_from(Some("https://cdn.example.com/campplus.onnx")),
+            vec!["https://cdn.example.com/campplus.onnx", MODEL_URL_UPSTREAM],
+        );
+    }
+
+    /// A mirror base (directory) is joined with the model filename, so ops can
+    /// point at a bucket prefix rather than restating the file name.
+    #[test]
+    fn model_urls_join_a_base_prefix_with_the_filename() {
+        assert_eq!(
+            model_urls_from(Some("https://cdn.example.com/models/")),
+            vec![
+                "https://cdn.example.com/models/campplus_zh_en_16k.onnx",
+                MODEL_URL_UPSTREAM
+            ],
+        );
+    }
 
     /// NME-SC on two well-separated speaker-like blobs (realistic within-speaker
     /// spread, not degenerate near-identical points) must auto-detect 2 speakers
@@ -1176,10 +1254,10 @@ mod tests {
     }
 
     /// Locally-cached model for the test (download once to /tmp, or set
-    /// PARLEY_TEST_MODEL). The test self-skips when neither is available so CI
+    /// COACH_TEST_MODEL). The test self-skips when neither is available so CI
     /// without the assets stays green.
     fn test_model() -> Option<PathBuf> {
-        let p = std::env::var("PARLEY_TEST_MODEL")
+        let p = std::env::var("COACH_TEST_MODEL")
             .map(PathBuf::from)
             .unwrap_or_else(|_| PathBuf::from("/tmp/campplus.onnx"));
         p.exists().then_some(p)

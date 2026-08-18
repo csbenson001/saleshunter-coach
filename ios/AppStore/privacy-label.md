@@ -20,7 +20,7 @@ advertising, or personalization outside the service the user requested.
 
 ## The keyboard extension does not add a row
 
-The Parley Voice keyboard (1.1) requests Full Access, which reviewers and
+The SalesHunter Coach Voice keyboard (1.1) requests Full Access, which reviewers and
 privacy-conscious buyers both read as "this keyboard can phone home". The label
 still needs no extra data type, and the reason is worth being able to state:
 
@@ -39,12 +39,12 @@ and the label has to change with it.
 
 ## URLs
 
-- Privacy Policy: `https://parley.tw/privacy/`
-- User Privacy Choices (optional but recommended): `https://parley.tw/privacy/`
+- Privacy Policy: `https://saleshunterlive.com/privacy/`
+- User Privacy Choices (optional but recommended): `https://saleshunterlive.com/privacy/`
 
 ## Privacy manifest
 
-`ios/App/Parley/PrivacyInfo.xcprivacy` declares the app’s UserDefaults access
+`ios/App/SalesHunter Coach/PrivacyInfo.xcprivacy` declares the app’s UserDefaults access
 with Apple’s `CA92.1` reason. It intentionally does not duplicate the App
 Store privacy label: the manifest reports required-reason APIs, while the
 App Privacy questionnaire reports the data practices above.

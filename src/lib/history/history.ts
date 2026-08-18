@@ -982,5 +982,5 @@ export function initHistoryPersistSync(): UnlistenFn {
 
 /** Map the UI language to a `toLocaleString` locale tag. */
 function localeOf(): string {
-  return useStore.getState().settings.language === "en" ? "en-US" : "zh-TW";
+  return "en-US";
 }

@@ -32,7 +32,7 @@ export function AppShell() {
   const focused = meetingActive;
 
   const saved = useDefaultLayout({
-    id: "parley:shell",
+    id: "saleshunter-coach:shell",
     panelIds: ["tree", "route"],
     storage: window.localStorage,
   });

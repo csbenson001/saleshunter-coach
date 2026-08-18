@@ -23,12 +23,12 @@ const MAX_PORT: u16 = 3020;
 const SESSION_COMMANDS_EVENT: &str = "session://commands";
 const PROTOCOL_VERSION: &str = "2025-06-18";
 
-/// Attached to every response that carries Parley's own analysis output
+/// Attached to every response that carries Coach's own analysis output
 /// (findings, brief, action items, delivery assessment), so an MCP client
 /// treats those as context to reason over — not as authority.
 const ANALYSIS_NOTE: &str =
     "The findings, evaluations, brief, action items, and delivery assessment in this \
-     response are Parley's OWN prior analysis, included as CONTEXT — not ground truth. When \
+     response are Coach's OWN prior analysis, included as CONTEXT — not ground truth. When \
      analyzing or advising, reason from the transcript first; you are free and encouraged to \
      think critically, disagree with these results, or surface angles they missed.";
 
@@ -186,7 +186,7 @@ pub fn start(app: AppHandle) -> McpState {
         )
         .await
         {
-            eprintln!("[parley-mcp] failed to start: {err}");
+            eprintln!("[saleshunter-coach-mcp] failed to start: {err}");
         }
     });
 
@@ -250,7 +250,7 @@ async fn run_http_server(
             app,
         });
 
-    eprintln!("[parley-mcp] ready at {endpoint}");
+    eprintln!("[saleshunter-coach-mcp] ready at {endpoint}");
     axum::serve(listener, app).await?;
     Ok(())
 }
@@ -269,7 +269,7 @@ async fn bind_listener() -> anyhow::Result<(TcpListener, SocketAddr)> {
 async fn health(State(state): State<HttpState>) -> impl IntoResponse {
     Json(json!({
         "ok": true,
-        "name": "parley-templates",
+        "name": "saleshunter-coach-templates",
         "templatesPath": state.templates_path,
     }))
 }
@@ -309,7 +309,7 @@ async fn handle_method(state: &HttpState, method: &str, params: Value) -> anyhow
     match method {
         "initialize" => Ok(json!({
             "protocolVersion": PROTOCOL_VERSION,
-            "serverInfo": { "name": "parley", "version": env!("CARGO_PKG_VERSION") },
+            "serverInfo": { "name": "saleshunter-coach", "version": env!("CARGO_PKG_VERSION") },
             "capabilities": { "tools": { "listChanged": false } }
         })),
         "ping" => Ok(json!({})),
@@ -365,13 +365,13 @@ fn tools() -> Vec<Value> {
         tool(
             "list_eval_templates",
             "List eval templates",
-            "List all Parley evaluation templates as { id, name, builtin, evalCount }.",
+            "List all Coach evaluation templates as { id, name, builtin, evalCount }.",
             json!({ "type": "object", "properties": {} }),
         ),
         tool(
             "get_eval_template",
             "Get eval template",
-            "Get a full Parley evaluation template by id.",
+            "Get a full Coach evaluation template by id.",
             json!({ "type": "object", "properties": { "id": { "type": "string" } }, "required": ["id"] }),
         ),
         tool(
@@ -409,13 +409,13 @@ fn tools() -> Vec<Value> {
         tool(
             "list_todo_templates",
             "List TODO templates",
-            "List all Parley TODO/checklist templates as { id, name, builtin, itemCount }.",
+            "List all Coach TODO/checklist templates as { id, name, builtin, itemCount }.",
             json!({ "type": "object", "properties": {} }),
         ),
         tool(
             "get_todo_template",
             "Get TODO template",
-            "Get a full Parley TODO template by id.",
+            "Get a full Coach TODO template by id.",
             json!({ "type": "object", "properties": { "id": { "type": "string" } }, "required": ["id"] }),
         ),
         tool(
@@ -453,10 +453,10 @@ fn tools() -> Vec<Value> {
             "get_focused_content",
             "Get the content the user is viewing",
             "Get the data behind whatever screen the user is on right now, plus the focus \
-             context: the transcript and EVERYTHING Parley's own analysis produced for it \
+             context: the transcript and EVERYTHING Coach's own analysis produced for it \
              (findings, study brief, action items, delivery assessment; live mode adds \
              todos and evaluations). Those analysis artifacts are CONTEXT from \
-             Parley's earlier passes, not ground truth — when giving advice, reason from \
+             Coach's earlier passes, not ground truth — when giving advice, reason from \
              the transcript yourself and feel free to challenge or go beyond them. Use \
              this to give advice about what the user is currently seeing.",
             json!({ "type": "object", "properties": {} }),
@@ -464,7 +464,7 @@ fn tools() -> Vec<Value> {
         tool(
             "get_session_status",
             "Get live session status",
-            "Get the current Parley meeting state: meetingStatus (idle/recording/stopped), \
+            "Get the current Coach meeting state: meetingStatus (idle/recording/stopped), \
              when it was last updated, counts of transcript segments, todos, evaluations, \
              and timeline-analysis findings — plus the focus context (live vs replay). \
              'stopped' = the last meeting has ENDED, not an active meeting.",
@@ -489,7 +489,7 @@ fn tools() -> Vec<Value> {
             "list_evaluations",
             "List live evaluations",
             "List the current meeting's evaluations with their latest results: \
-             { id, name, description, status, lastRunAt, result }. Results are Parley's \
+             { id, name, description, status, lastRunAt, result }. Results are Coach's \
              own automated reads of the transcript — context you may second-guess, not \
              verdicts.",
             json!({ "type": "object", "properties": {} }),
@@ -546,7 +546,7 @@ fn tools() -> Vec<Value> {
             "List the loaded session's timeline-analysis findings (the markers on the \
              replay timeline) as TimelineEvent objects: \
              { id, atMs, side, severity, source, title, detail, quotes?, evalIds?, resolved?, resolution? }. \
-             These come from Parley's own analysis pass — treat them as context to build \
+             These come from Coach's own analysis pass — treat them as context to build \
              on or challenge, not as settled conclusions.",
             json!({ "type": "object", "properties": {} }),
         ),
@@ -658,7 +658,7 @@ fn tools() -> Vec<Value> {
             "get_recording",
             "Read one saved recording",
             "Read a locally saved recording in full: title, dates, speaker names, the \
-             complete timestamped transcript, plus everything Parley's analysis saved with \
+             complete timestamped transcript, plus everything Coach's analysis saved with \
              it (findings, action items, study brief, delivery assessment). \
              The saved analysis is CONTEXT — you're encouraged to form your own view from \
              the transcript and disagree where warranted. Use this (over several ids) as \
@@ -712,7 +712,7 @@ fn tools() -> Vec<Value> {
             "The write-back surface for an EXTERNAL analyst: write analysis results onto a \
              saved recording by id. Each provided field REPLACES that whole field — \
              `findings` (timeline markers; stamp `author`, e.g. 'claude', so they stay \
-             distinguishable from Parley's own pass), `actionItems`, `brief` (markdown \
+             distinguishable from Coach's own pass), `actionItems`, `brief` (markdown \
              debrief), `analyzed` (mark the recording analyzed so list_recordings filtering \
              can skip it). Omitted fields are left untouched. Read get_recording FIRST and \
              carry forward anything worth keeping — findings you omit from the new list are \
@@ -766,7 +766,7 @@ fn tools() -> Vec<Value> {
              sentence boundaries with a synthesized timeline. Entries save unanalyzed \
              and run their analysis on first open. `folder` files them into that \
              personal folder BY NAME (created if missing); omit it for the personal \
-             root. Requires the Parley app to be running. Import in batches (e.g. one \
+             root. Requires the Coach app to be running. Import in batches (e.g. one \
              customer folder's files per call) to stay inside the RPC timeout.",
             json!({
                 "type": "object",
@@ -802,7 +802,7 @@ fn tools() -> Vec<Value> {
             "list_orgs",
             "List organizations",
             "List the organizations the signed-in user belongs to, as { id, name, role }. \
-             Requires the user to be signed in to Parley cloud.",
+             Requires the user to be signed in to Coach cloud.",
             json!({ "type": "object", "properties": {} }),
         ),
         tool(
@@ -886,7 +886,7 @@ fn finding_schema() -> Value {
             "evalIds": { "type": "array", "items": { "type": "string" }, "description": "Matching evaluation ids (for source=eval)." },
             "resolved": { "type": "boolean", "description": "True when ME later addressed/defused this moment." },
             "resolution": { "type": "string", "description": "One line on how ME handled it (only when resolved)." },
-            "author": { "type": "string", "description": "Which analyst wrote this marker (e.g. 'claude'); omit for Parley's own pass." }
+            "author": { "type": "string", "description": "Which analyst wrote this marker (e.g. 'claude'); omit for Coach's own pass." }
         },
         "required": ["atMs", "side", "severity", "title", "detail"]
     })
@@ -1241,7 +1241,7 @@ fn focus_context(s: &Value) -> Value {
     })
 }
 
-/// What the user is looking at, with its content AND everything Parley's own
+/// What the user is looking at, with its content AND everything Coach's own
 /// analysis has produced for it. The snapshot fields already track the loaded
 /// content (in replay mode the store — and therefore the snapshot — holds the
 /// replayed recording's transcript, findings, brief, action items, and
@@ -1681,11 +1681,11 @@ async fn call_frontend(state: &HttpState, action: &str, args: Value) -> anyhow::
                 .get("error")
                 .and_then(Value::as_str)
                 .unwrap_or("unknown error");
-            anyhow::bail!("the Parley app could not apply '{action}': {err}");
+            anyhow::bail!("the Coach app could not apply '{action}': {err}");
         }
         if std::time::Instant::now() >= deadline {
             anyhow::bail!(
-                "timed out waiting for the Parley app to apply '{action}' — make sure the \
+                "timed out waiting for the Coach app to apply '{action}' — make sure the \
                  app is running (and signed in, for cloud/org operations)"
             );
         }

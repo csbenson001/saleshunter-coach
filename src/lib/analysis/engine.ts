@@ -48,12 +48,12 @@ function analysisCacheKey(
   // to it must invalidate the cache and re-analyze.
   const profile = `${settings.userName}|${settings.userRole}|${settings.userCompany}|${settings.userBackground}`;
   const raw = `${ANALYSIS_CACHE_VERSION} ${model} ${profile} ${meetingContext} ${JSON.stringify(names)} ${evalSig} ${segSig}`;
-  return `parley:analysis:${fnv1a(raw)}`;
+  return `saleshunter-coach:analysis:${fnv1a(raw)}`;
 }
 
-/** Drop every cached analysis (all `parley:analysis:*` localStorage entries). */
+/** Drop every cached analysis (all `saleshunter-coach:analysis:*` localStorage entries). */
 export function clearAnalysisCache(): number {
-  return clearCacheByPrefix("parley:analysis:");
+  return clearCacheByPrefix("saleshunter-coach:analysis:");
 }
 
 /**

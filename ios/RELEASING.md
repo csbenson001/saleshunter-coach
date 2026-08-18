@@ -1,16 +1,16 @@
-# Parley iOS — release checklist
+# SalesHunter Coach iOS — release checklist
 
-Parley iOS is the cloud companion for face-to-face meetings. It records the
-phone microphone, streams it through the hosted Parley relay, and syncs the
+SalesHunter Coach iOS is the cloud companion for face-to-face meetings. It records the
+phone microphone, streams it through the hosted SalesHunter Coach relay, and syncs the
 Ogg recording plus transcript to the same account as the desktop app. Since 1.1
 it also ships a voice-typing keyboard extension. It does not capture phone calls
 or other apps' audio.
 
 Already configured for the Pathors Apple team (`SXHVCQXJHZ`):
 
-- Bundle IDs: `com.pathors.parley.ios`, `com.pathors.parley.ios.keyboard`
-- App Group: `group.com.pathors.parley.ios` (the app ↔ keyboard transcript handoff)
-- App Store Connect app: `Parley` (`6795031201`)
+- Bundle IDs: `com.saleshunter.coach.ios`, `com.saleshunter.coach.ios.keyboard`
+- App Group: `group.com.saleshunter.coach.ios` (the app ↔ keyboard transcript handoff)
+- App Store Connect app: `SalesHunter Coach` (`6795031201`)
 - Sign in with Apple capability and hosted Better Auth Apple provider
 - Hosted login page: `https://api.parley.tw/sign-in`
 
@@ -36,7 +36,7 @@ role is too narrow: create a new key with **App Manager** in App Store Connect �
 Users and Access → Integrations, and update those three secrets.
 
 **Build numbers.** Every upload needs a `CFBundleVersion` App Store Connect has
-not seen. `xcodegen generate` writes `App/Parley/Info.plist` from
+not seen. `xcodegen generate` writes `App/SalesHunter Coach/Info.plist` from
 `App/project.yml`, so bump it in **`project.yml`** — editing the plist alone is
 overwritten on the next generate — and commit the regenerated plist with it.
 Both targets carry the number and both must move together. To re-upload without
@@ -48,10 +48,10 @@ a commit, run the workflow manually with the `build_number` input.
 ```bash
 cd ios/App
 xcodegen generate
-xcodebuild -project Parley.xcodeproj -scheme Parley \
+xcodebuild -project Coach.xcodeproj -scheme SalesHunter Coach \
   -destination 'generic/platform=iOS' \
-  -archivePath build/Parley.xcarchive archive
-xcodebuild -exportArchive -archivePath build/Parley.xcarchive \
+  -archivePath build/Coach.xcarchive archive
+xcodebuild -exportArchive -archivePath build/Coach.xcarchive \
   -exportOptionsPlist ExportOptions.plist -exportPath build/export \
   -allowProvisioningUpdates
 ```
@@ -72,8 +72,8 @@ Two things in that checklist are easy to skip and expensive to skip:
 - **English (U.S.) is the primary locale.** It is what every region without its
   own localization sees. Connect restricts when primary language can change, so
   it goes first.
-- **Screenshots are per-locale**, `AppStore/screenshots/en-US/` and
-  `zh-Hant/`, 1320×2868 (the 6.9-inch slot). Regenerate with
+- **Screenshots** live in `AppStore/screenshots/en-US/`, 1320×2868 (the
+  6.9-inch slot). Regenerate with
   [`AppStore/capture-screenshots.sh`](AppStore/capture-screenshots.sh) whenever
   the UI moves; it fails rather than shipping a blank or mis-sized frame.
 
@@ -99,14 +99,14 @@ unit tests.
 - [ ] **With Full Access off**, the keyboard still shows the explanation and a
       working key row (globe, space, return, delete) — never a dead rectangle.
       This is what guideline 4.4.1 review looks at.
-- [ ] Mic button → Parley records → the transcript types into the field you
+- [ ] Mic button → SalesHunter Coach records → the transcript types into the field you
       started from, in a third-party app (Notes, Messages, Mail).
-- [ ] The Action Button intent starts dictation without bringing Parley forward.
+- [ ] The Action Button intent starts dictation without bringing SalesHunter Coach forward.
 - [ ] A session left running stops itself at the 120-second cap.
 
 **Localization**
 
-- [ ] The app in both languages, switched via Settings → Parley → Language: no
+- [ ] The app in both languages, switched via Settings → SalesHunter Coach → Language: no
       English leaking into the Chinese build, no clipped or wrapped rows.
 - [ ] The keyboard's name in the system keyboard list is localized.
 

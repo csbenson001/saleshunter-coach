@@ -12,7 +12,7 @@
 //! NOTE: runtime capture requires the `com.apple.security.device.audio-input`
 //! entitlement (see src-tauri/entitlements.plist) and the "System Audio
 //! Recording Only" TCC grant (macOS 14.4+, prompted via
-//! `NSAudioCaptureUsageDescription` in Info.plist — it lists Parley under
+//! `NSAudioCaptureUsageDescription` in Info.plist — it lists Coach under
 //! System Settings → Privacy → Screen & System Audio Recording). If tap setup
 //! fails, this source logs and exits cleanly — the meeting continues mic-only.
 
@@ -81,7 +81,7 @@ pub enum TapAccess {
     Unsupported,
 }
 
-/// Probe whether Parley may capture system audio, without capturing: create a
+/// Probe whether Coach may capture system audio, without capturing: create a
 /// global tap, try to read its stream format, tear it down. The very first call
 /// while TCC is "not determined" makes macOS show the native "record system
 /// audio" consent prompt (text from `NSAudioCaptureUsageDescription`) — so only
@@ -190,11 +190,11 @@ fn run(tx: UnboundedSender<Vec<i16>>, running: Arc<AtomicBool>, app: &AppHandle)
         let agg_desc = CFDictionary::from_CFType_pairs(&[
             (
                 CFString::new("name").as_CFType(),
-                CFString::new("Parley System Tap").as_CFType(),
+                CFString::new("Coach System Tap").as_CFType(),
             ),
             (
                 CFString::new("uid").as_CFType(),
-                CFString::new(&format!("com.pathors.parley.agg.{uid}")).as_CFType(),
+                CFString::new(&format!("com.saleshunter.coach.agg.{uid}")).as_CFType(),
             ),
             (
                 CFString::new("private").as_CFType(),

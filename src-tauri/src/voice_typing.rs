@@ -5,7 +5,7 @@
 //! It emits the same `transcript://segment` and `audio://level` events as a
 //! meeting, tagged `source: "voice-typing"`, which the floating overlay window
 //! renders. On release, the host copies the final text to the clipboard via the
-//! native pasteboard (the webview can't, because Parley isn't the focused app)
+//! native pasteboard (the webview can't, because Coach isn't the focused app)
 //! and — when the user enabled it — simulates Cmd+V to paste into the frontmost
 //! app (needs Accessibility).
 
@@ -88,12 +88,12 @@ pub async fn start_voice_typing(
     model: Option<String>,
     language_hints: Option<Vec<String>>,
     input_device: Option<String>,
-    // Hosted "parley" mode: the cloud STT relay's `wss://` URL. When set,
+    // Hosted "saleshunter_coach" mode: the cloud STT relay's `wss://` URL. When set,
     // `api_key` is the cloud Bearer token (not a vendor key) and the adapter
     // relays through this URL. Absent for BYOK providers. Same contract as
     // `start_meeting`.
     relay_url: Option<String>,
-    // Hosted "parley" mode only: the free plan's per-dictation cap, in seconds.
+    // Hosted "saleshunter_coach" mode only: the free plan's per-dictation cap, in seconds.
     // The frontend caps and stops the session at the limit; this arms a backend
     // watchdog that force-stops the mic if the webview never did, so the paid
     // relay can't stream forever. `None`/`0` (BYOK) = uncapped.
@@ -105,7 +105,7 @@ pub async fn start_voice_typing(
     }
     let relay_endpoint = relay_url.filter(|u| !u.trim().is_empty());
     // Same guard as start_meeting: the hosted token only works via the relay.
-    if provider == SttProvider::Parley && relay_endpoint.is_none() {
+    if provider == SttProvider::Coach && relay_endpoint.is_none() {
         return Err("hosted transcription requires the cloud relay URL".into());
     }
     // A press must always yield a FRESH session. Release any voice-typing mic
@@ -300,7 +300,7 @@ pub async fn stop_voice_typing(
 }
 
 /// Copy text to the system clipboard via the native pasteboard. Needed because
-/// the webview's `navigator.clipboard` is blocked while Parley isn't focused.
+/// the webview's `navigator.clipboard` is blocked while Coach isn't focused.
 #[tauri::command]
 pub fn copy_to_clipboard(text: String) -> Result<(), String> {
     imp::copy_to_clipboard(&text)
@@ -327,10 +327,10 @@ pub(crate) fn is_accessibility_trusted() -> bool {
     imp::accessibility_trusted(false)
 }
 
-/// Show the overlay above ALL apps without activating Parley or stealing focus
+/// Show the overlay above ALL apps without activating Coach or stealing focus
 /// (`orderFrontRegardless` + a floating level + all-spaces / full-screen
 /// collection behaviour). Driving visibility natively avoids Tauri's `show()`,
-/// which can bring Parley to the front.
+/// which can bring Coach to the front.
 #[tauri::command]
 pub fn present_voice_overlay(app: AppHandle) {
     #[cfg(target_os = "macos")]
@@ -459,7 +459,7 @@ mod imp {
     /// over a full-screen app, without joining window cycling.
     const OVERLAY_COLLECTION_BEHAVIOR: usize = (1 << 0) | (1 << 4) | (1 << 6) | (1 << 8);
     /// NSWindowStyleMaskNonactivatingPanel — the panel shows without activating
-    /// Parley or stealing focus.
+    /// Coach or stealing focus.
     const NONACTIVATING_PANEL: usize = 1 << 7;
 
     pub fn present_overlay(ns_window: *mut std::ffi::c_void) {

@@ -14,7 +14,7 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "parley-android"
+rootProject.name = "coach-android"
 
 include(":app")
-include(":parleykit")
+include(":coachkit")

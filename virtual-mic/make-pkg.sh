@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build a macOS installer package for the Parley Microphone driver.
+# Build a macOS installer package for the Coach Microphone driver.
 #
 # This is the NORMAL-USER install path: double-clicking the resulting .pkg shows
 # the native macOS Installer with a graphical admin-password prompt — no Terminal,
@@ -15,8 +15,8 @@ set -euo pipefail
 
 cd "$(dirname "$0")"
 
-DRIVER="build/ParleyMicrophone.driver"
-PKG="build/ParleyMicrophone.pkg"
+DRIVER="build/CoachMicrophone.driver"
+PKG="build/CoachMicrophone.pkg"
 
 if [ ! -d "$DRIVER" ]; then
   echo "error: $DRIVER not found — run ./build.sh first." >&2
@@ -28,11 +28,11 @@ fi
 # structure and any code signature intact).
 STAGE="$(mktemp -d)"
 trap 'rm -rf "$STAGE"' EXIT
-ditto "$DRIVER" "$STAGE/ParleyMicrophone.driver"
+ditto "$DRIVER" "$STAGE/CoachMicrophone.driver"
 
 pkgbuild \
   --root "$STAGE" \
-  --identifier "com.pathors.parley.virtualmic" \
+  --identifier "com.saleshunter.coach.virtualmic" \
   --version "0.1.0" \
   --install-location "/Library/Audio/Plug-Ins/HAL" \
   --scripts "pkg/scripts" \
@@ -42,8 +42,8 @@ echo "built: $(pwd)/$PKG"
 
 # Sign for distribution when a Developer ID Installer identity is provided.
 if [ -n "${INSTALLER_ID:-}" ]; then
-  productsign --sign "$INSTALLER_ID" "$PKG" "build/ParleyMicrophone-signed.pkg"
-  echo "signed: $(pwd)/build/ParleyMicrophone-signed.pkg  (notarize before shipping)"
+  productsign --sign "$INSTALLER_ID" "$PKG" "build/CoachMicrophone-signed.pkg"
+  echo "signed: $(pwd)/build/CoachMicrophone-signed.pkg  (notarize before shipping)"
 else
   echo "note: unsigned — double-clicking works locally, but a shipped .pkg needs INSTALLER_ID + notarization."
 fi

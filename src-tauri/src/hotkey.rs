@@ -179,7 +179,7 @@ fn status() -> HotkeyStatus {
 }
 
 /// Start the listener at app launch. Not forced: with neither permission
-/// granted this is a silent no-op, so launch never registers Parley in the TCC
+/// granted this is a silent no-op, so launch never registers Coach in the TCC
 /// panes uninvited. (Harmless under the default Alt+Space selection since the
 /// tap then matches nothing.)
 pub fn init(app: AppHandle) {

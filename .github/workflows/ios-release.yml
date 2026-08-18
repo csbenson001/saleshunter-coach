@@ -75,8 +75,8 @@ jobs:
 
       # The transcript core runs on macOS with no simulator, so it is cheap and
       # there is no reason to ship a build whose segment logic is broken.
-      - name: Test ParleyKit
-        run: swift test --package-path ios/ParleyKit
+      - name: Test CoachKit
+        run: swift test --package-path ios/CoachKit
 
       - name: Override build number
         if: inputs.build_number != ''
@@ -94,8 +94,8 @@ jobs:
         run: |
           tag="${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}"
           want="${tag#ios-v}"
-          got="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' ios/App/Parley/Info.plist)"
-          build="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' ios/App/Parley/Info.plist)"
+          got="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' ios/App/Coach/Info.plist)"
+          build="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' ios/App/Coach/Info.plist)"
           echo "tag=$tag  version=$got  build=$build"
           if [ "$want" != "$got" ]; then
             echo "::error::tag $tag expects CFBundleShortVersionString $want, but the project says $got"
@@ -121,10 +121,10 @@ jobs:
       - name: Archive
         run: |
           cd ios/App
-          xcodebuild -project Parley.xcodeproj -scheme Parley \
+          xcodebuild -project Coach.xcodeproj -scheme Coach \
             -configuration Release \
             -destination 'generic/platform=iOS' \
-            -archivePath "$RUNNER_TEMP/Parley.xcarchive" \
+            -archivePath "$RUNNER_TEMP/Coach.xcarchive" \
             -allowProvisioningUpdates \
             -authenticationKeyPath "$RUNNER_TEMP/asc/AuthKey.p8" \
             -authenticationKeyID "${{ secrets.APPLE_API_KEY }}" \
@@ -135,7 +135,7 @@ jobs:
         run: |
           cd ios/App
           xcodebuild -exportArchive \
-            -archivePath "$RUNNER_TEMP/Parley.xcarchive" \
+            -archivePath "$RUNNER_TEMP/Coach.xcarchive" \
             -exportOptionsPlist ExportOptions.plist \
             -exportPath "$RUNNER_TEMP/export" \
             -allowProvisioningUpdates \
@@ -148,15 +148,15 @@ jobs:
       - name: Collect dSYMs
         if: always()
         run: |
-          if [ -d "$RUNNER_TEMP/Parley.xcarchive/dSYMs" ]; then
-            ditto -c -k --keepParent "$RUNNER_TEMP/Parley.xcarchive/dSYMs" "$RUNNER_TEMP/dSYMs.zip"
+          if [ -d "$RUNNER_TEMP/Coach.xcarchive/dSYMs" ]; then
+            ditto -c -k --keepParent "$RUNNER_TEMP/Coach.xcarchive/dSYMs" "$RUNNER_TEMP/dSYMs.zip"
           fi
 
       - name: Upload build artifacts
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: parley-ios-${{ github.run_number }}
+          name: saleshunter-coach-ios-${{ github.run_number }}
           path: |
             ${{ runner.temp }}/export/*.ipa
             ${{ runner.temp }}/dSYMs.zip

@@ -9,7 +9,7 @@
 
 import { isTauri } from "../tauriEvents";
 
-const PREFIX = "parley:speakers:";
+const PREFIX = "saleshunter-coach:speakers:";
 
 /** Deterministic 32-bit FNV-1a hash → hex (same as the analysis cache). */
 function fnv1a(s: string): string {
@@ -68,7 +68,7 @@ export function writeSpeakerNames(
   }
 }
 
-/** Drop every cached speaker-name set (all `parley:speakers:*` entries). */
+/** Drop every cached speaker-name set (all `saleshunter-coach:speakers:*` entries). */
 export function clearSpeakerNamesCache(): number {
   let removed = 0;
   try {

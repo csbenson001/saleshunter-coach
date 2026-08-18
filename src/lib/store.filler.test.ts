@@ -33,11 +33,6 @@ describe("live filler-sound counting (upsertSegment)", () => {
     expect(useStore.getState().filledPauseCount).toBe(2);
   });
 
-  it("counts Mandarin hesitations the same as English", () => {
-    useStore.getState().upsertSegment(seg({ id: "a", source: "me", text: "嗯我覺得呃這樣" }));
-    expect(useStore.getState().filledPauseCount).toBe(2);
-  });
-
   it("does not double-count across a rewrite that drops a filler", () => {
     const up = useStore.getState().upsertSegment;
     up(seg({ id: "a", source: "me", isFinal: false, text: "um uh" })); // +2

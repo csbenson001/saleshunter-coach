@@ -13,7 +13,7 @@ plugins {
 // of precedence, environment variables (how CI passes them) then local.properties
 // (how a maintainer keeps them off the command line). Nothing is ever committed.
 //
-// Parley is open source, so the common case is a contributor with no keystore at
+// Coach is open source, so the common case is a contributor with no keystore at
 // all. That must not break the build: when the settings are absent we simply do
 // not create the signing config, and `assembleRelease`/`bundleRelease` produce an
 // unsigned artifact — a warning, never a configuration-time failure.
@@ -28,12 +28,12 @@ fun signingSetting(envName: String, propertyName: String): String? =
         ?.trim()
         ?.takeIf { it.isNotEmpty() }
 
-val uploadKeystorePath = signingSetting("PARLEY_UPLOAD_KEYSTORE", "parley.upload.keystore")
+val uploadKeystorePath = signingSetting("COACH_UPLOAD_KEYSTORE", "saleshunter-coach.upload.keystore")
 val uploadKeystorePassword =
-    signingSetting("PARLEY_UPLOAD_KEYSTORE_PASSWORD", "parley.upload.keystore.password")
-val uploadKeyAlias = signingSetting("PARLEY_UPLOAD_KEY_ALIAS", "parley.upload.key.alias")
+    signingSetting("COACH_UPLOAD_KEYSTORE_PASSWORD", "saleshunter-coach.upload.keystore.password")
+val uploadKeyAlias = signingSetting("COACH_UPLOAD_KEY_ALIAS", "coach.upload.key.alias")
 val uploadKeyPassword =
-    signingSetting("PARLEY_UPLOAD_KEY_PASSWORD", "parley.upload.key.password")
+    signingSetting("COACH_UPLOAD_KEY_PASSWORD", "coach.upload.key.password")
 
 // Relative paths resolve against `android/`; absolute paths (what CI writes into
 // $RUNNER_TEMP) pass through untouched.
@@ -50,14 +50,14 @@ if (!uploadSigningReady) {
     // contributor running `assembleDebug` has no reason to hear about this.
     val reason = when {
         uploadKeystorePath == null ->
-            "PARLEY_UPLOAD_KEYSTORE is not set (env or local.properties `parley.upload.keystore`)"
+            "COACH_UPLOAD_KEYSTORE is not set (env or local.properties `saleshunter-coach.upload.keystore`)"
         uploadKeystoreFile?.isFile != true ->
             "keystore file not found at ${uploadKeystoreFile?.absolutePath}"
         else ->
             "missing " + listOfNotNull(
-                "PARLEY_UPLOAD_KEYSTORE_PASSWORD".takeIf { uploadKeystorePassword == null },
-                "PARLEY_UPLOAD_KEY_ALIAS".takeIf { uploadKeyAlias == null },
-                "PARLEY_UPLOAD_KEY_PASSWORD".takeIf { uploadKeyPassword == null },
+                "COACH_UPLOAD_KEYSTORE_PASSWORD".takeIf { uploadKeystorePassword == null },
+                "COACH_UPLOAD_KEY_ALIAS".takeIf { uploadKeyAlias == null },
+                "COACH_UPLOAD_KEY_PASSWORD".takeIf { uploadKeyPassword == null },
             ).joinToString(", ")
     }
     gradle.taskGraph.whenReady {
@@ -66,21 +66,21 @@ if (!uploadSigningReady) {
         }
         if (buildingRelease) {
             logger.warn(
-                "\n[parley] Release artifacts will be UNSIGNED: $reason." +
-                    "\n[parley] This is expected for contributors without the upload key; the" +
-                    "\n[parley] output cannot be installed on a device or uploaded to Play." +
-                    "\n[parley] See android/RELEASING.md → \"Signing setup\".\n",
+                "\n[coach] Release artifacts will be UNSIGNED: $reason." +
+                    "\n[coach] This is expected for contributors without the upload key; the" +
+                    "\n[coach] output cannot be installed on a device or uploaded to Play." +
+                    "\n[coach] See android/RELEASING.md → \"Signing setup\".\n",
             )
         }
     }
 }
 
 android {
-    namespace = "com.pathors.parley"
+    namespace = "com.saleshunter.coach"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.pathors.parley"
+        applicationId = "com.saleshunter.coach"
         // minSdk 29: MediaMuxer OGG output + MediaCodec Opus encoder both require API 29.
         minSdk = 29
         targetSdk = 35
@@ -129,7 +129,7 @@ android {
 }
 
 dependencies {
-    implementation(project(":parleykit"))
+    implementation(project(":coachkit"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)

@@ -74,8 +74,8 @@ async function importRecording(folderId: string | null): Promise<void> {
  * in two windows.
  */
 export function LibraryScreen({ tree }: Readonly<{ tree: LibraryTree }>) {
-  const { t, language } = useI18n();
-  const locale = language === "en" ? "en-US" : "zh-TW";
+  const { t } = useI18n();
+  const locale = "en-US";
   const selection = useStore((s) => s.librarySelection);
 
   const [entries, setEntries] = useState<HistoryCardItem[] | null>(null);

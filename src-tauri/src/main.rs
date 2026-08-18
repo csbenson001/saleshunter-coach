@@ -2,5 +2,5 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 fn main() {
-    parley_lib::run()
+    saleshunter_coach_lib::run()
 }
