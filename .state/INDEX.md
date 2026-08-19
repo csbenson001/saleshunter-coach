@@ -2,22 +2,22 @@
 
 **This file is the entry point. Read it first, every session, before doing anything else.**
 
-Last updated: 2026-08-19 · main @ `72a00bc` · **COLD — see below before committing anything**
+Last updated: 2026-08-19 · main @ `72a00bc` · **mobile ACTIVE, desktop cold — read below**
 
 ---
 
-## Status: cold, deliberately
+## Status: mixed — mobile is ACTIVE, desktop is cold
 
-On 2026-08-19 Chris chose the Nexeo field pilot (`sales-hunter-live-app` +
-`saleshunter-revenue`) for the next two weeks. **This repo and
-`saleshunter-platform` receive no feature work until that pilot closes.**
+**The iOS and Android apps are now the WeFlow-parity mobile base.** Decided
+2026-08-19 after reading WeFlow's actual sign-in flow off screenshots of their
+shipping app. This repo's native apps already implement that flow structurally —
+see [decisions.md](decisions.md), entry 2026-08-19 (mobile).
 
-Cold is not dead. The reasoning, and what would flip it back on, is in
-`saleshunter-revenue/.state/decisions.md`, entry 2026-08-19.
+**The Tauri desktop app stays cold** until the Nexeo pilot closes. Same as before.
 
-The three fixes in [risks.md](risks.md) are the exception — they are
-customer-facing falsehoods in a public repo and should be closed *before* the
-freeze, not after.
+The three customer-facing falsehoods in [risks.md](risks.md) are now urgent
+rather than merely open: shipping mobile work on top of a README that points
+downloads at upstream is not acceptable.
 
 ---
 
