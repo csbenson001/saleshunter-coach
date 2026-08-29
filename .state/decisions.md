@@ -6,6 +6,24 @@ Append-only. Newest first.
 
 ## 2026-08-19 (mobile) — The native apps are the WeFlow-parity mobile base
 
+> **SUPERSEDED 2026-08-29** by `sales-hunter-live-app/.state/decisions.md`,
+> entry 2026-08-29. WeFlow demoed their live product to Nexeo on 2026-08-26 and
+> their CEO stated that the mobile app does not write structured CRM fields —
+> it produces an AI summary, "almost like a note." Parity is a lower bar than
+> this entry assumed, `expo-web-browser` gives Expo the same
+> `ASWebAuthenticationSession` / Custom Tabs primitive in a few lines, and the
+> differentiated half lives only in the Expo app. **The Expo app is the mobile
+> base. `ios/` and `android/` return to cold.**
+>
+> **What survives:** everything below about WeFlow's *auth* flow — server-side
+> code exchange against their own origin, three scopes, org-keyed entitlement
+> gate — and both deliberate departures. Those are carried forward into
+> `sales-hunter-live-app/docs/superpowers/specs/2026-08-29-weflow-parity-mobile-design.md` §4.
+>
+> **What does not:** "the delta is small… port the Expo app's extraction
+> verifier, confirm gate and idempotency ledger across." The port runs the
+> other way, and it does not run at all.
+
 **Supersedes the consolidation plan's "delete parley mobile" recommendation.**
 
 Chris installed WeFlow's shipping app and captured its sign-in flow. Read off

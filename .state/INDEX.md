@@ -2,22 +2,30 @@
 
 **This file is the entry point. Read it first, every session, before doing anything else.**
 
-Last updated: 2026-08-19 · main @ `72a00bc` · **mobile ACTIVE, desktop cold — read below**
+Last updated: 2026-08-29 · main @ `72a00bc` · **whole repo cold — mobile reversed 2026-08-29**
 
 ---
 
-## Status: mixed — mobile is ACTIVE, desktop is cold
+## Status: cold — mobile and desktop both
 
-**The iOS and Android apps are now the WeFlow-parity mobile base.** Decided
-2026-08-19 after reading WeFlow's actual sign-in flow off screenshots of their
-shipping app. This repo's native apps already implement that flow structurally —
-see [decisions.md](decisions.md), entry 2026-08-19 (mobile).
+**Reversed 2026-08-29.** From 2026-08-19 this file said the iOS and Android apps
+were the WeFlow-parity mobile base. WeFlow then demoed their live product to
+Nexeo on 2026-08-26, and their CEO said the mobile app does not write structured
+CRM fields — it writes an AI summary, "almost like a note." Parity is a lower bar
+than that decision assumed; `expo-web-browser` gives Expo the same
+`ASWebAuthenticationSession` / Custom Tabs primitive; and the differentiated half
+(span verifier, confirm gate, idempotency ledger, `ReviewStage.tsx`) exists only
+in the Expo app.
 
-**The Tauri desktop app stays cold** until the Nexeo pilot closes. Same as before.
+**`sales-hunter-live-app` is the mobile base. `ios/` and `android/` are cold
+again.** See [decisions.md](decisions.md), entry 2026-08-19 (mobile), now carrying
+a supersede box, and `sales-hunter-live-app/.state/decisions.md` 2026-08-29.
 
-The three customer-facing falsehoods in [risks.md](risks.md) are now urgent
-rather than merely open: shipping mobile work on top of a README that points
-downloads at upstream is not acceptable.
+**The Tauri desktop app stays cold** until the Nexeo pilot closes. Unchanged.
+
+The three customer-facing falsehoods in [risks.md](risks.md) remain the only
+work this repo takes: a README pointing downloads at upstream is not acceptable
+whether or not anything here is shipping.
 
 ---
 
