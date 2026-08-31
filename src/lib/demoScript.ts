@@ -2,10 +2,18 @@ import { useStore } from "./store";
 import type { Source } from "./types";
 
 /**
- * M0 development stand-in for the real Soniox pipeline. It fakes a back-and-forth
- * conversation, emitting partial segments that grow word-by-word and then settle
- * to final — exercising the same `upsertSegment` path the Rust transcript events
- * will use in M1. Replace/disable once the realtime websocket is wired up.
+ * The DEMO SCRIPT. A canned six-line conversation for showing the app without a
+ * microphone — demos, screenshots, walkthroughs.
+ *
+ * It is NOT a fallback. It runs only when Settings.demoScript is explicitly on.
+ * It used to run automatically whenever no transcription key was configured,
+ * which meant the app could sit in a real meeting playing a script while the
+ * screen said LIVE — the operator would only find out afterwards, when there
+ * was nothing to review. `meeting/start.ts` now refuses to start instead.
+ *
+ * It emits partial segments that grow word by word and then settle, through the
+ * same `upsertSegment` path real transcript events use, so what a demo shows is
+ * shaped like the real thing.
  */
 
 const SCRIPT: { source: Source; speaker: number; text: string }[] = [
@@ -19,8 +27,8 @@ const SCRIPT: { source: Source; speaker: number; text: string }[] = [
 
 let timer: ReturnType<typeof setTimeout> | null = null;
 
-export function startMockStream() {
-  stopMockStream();
+export function startDemoScript() {
+  stopDemoScript();
   const { meetingStartedAt } = useStore.getState();
   const base = meetingStartedAt ?? Date.now();
   let line = 0;
@@ -74,7 +82,7 @@ export function startMockStream() {
   timer = setTimeout(emitLine, 600);
 }
 
-export function stopMockStream() {
+export function stopDemoScript() {
   if (timer) {
     clearTimeout(timer);
     timer = null;

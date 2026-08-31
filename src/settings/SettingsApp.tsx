@@ -672,6 +672,25 @@ export function SettingsApp() {
             <Field label={t("settings.transcription.speakerModel")}>
               <DiarizeModelField />
             </Field>
+
+            {/* Sits with transcription because that is what it replaces. Off by
+                default, and nothing turns it on for you — the app refuses to
+                start rather than falling back to it. */}
+            <Field label={t("settings.demoScript.title")}>
+              <div className="flex max-w-xl flex-col gap-2 rounded-lg border p-3">
+                <label className="flex items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    className="size-3.5 accent-primary"
+                    checked={settings.demoScript}
+                    disabled={recording}
+                    onChange={(e) => patch({ demoScript: e.target.checked })}
+                  />
+                  {t("settings.demoScript.title")}
+                </label>
+                <p className="text-[11px] text-muted-foreground">{t("settings.demoScript.desc")}</p>
+              </div>
+            </Field>
             <Field label={t("settings.transcription.microphone")}>
               <div className="flex max-w-sm flex-col gap-2">
                 <Select

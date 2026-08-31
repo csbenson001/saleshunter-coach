@@ -2,7 +2,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { toast } from "sonner";
 import { useStore } from "../store";
 import { STT_BY_ID, sttApiKey, sttRelayUrl } from "../transcription/providers";
-import { startMockStream } from "../mockStream";
+import { startDemoScript } from "../demoScript";
 import { isTauri } from "../tauriEvents";
 import { translate, type TranslationKey } from "../../i18n/messages";
 import type { Settings } from "../types";
@@ -40,15 +40,29 @@ async function start(): Promise<void> {
 
   if (useRealPipeline) {
     await openCaptureSession(settings, sttKey);
+  } else if (settings.demoScript) {
+    // Explicitly asked for. Announced every time: a demo that looks identical
+    // to a real recording is the thing that gets shown in a real meeting.
+    log.info("meeting: start (demo script, explicitly enabled)");
+    startDemoScript();
+    toast.warning(t("meeting.demo.running"));
   } else if (settings.transcriptionProvider === "parley") {
-    // Hosted STT selected but no usable cloud session — never fake it with a
-    // mock transcript; tell the user to sign in and back out of "recording".
+    // Hosted transcription selected but no usable session — tell the user to
+    // sign in and back out of "recording".
     log.info("meeting: start blocked (saleshunter-coach, no session)");
     useStore.getState().stopMeeting();
     toast.error(t("meeting.error.signin"));
   } else {
-    log.info("meeting: start (mock stream)");
-    startMockStream();
+    // The important change. This branch used to play the demo script silently,
+    // so the app could show LIVE through a whole customer meeting and record
+    // nothing — discovered only afterwards, when there was nothing to review.
+    // Refusing is the honest failure: it costs one meeting's setup, and the
+    // alternative costs the meeting.
+    log.info("meeting: start blocked (no transcription key)", {
+      provider: settings.transcriptionProvider,
+    });
+    useStore.getState().stopMeeting();
+    toast.error(t("meeting.error.nokey"));
   }
 }
 

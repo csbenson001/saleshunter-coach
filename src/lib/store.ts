@@ -138,6 +138,8 @@ const DEFAULT_SETTINGS: Settings = {
   deepgramApiKey: "",
   assemblyaiApiKey: "",
   inputDevice: "",
+  // Never defaulted on. See Settings.demoScript.
+  demoScript: false,
   // Recordings analyze themselves as they always have; turning this off hands
   // analysis to an external AI over MCP. See Settings.autoStudyAnalysis.
   autoStudyAnalysis: true,

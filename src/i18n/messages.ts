@@ -590,6 +590,13 @@ export const en = {
   "meeting.error.connect": "Couldn't reach the transcription service. Check your connection and retry.",
   "meeting.error.capture": "No audio source could be started (microphone / system audio). Check permissions and retry.",
   "meeting.error.signin": "Sign in to use SalesHunter Coach hosted transcription.",
+  "settings.demoScript.title": "Play the demo script instead of listening",
+  "settings.demoScript.desc":
+    "For demos and screenshots. Plays a canned sales conversation instead of your microphone, and says so on screen while it runs. Nothing is recorded. Leave this off for real meetings.",
+  "meeting.error.nokey":
+    "No transcription key is set, so nothing would be recorded. Add a Soniox, Deepgram or AssemblyAI key in Settings — or turn on the demo script if you are demonstrating.",
+  "meeting.demo.running":
+    "Demo script running — this is a canned conversation, not your microphone.",
   "meeting.warning.systemAudio": "No system audio is coming in — the other party won't be transcribed. Grant \"System Audio Recording\" in Settings › Permissions, then restart the meeting.",
   "meeting.warning.systemAudioBanner": "Only your mic is being recorded — the other party won't appear in the transcript (no system audio; usually the \"System Audio Recording\" permission is missing).",
   "common.dismiss": "Dismiss",

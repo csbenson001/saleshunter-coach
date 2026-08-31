@@ -304,6 +304,14 @@ export interface Settings {
   assemblyaiApiKey: string;
   /** Microphone input device name; empty = system default. */
   inputDevice: string;
+  /**
+   * Play the canned demo conversation instead of listening to a microphone.
+   *
+   * Off by default and never turned on automatically. This exists for demos and
+   * screenshots; it previously ran whenever no transcription key was set, which
+   * let the app show LIVE in a real meeting while replaying a script.
+   */
+  demoScript: boolean;
   /** Master switch for the study/replay auto-analysis pipeline (findings →
    *  action items → brief → delivery). Off → a recording stays
    *  UNANALYZED so an external AI can own the analysis and write it back over

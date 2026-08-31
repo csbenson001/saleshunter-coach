@@ -8,7 +8,7 @@ import type { Settings as AppSettings } from "../lib/types";
 import { log } from "../lib/log";
 import { sttApiKey } from "../lib/transcription/providers";
 import { toast } from "sonner";
-import { stopMockStream } from "../lib/mockStream";
+import { stopDemoScript } from "../lib/demoScript";
 import { isTauri } from "../lib/tauriEvents";
 import { beginMeeting } from "../lib/meeting/start";
 import { openSettings } from "../lib/nav";
@@ -602,7 +602,7 @@ export function TitleBar({ fullscreen = false }: Readonly<{ fullscreen?: boolean
           setFinalizingMeeting(false);
         }
       } else {
-        stopMockStream();
+        stopDemoScript();
       }
     });
   }
@@ -637,7 +637,7 @@ export function TitleBar({ fullscreen = false }: Readonly<{ fullscreen?: boolean
           log.error("meeting: cancel failed", { error: String(e) });
         }
       } else {
-        stopMockStream();
+        stopDemoScript();
       }
     });
   }
