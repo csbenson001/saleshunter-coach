@@ -73,6 +73,24 @@ for (const r of results) {
 const reportPath = path.resolve(process.cwd(), "PROVING_GROUND_REPORT.md");
 fs.writeFileSync(reportPath, markdownLines.join("\n"), "utf-8");
 
+// Optional: Post proof receipt to Factory Control Plane if endpoint is active
+try {
+  const factoryUrl = process.env.SALESHUNTER_FACTORY_URL || "http://localhost:3000/api/factory/status";
+  fetch(factoryUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      action: "battleReceipt",
+      repo: "saleshunter-coach",
+      allPassed,
+      resultsCount: results.length,
+      timestamp: new Date().toISOString()
+    })
+  }).catch(() => {}); // non-blocking fallback
+} catch {
+  // silent fallback when offline
+}
+
 console.log("================================================================================");
 console.log(`Proof dossier written to: ${reportPath}`);
 if (allPassed) {
