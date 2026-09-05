@@ -20,6 +20,7 @@ nav.querySelectorAll(".nav__links a").forEach((a) =>
 );
 
 // Scroll reveal
+document.documentElement.classList.add("js");
 const reveals = document.querySelectorAll(".reveal");
 if ("IntersectionObserver" in window) {
   const io = new IntersectionObserver(
@@ -55,6 +56,8 @@ document.querySelectorAll(".copy").forEach((btn) => {
       /* clipboard unavailable — no-op */
     }
   });
+});
+
 // Pricing monthly / annual toggle
 const pricingToggle = document.getElementById("pricing-toggle");
 const monthlyLabel = document.getElementById("monthly-label");

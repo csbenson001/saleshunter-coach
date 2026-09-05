@@ -701,9 +701,13 @@ img { max-width: 100%; display: block; }
 .faq-a { font-size: 14px; color: var(--muted); line-height: 1.6; margin: 0; }
 .faq-a strong { color: var(--text); }
 
-/* ---------- Scroll reveal ---------- */
-.reveal { opacity: 0; transform: translateY(22px); transition: opacity 0.6s ease, transform 0.6s ease; }
-.reveal.is-in { opacity: 1; transform: none; }
+/* ---------- Scroll reveal (progressive enhancement) ---------- */
+.reveal { opacity: 1; transform: none; }
+html.js .reveal { opacity: 0; transform: translateY(22px); transition: opacity 0.6s ease, transform 0.6s ease; }
+html.js .reveal.is-in { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) {
+  .reveal, html.js .reveal { opacity: 1 !important; transform: none !important; transition: none !important; }
+}
 
 /* ---------- Responsive ---------- */
 @media (max-width: 1100px) {
