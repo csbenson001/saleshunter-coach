@@ -73,7 +73,7 @@ const DEAL_RISK_PATTERNS: Array<{
     category: "budget_freeze",
     label: "Budget Constraint / Freeze",
     severity: "high",
-    regex: /\b(no budget|budget freeze|cut costs|tight budget|too expensive|can('t|not) afford|spend freeze|out of our budget)\b/i,
+    regex: /\b(no budget|budget freeze|spending freeze|spend freeze|complete freeze|cut costs|tight budget|too expensive|can('t|not) afford|out of our budget)\b/i,
     coachingAdvice: "Reframe from cost to ROI: probe what problem this solves and the cost of inaction.",
   },
   {

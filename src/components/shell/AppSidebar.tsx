@@ -12,6 +12,7 @@ import {
   Trash2,
   UsersRound,
   Sparkles,
+  Flame,
 } from "lucide-react";
 import { buildOwnershipIndex, countByNode, nodeKey, type LibraryNode } from "../../lib/library/scope";
 import { beginMeeting } from "../../lib/meeting/start";
@@ -19,6 +20,7 @@ import { useStore, type LibrarySelection } from "../../lib/store";
 import { useI18n } from "../../i18n";
 import type { LibraryTree } from "./useLibraryTree";
 import { ProUpgradeModal } from "../sales/ProUpgradeModal";
+import { ProvingGroundModal } from "../sales/ProvingGroundModal";
 
 /**
  * The one tree (issue #195).
@@ -46,6 +48,7 @@ export function AppSidebar({ tree }: Readonly<{ tree: LibraryTree }>) {
   // navigation, not a permanently-open data-entry form.
   const [newFolderOpen, setNewFolderOpen] = useState(false);
   const [upgradeOpen, setUpgradeOpen] = useState(false);
+  const [provingGroundOpen, setProvingGroundOpen] = useState(false);
 
   // Folder facts + every node's count in one pass. The grid filters with the
   // SAME index and the SAME rule (lib/library/scope), so "和運租車 · 8" is a
@@ -218,8 +221,24 @@ export function AppSidebar({ tree }: Readonly<{ tree: LibraryTree }>) {
         </>
       )}
 
-      {/* SalesHunter Pro Conversion Banner */}
-      <div className="mt-auto pt-3">
+      {/* Battlefield Proving Ground & Pro Upgrade */}
+      <div className="mt-auto space-y-2 pt-3">
+        <button
+          type="button"
+          onClick={() => setProvingGroundOpen(true)}
+          className="flex w-full items-center gap-2 rounded-lg border border-amber-500/30 bg-gradient-to-r from-amber-950/30 to-slate-900/60 p-2.5 text-left transition-all hover:border-amber-500/60 hover:bg-amber-950/50 shadow-sm"
+        >
+          <Flame className="size-4 shrink-0 text-amber-400" />
+          <div className="min-w-0 flex-1">
+            <div className="text-xs font-bold text-white flex items-center justify-between">
+              <span>Proving Ground</span>
+              <span className="text-[9px] font-mono text-amber-400 bg-amber-950/80 px-1 rounded border border-amber-500/30">Prove It</span>
+            </div>
+            <div className="text-[10px] text-amber-300/80">Battlefield proof simulations</div>
+          </div>
+        </button>
+
+        {/* SalesHunter Pro Conversion Banner */}
         <button
           type="button"
           onClick={() => setUpgradeOpen(true)}
@@ -237,6 +256,11 @@ export function AppSidebar({ tree }: Readonly<{ tree: LibraryTree }>) {
         isOpen={upgradeOpen}
         onClose={() => setUpgradeOpen(false)}
         featureTrigger="Sidebar Navigation"
+      />
+
+      <ProvingGroundModal
+        isOpen={provingGroundOpen}
+        onClose={() => setProvingGroundOpen(false)}
       />
     </nav>
   );

@@ -19,8 +19,9 @@ import { CrmExportModal } from "../sales/CrmExportModal";
 import { SnippetCardExporter } from "../sales/SnippetCardExporter";
 import { ProUpgradeModal } from "../sales/ProUpgradeModal";
 import { RoleplaySimulator } from "../sales/RoleplaySimulator";
+import { ProvingGroundModal } from "../sales/ProvingGroundModal";
 import { type TranscriptUtterance } from "../../lib/sales/scorecard";
-import { Mail, Database, Share2, Sparkles } from "lucide-react";
+import { Mail, Database, Share2, Sparkles, Flame } from "lucide-react";
 
 /** The report's section anchors (order = page order = TOC-rail order). */
 const SECTIONS = [
@@ -75,6 +76,7 @@ function ReportPage() {
   const [crmExportOpen, setCrmExportOpen] = useState(false);
   const [snippetOpen, setSnippetOpen] = useState(false);
   const [upgradeOpen, setUpgradeOpen] = useState(false);
+  const [provingGroundOpen, setProvingGroundOpen] = useState(false);
 
   const segments = useStore((s) => s.segments) || [];
   const replayName = useStore((s) => s.replay?.name);
@@ -147,6 +149,15 @@ function ReportPage() {
             >
               <Share2 className="size-3.5 text-sky-400" />
               Share Snippet
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setProvingGroundOpen(true)}
+              className="h-8 gap-1.5 text-xs border-amber-500/40 text-amber-300 hover:bg-amber-950/30"
+            >
+              <Flame className="size-3.5 text-amber-400" />
+              Proving Ground
             </Button>
             <Button
               size="sm"
@@ -228,6 +239,11 @@ function ReportPage() {
         isOpen={upgradeOpen}
         onClose={() => setUpgradeOpen(false)}
         featureTrigger="Post-Meeting Revenue Intelligence"
+      />
+
+      <ProvingGroundModal
+        isOpen={provingGroundOpen}
+        onClose={() => setProvingGroundOpen(false)}
       />
     </div>
   );
