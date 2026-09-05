@@ -27,6 +27,8 @@ export const CONCESSION_TRADE_MATRIX: ConcessionDemand[] = [
     id: "concession_discount",
     category: "discount",
     buyerPhrases: [
+      "discount",
+      "% off",
       "give us a discount",
       "need 20% off",
       "can you do 15%",
@@ -35,6 +37,8 @@ export const CONCESSION_TRADE_MATRIX: ConcessionDemand[] = [
       "sharpen your pencil",
       "match competitor pricing",
       "drop the price",
+      "price reduction",
+      "cheaper",
     ],
     repWarning: "🚨 PROCUREMENT DISCOUNT BLUFF: Do not concede list price for free. Demand contractual commitments.",
     recommendedTradeDemands: [
@@ -168,4 +172,9 @@ export function detectConcessionDemands(transcriptText: string): ConcessionDetec
     latencySeconds: 0.1,
     spineRating: "Neutral",
   };
+}
+
+export function matchConcessionTrade(transcriptText: string): ConcessionDemand | null {
+  const res = detectConcessionDemands(transcriptText);
+  return res.detected && res.concession ? res.concession : null;
 }

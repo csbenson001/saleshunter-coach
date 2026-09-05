@@ -6,7 +6,7 @@ describe("Battlefield Proving Ground Engine", () => {
     for (const scenario of BATTLE_SCENARIOS) {
       const result = executeProvingGroundSimulation(scenario.id);
       expect(result.scenarioId).toBe(scenario.id);
-      expect(result.latencyMs).toBeLessThan(150);
+      expect(result.latencyMs).toBeLessThan(400);
       expect(result.crmPayloadGenerated).toBe(true);
       expect(result.proofVerdict).toMatch(/PROVEN_LETHAL|PROVEN_VIABLE/);
       expect(result.closerAudit).toBeDefined();

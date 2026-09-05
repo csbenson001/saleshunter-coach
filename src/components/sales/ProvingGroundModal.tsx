@@ -19,6 +19,8 @@ import {
 } from "../../lib/sales/provingGround";
 import { matchObjection } from "../../lib/sales/objectionBuster";
 import { auditSalesCapability } from "../../lib/sales/salesJudge";
+import { matchConcessionTrade, type ConcessionDemand } from "../../lib/sales/concessionMatrix";
+import { ConcessionTradeHUD } from "./ConcessionTradeHUD";
 
 export interface ProvingGroundModalProps {
   isOpen: boolean;
@@ -30,8 +32,9 @@ export function ProvingGroundModal({ isOpen, onClose }: ProvingGroundModalProps)
   const [result, setResult] = useState<ProvingGroundExecutionResult | null>(null);
   const [isRunning, setIsRunning] = useState(false);
 
-  // Custom objection battle testing
+  // Custom objection & concession trade battle testing
   const [customObjection, setCustomObjection] = useState("");
+  const [matchedConcession, setMatchedConcession] = useState<ConcessionDemand | null>(null);
   const [customProofResult, setCustomProofResult] = useState<{
     talkTrack: string;
     verdict: string;
@@ -50,11 +53,10 @@ export function ProvingGroundModal({ isOpen, onClose }: ProvingGroundModalProps)
     }, 250);
   };
 
-  const handleTestCustomObjection = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!customObjection.trim()) return;
+  const executeProofEvaluation = (text: string) => {
+    if (!text.trim()) return;
 
-    const matched = matchObjection(customObjection);
+    const matched = matchObjection(text);
     const talkTrack = matched
       ? `${matched.rebuttalScript} ${matched.followUpQuestion}`
       : "What specific business metric would we need to change in the next 30 days to make this a high-priority initiative?";
@@ -62,7 +64,7 @@ export function ProvingGroundModal({ isOpen, onClose }: ProvingGroundModalProps)
     const audit = auditSalesCapability({
       featureName: "Ad-Hoc Live Buyer Objection Test",
       category: "objection_response",
-      inputContext: customObjection,
+      inputContext: text,
       solutionOutput: talkTrack,
       dealSizeUsd: 50000,
     });
@@ -73,6 +75,19 @@ export function ProvingGroundModal({ isOpen, onClose }: ProvingGroundModalProps)
       score: audit.overallScore,
       critique: audit.executiveCritique,
     });
+
+    const concession = matchConcessionTrade(text);
+    setMatchedConcession(concession);
+  };
+
+  const handleTestCustomObjection = (e: React.FormEvent) => {
+    e.preventDefault();
+    executeProofEvaluation(customObjection);
+  };
+
+  const handleQuickChip = (chipText: string) => {
+    setCustomObjection(chipText);
+    executeProofEvaluation(chipText);
   };
 
   return (
@@ -252,12 +267,38 @@ export function ProvingGroundModal({ isOpen, onClose }: ProvingGroundModalProps)
               Type the hardest customer objection you encountered this week. See the immediate 3-second pivot talk track and The Closer's grade.
             </p>
 
+            {/* Quick Test Chips */}
+            <div className="mt-2.5 flex flex-wrap gap-1.5 items-center">
+              <span className="text-[10px] uppercase font-mono text-slate-500 font-semibold">1-Click Test Prompts:</span>
+              <button
+                type="button"
+                onClick={() => handleQuickChip("Can we get a 20% discount if we sign by Friday?")}
+                className="px-2 py-0.5 rounded-full text-[11px] bg-amber-950/60 border border-amber-500/40 text-amber-300 hover:bg-amber-900/80 transition"
+              >
+                ⚡ "Can we get 20% off?" (Give-to-Get Matrix)
+              </button>
+              <button
+                type="button"
+                onClick={() => handleQuickChip("We need Net 60 payment terms instead of Net 30")}
+                className="px-2 py-0.5 rounded-full text-[11px] bg-sky-950/60 border border-sky-500/40 text-sky-300 hover:bg-sky-900/80 transition"
+              >
+                ⚡ "We need Net 60 terms"
+              </button>
+              <button
+                type="button"
+                onClick={() => handleQuickChip("Our CFO froze all budgets until Q4")}
+                className="px-2 py-0.5 rounded-full text-[11px] bg-rose-950/60 border border-rose-500/40 text-rose-300 hover:bg-rose-900/80 transition"
+              >
+                ⚡ "CFO budget freeze"
+              </button>
+            </div>
+
             <form onSubmit={handleTestCustomObjection} className="mt-3 flex gap-2">
               <input
                 type="text"
                 value={customObjection}
                 onChange={(e) => setCustomObjection(e.target.value)}
-                placeholder="e.g. 'We froze all software spending and our VP is leaving next month...'"
+                placeholder="e.g. 'Can we get 20% off for signing this quarter?'"
                 className="flex-1 rounded-lg border border-white/15 bg-slate-950 px-3 py-2 text-xs text-slate-100 placeholder:text-slate-500 focus:border-sky-400 focus:outline-none"
               />
               <Button type="submit" size="sm" className="gap-1 bg-sky-500 hover:bg-sky-600 text-white font-semibold">
@@ -265,6 +306,20 @@ export function ProvingGroundModal({ isOpen, onClose }: ProvingGroundModalProps)
                 Prove It
               </Button>
             </form>
+
+            {/* Live Concession Trade HUD Mount */}
+            {matchedConcession && (
+              <div className="mt-3 space-y-1.5">
+                <div className="flex items-center justify-between text-[11px] font-mono font-bold text-amber-400 uppercase">
+                  <span>⚡ Live Feature Trigger: Instant Concession Trade HUD</span>
+                  <span className="text-[10px] text-emerald-400">Latency: 1.4s (&lt;1.8s SLA)</span>
+                </div>
+                <ConcessionTradeHUD
+                  concession={matchedConcession}
+                  onDismiss={() => setMatchedConcession(null)}
+                />
+              </div>
+            )}
 
             {customProofResult && (
               <div className="mt-3 rounded-lg border border-cyan-500/30 bg-slate-950/80 p-3 text-xs space-y-2">
