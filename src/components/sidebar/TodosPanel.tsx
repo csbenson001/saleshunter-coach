@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { TodoItem } from "../../lib/types";
+import { MeddicMatrix } from "../sales/MeddicMatrix";
+import { ObjectionDrawer } from "../sales/ObjectionDrawer";
 
 /**
  * The live meeting checklist: the agenda rail beside the coach feed. Items are
@@ -79,6 +81,7 @@ export function TodosPanel() {
   const { t } = useI18n();
   const todos = useStore((s) => s.todos);
   const [checking, setChecking] = useState(false);
+  const [sidebarTab, setSidebarTab] = useState<"agenda" | "objections">("agenda");
 
   const done = todos.filter((x) => x.done).length;
 
@@ -102,36 +105,74 @@ export function TodosPanel() {
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <div className="flex items-center gap-2 px-3 py-2 text-[11px] text-muted-foreground">
-        <span className="shrink-0">
-          {todos.length > 0 ? t("todos.doneCount", { done, total: todos.length }) : t("todos.noItems")}
-        </span>
-        <Button
-          variant="outline"
-          size="sm"
-          className="ml-auto h-6 shrink-0 px-2 text-[11px]"
-          disabled={checking || todos.length === 0}
-          onClick={aiUpdate}
-          title={t("todos.aiTitle")}
+      {/* Live Qualification Matrix */}
+      <MeddicMatrix />
+
+      {/* Tab bar for Agenda vs Objection Battlecards */}
+      <div className="flex items-center border-b border-border/40 bg-muted/20 px-2 py-1 gap-1">
+        <button
+          type="button"
+          onClick={() => setSidebarTab("agenda")}
+          className={`px-2 py-0.5 text-xs font-semibold rounded ${
+            sidebarTab === "agenda"
+              ? "bg-background text-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground"
+          }`}
         >
-          <Sparkles className={`size-3 ${checking ? "animate-pulse" : ""}`} />
-          AI
-        </Button>
+          Call Agenda
+        </button>
+        <button
+          type="button"
+          onClick={() => setSidebarTab("objections")}
+          className={`px-2 py-0.5 text-xs font-semibold rounded ${
+            sidebarTab === "objections"
+              ? "bg-background text-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          Objection Buster
+        </button>
       </div>
 
-      <ScrollArea className="min-h-0 flex-1">
-        <div className="flex flex-col gap-1 px-3 pb-3">
-          {todos.length === 0 ? (
-            <p className="px-1 pt-6 text-center text-xs text-muted-foreground">
-              {t("todos.empty")}
-            </p>
-          ) : (
-            todos.map((x) => <TodoRow key={x.id} todo={x} />)
-          )}
-        </div>
-      </ScrollArea>
+      {sidebarTab === "objections" ? (
+        <ScrollArea className="min-h-0 flex-1 p-2">
+          <ObjectionDrawer />
+        </ScrollArea>
+      ) : (
+        <>
+          <div className="flex items-center gap-2 px-3 py-2 text-[11px] text-muted-foreground">
+            <span className="shrink-0">
+              {todos.length > 0 ? t("todos.doneCount", { done, total: todos.length }) : t("todos.noItems")}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              className="ml-auto h-6 shrink-0 px-2 text-[11px]"
+              disabled={checking || todos.length === 0}
+              onClick={aiUpdate}
+              title={t("todos.aiTitle")}
+            >
+              <Sparkles className={`size-3 ${checking ? "animate-pulse" : ""}`} />
+              AI
+            </Button>
+          </div>
 
-      <AddForm />
+          <ScrollArea className="min-h-0 flex-1">
+            <div className="flex flex-col gap-1 px-3 pb-3">
+              {todos.length === 0 ? (
+                <p className="px-1 pt-6 text-center text-xs text-muted-foreground">
+                  {t("todos.empty")}
+                </p>
+              ) : (
+                todos.map((x) => <TodoRow key={x.id} todo={x} />)
+              )}
+            </div>
+          </ScrollArea>
+
+          <AddForm />
+        </>
+      )}
     </div>
   );
 }
+

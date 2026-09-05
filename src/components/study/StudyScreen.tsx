@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Clock, Loader2, MessageCircleQuestion, X } from "lucide-react";
 import { useStore } from "../../lib/store";
 import { hasProviderKey } from "../../lib/ai/settings";
@@ -13,11 +13,22 @@ import { StudyLinkBar } from "./StudyLinkBar";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
+import { CallScorecardPanel } from "../sales/CallScorecardPanel";
+import { FollowUpPackModal } from "../sales/FollowUpPackModal";
+import { CrmExportModal } from "../sales/CrmExportModal";
+import { SnippetCardExporter } from "../sales/SnippetCardExporter";
+import { ProUpgradeModal } from "../sales/ProUpgradeModal";
+import { RoleplaySimulator } from "../sales/RoleplaySimulator";
+import { type TranscriptUtterance } from "../../lib/sales/scorecard";
+import { Mail, Database, Share2, Sparkles } from "lucide-react";
+
 /** The report's section anchors (order = page order = TOC-rail order). */
 const SECTIONS = [
-  { id: "study-brief", key: "study.brief" },
-  { id: "study-actions", key: "actionItems.title" },
-  { id: "study-delivery", key: "study.delivery" },
+  { id: "study-scorecard", label: "Call Scorecard" },
+  { id: "study-brief", label: "Executive Brief" },
+  { id: "study-actions", label: "Action Items" },
+  { id: "study-delivery", label: "Vocal Delivery" },
+  { id: "study-roleplay", label: "AI Practice Room" },
 ] as const;
 
 /**
@@ -59,6 +70,24 @@ function ReportPage() {
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const [activeId, setActiveId] = useState<string>(SECTIONS[0].id);
 
+  // Sales modal states
+  const [followUpOpen, setFollowUpOpen] = useState(false);
+  const [crmExportOpen, setCrmExportOpen] = useState(false);
+  const [snippetOpen, setSnippetOpen] = useState(false);
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
+
+  const segments = useStore((s) => s.segments) || [];
+  const replayName = useStore((s) => s.replay?.name);
+  const replayTitle = replayName || "Sales Meeting";
+  const actionItems = useStore((s) => s.actionItems) || [];
+
+  const utterances = useMemo<TranscriptUtterance[]>(() => {
+    return segments.map((seg) => ({
+      speaker: seg.source === "me" ? "rep" : "customer",
+      text: seg.text,
+    }));
+  }, [segments]);
+
   // The section that owns the viewport: the last heading that has crossed the
   // top edge. Scrolled-to-bottom pins the last section, which may be too short
   // to ever reach the top on its own.
@@ -69,30 +98,73 @@ function ReportPage() {
       const viewportTop = viewport.getBoundingClientRect().top;
       let current: string = SECTIONS[0].id;
       for (const s of SECTIONS) {
-        const el = viewport.querySelector(`#${s.id}`);
-        if (el && el.getBoundingClientRect().top - viewportTop <= 96) current = s.id;
+        const el = document.getElementById(s.id);
+        if (el && el.getBoundingClientRect().top - viewportTop <= 64) {
+          current = s.id;
+        }
       }
-      if (viewport.scrollTop + viewport.clientHeight >= viewport.scrollHeight - 4)
-        current = SECTIONS[SECTIONS.length - 1].id;
       setActiveId(current);
     };
-    onScroll();
     viewport.addEventListener("scroll", onScroll, { passive: true });
     return () => viewport.removeEventListener("scroll", onScroll);
   }, []);
 
-  const jumpTo = (id: string) => {
-    scrollRef.current
-      ?.querySelector(`#${id}`)
-      ?.scrollIntoView({ behavior: "smooth", block: "start" });
-  };
+  const jumpTo = useCallback((id: string) => {
+    const el = document.getElementById(id);
+    el?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, []);
 
   return (
     <div className="relative min-h-0 flex-1">
       <ScrollArea className="h-full">
         <div ref={scrollRef} className="mx-auto max-w-2xl px-6 py-5">
           <StudyLinkBar />
+
+          {/* Quick Revenue & Deal Action Bar */}
+          <div className="mb-6 flex flex-wrap items-center gap-2 rounded-xl border border-sky-500/30 bg-gradient-to-r from-slate-900 via-slate-950 to-slate-900 p-3 shadow-md">
+            <Button
+              size="sm"
+              onClick={() => setFollowUpOpen(true)}
+              className="h-8 gap-1.5 text-xs bg-sky-500 hover:bg-sky-600 text-white font-semibold"
+            >
+              <Mail className="size-3.5" />
+              Follow-Up Pack
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setCrmExportOpen(true)}
+              className="h-8 gap-1.5 text-xs border-white/20 text-slate-200 hover:bg-white/10"
+            >
+              <Database className="size-3.5 text-cyan-400" />
+              Export to CRM
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setSnippetOpen(true)}
+              className="h-8 gap-1.5 text-xs border-white/20 text-slate-200 hover:bg-white/10"
+            >
+              <Share2 className="size-3.5 text-sky-400" />
+              Share Snippet
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => setUpgradeOpen(true)}
+              className="ml-auto h-8 gap-1 text-xs text-sky-400 hover:bg-sky-950/40"
+            >
+              <Sparkles className="size-3" />
+              Pro Features
+            </Button>
+          </div>
+
           <div className="flex flex-col gap-8 pb-10">
+            {/* Feature 6: Call Coaching Scorecard */}
+            <ReportSection id="study-scorecard" title="Call Scorecard & Coaching Analytics">
+              <CallScorecardPanel utterances={utterances} />
+            </ReportSection>
+
             <ReportSection id="study-brief" title={t("study.brief")}>
               <BriefSection onSeek={seek} />
             </ReportSection>
@@ -104,10 +176,59 @@ function ReportPage() {
             <ReportSection id="study-delivery" title={t("study.delivery")}>
               <DeliveryPanel mode="replay" variant="full" />
             </ReportSection>
+
+            {/* Feature 9: AI Practice Room */}
+            <ReportSection id="study-roleplay" title="AI Pitch Practice & Roleplay Drill Room">
+              <RoleplaySimulator />
+            </ReportSection>
           </div>
         </div>
       </ScrollArea>
       <ReportToc activeId={activeId} onJump={jumpTo} />
+
+      {/* Modals */}
+      <FollowUpPackModal
+        isOpen={followUpOpen}
+        onClose={() => setFollowUpOpen(false)}
+        meetingTitle={replayTitle}
+        actionItems={actionItems.map((a) => a.text)}
+      />
+
+      <CrmExportModal
+        isOpen={crmExportOpen}
+        onClose={() => setCrmExportOpen(false)}
+        data={{
+          title: replayTitle,
+          date: new Date().toLocaleDateString(),
+          durationFormatted: "25m",
+          dealHealthScore: 85,
+          executiveSummary: [
+            "Validated prospect conversion bottleneck and in-call objection latency.",
+            "Agreed on 7-day trial evaluation for sales team.",
+          ],
+          actionItems: actionItems.map((a) => a.text),
+          meddicStatus: {
+            Metrics: true,
+            "Economic Buyer": true,
+            "Decision Criteria": true,
+            "Decision Process": false,
+            "Identify Pain": true,
+            Champion: true,
+          },
+        }}
+      />
+
+      <SnippetCardExporter
+        isOpen={snippetOpen}
+        onClose={() => setSnippetOpen(false)}
+        callTitle={replayTitle}
+      />
+
+      <ProUpgradeModal
+        isOpen={upgradeOpen}
+        onClose={() => setUpgradeOpen(false)}
+        featureTrigger="Post-Meeting Revenue Intelligence"
+      />
     </div>
   );
 }
@@ -156,7 +277,7 @@ function ReportToc({
                 s.id === activeId ? "bg-primary" : "bg-transparent"
               }`}
             />
-            {t(s.key)}
+            {s.label}
           </button>
         ))}
       </div>

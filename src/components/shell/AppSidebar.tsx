@@ -11,12 +11,14 @@ import {
   Plus,
   Trash2,
   UsersRound,
+  Sparkles,
 } from "lucide-react";
 import { buildOwnershipIndex, countByNode, nodeKey, type LibraryNode } from "../../lib/library/scope";
 import { beginMeeting } from "../../lib/meeting/start";
 import { useStore, type LibrarySelection } from "../../lib/store";
 import { useI18n } from "../../i18n";
 import type { LibraryTree } from "./useLibraryTree";
+import { ProUpgradeModal } from "../sales/ProUpgradeModal";
 
 /**
  * The one tree (issue #195).
@@ -43,6 +45,7 @@ export function AppSidebar({ tree }: Readonly<{ tree: LibraryTree }>) {
   // R8a: creation lives behind the section header's ＋ — the tree is
   // navigation, not a permanently-open data-entry form.
   const [newFolderOpen, setNewFolderOpen] = useState(false);
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
 
   // Folder facts + every node's count in one pass. The grid filters with the
   // SAME index and the SAME rule (lib/library/scope), so "和運租車 · 8" is a
@@ -215,6 +218,26 @@ export function AppSidebar({ tree }: Readonly<{ tree: LibraryTree }>) {
         </>
       )}
 
+      {/* SalesHunter Pro Conversion Banner */}
+      <div className="mt-auto pt-3">
+        <button
+          type="button"
+          onClick={() => setUpgradeOpen(true)}
+          className="flex w-full items-center gap-2 rounded-lg border border-sky-500/30 bg-gradient-to-r from-sky-950/40 to-slate-900/60 p-2.5 text-left transition-all hover:border-sky-500/60 hover:bg-sky-950/60 shadow-sm"
+        >
+          <Sparkles className="size-4 shrink-0 text-sky-400" />
+          <div className="min-w-0 flex-1">
+            <div className="text-xs font-bold text-white">SalesHunter Pro</div>
+            <div className="text-[10px] text-sky-300/80">Live coaching &amp; MEDDIC</div>
+          </div>
+        </button>
+      </div>
+
+      <ProUpgradeModal
+        isOpen={upgradeOpen}
+        onClose={() => setUpgradeOpen(false)}
+        featureTrigger="Sidebar Navigation"
+      />
     </nav>
   );
 }

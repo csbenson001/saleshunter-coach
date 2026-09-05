@@ -12,6 +12,8 @@ import { MeetingView } from "../MeetingView";
 import { CoachFeed } from "./CoachFeed";
 import { TodosPanel } from "../sidebar/TodosPanel";
 import { FindingsPanel } from "../analysis/FindingsPanel";
+import { DealRiskHud } from "../sales/DealRiskHud";
+import { CompetitorBattlecardBar } from "../sales/CompetitorBattlecardBar";
 
 /**
  * Persistent mic-only warning (⑥): the system-audio tap failing means the
@@ -62,6 +64,8 @@ export function LiveScreen() {
   return (
     <div className="flex min-h-0 flex-1 flex-col">
     <SystemAudioBanner />
+    <DealRiskHud />
+    <CompetitorBattlecardBar />
     <ResizablePanelGroup
       key={layout}
       orientation="horizontal"
