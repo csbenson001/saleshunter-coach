@@ -18,10 +18,16 @@ use super::common::{
     connect_with_headers, drive_session, LevelMeter, SegmentBuilder, TranscribeConfig, LEVEL_EVENT,
     TRANSCRIPT_EVENT,
 };
-use crate::audio::resample::pcm_to_le_bytes;
+use crate::audio::resample::{pcm_to_le_bytes, LinearResampler};
+use crate::audio::TARGET_SAMPLE_RATE;
 
 const OPENAI_RT_URL: &str = "wss://api.openai.com/v1/realtime?intent=transcription";
 const DEFAULT_MODEL: &str = "gpt-4o-transcribe";
+/// OpenAI's GA realtime API refuses anything below 24 kHz, but the whole capture
+/// pipeline (recording, prosody, replay) is built on 16 kHz. Rather than move
+/// TARGET_SAMPLE_RATE and disturb all of that, this provider upsamples its own
+/// leg on the way out. Nothing else in the app sees 24 kHz.
+const OPENAI_RATE_HZ: u32 = 24_000;
 
 #[derive(Deserialize, Default)]
 struct OaiError {
@@ -50,10 +56,7 @@ pub async fn run_session(
 ) -> Result<()> {
     let ws = connect_with_headers(
         OPENAI_RT_URL,
-        &[
-            ("Authorization", format!("Bearer {}", config.api_key)),
-            ("OpenAI-Beta", "realtime=v1".to_string()),
-        ],
+        &[("Authorization", format!("Bearer {}", config.api_key))],
     )
     .await?;
     let (mut write, mut read) = ws.split();
@@ -67,12 +70,19 @@ pub async fn run_session(
     if let Some(lang) = config.language_hints.first() {
         transcription["language"] = json!(lang);
     }
+    // GA shape. The beta `transcription_session.update` was retired along with
+    // the `OpenAI-Beta: realtime=v1` header; the server rejects both outright.
     let setup = json!({
-        "type": "transcription_session.update",
+        "type": "session.update",
         "session": {
-            "input_audio_format": "pcm16",
-            "input_audio_transcription": transcription,
-            "turn_detection": { "type": "server_vad", "silence_duration_ms": 500 }
+            "type": "transcription",
+            "audio": {
+                "input": {
+                    "format": { "type": "audio/pcm", "rate": OPENAI_RATE_HZ },
+                    "transcription": transcription,
+                    "turn_detection": { "type": "server_vad", "silence_duration_ms": 500 }
+                }
+            }
         }
     });
     write.send(Message::Text(setup.to_string())).await?;
@@ -83,12 +93,21 @@ pub async fn run_session(
     // (dead socket) — drive_session reports the latter as a failure.
     let forward = async move {
         let b64 = base64::engine::general_purpose::STANDARD;
+        let mut upsampler = LinearResampler::new(TARGET_SAMPLE_RATE, OPENAI_RATE_HZ);
+        let mut as_f32: Vec<f32> = Vec::new();
+        let mut upsampled: Vec<i16> = Vec::new();
         let drained = loop {
             let Some(chunk) = pcm_rx.recv().await else {
                 break true;
             };
+            // Meter the original 16 kHz chunk — levels feed prosody, which is
+            // 16 kHz everywhere. Only the bytes on the wire are resampled.
             meter.push(&chunk);
-            let bytes = pcm_to_le_bytes(&chunk);
+            as_f32.clear();
+            as_f32.extend(chunk.iter().map(|&s| s as f32 / 32768.0));
+            upsampled.clear();
+            upsampler.process(&as_f32, &mut upsampled);
+            let bytes = pcm_to_le_bytes(&upsampled);
             let audio = b64.encode(&bytes);
             let msg = json!({ "type": "input_audio_buffer.append", "audio": audio });
             if write.send(Message::Text(msg.to_string())).await.is_err() {

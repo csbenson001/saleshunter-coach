@@ -1,5 +1,29 @@
 # Risks
 
+## Vendor APIs the app pins can be retired underneath it
+
+Observed 2026-08-31, live, from `~/Library/Logs/com.saleshunter.coach/saleshunter-coach.log`:
+
+    [stt:me] session ended: The Realtime Beta API is no longer supported.
+                            Please use /v1/realtime for the GA API.
+
+Every OpenAI transcription attempt failed. The app sent `OpenAI-Beta: realtime=v1`
+and a `transcription_session.update` message — both retired when OpenAI took the
+realtime API to GA. The URL was already correct; only the header and the message
+shape were stale. Fixed in `src-tauri/src/transcription/openai.rs`.
+
+**The general risk, which is not fixed:** five of the six transcription providers
+are pinned to a hand-written wire format with no contract test against the live
+vendor. Soniox, Deepgram, AssemblyAI and Gemini can each break exactly this way,
+silently, and the first person to find out is whoever is standing in a meeting.
+The user-facing message ("Couldn't reach the transcription service. Check your
+connection and retry.") also misdirects — it blames the network for a protocol
+rejection. Nothing detects this until someone starts a call.
+
+This is the strongest practical argument for the hosted-in-tenant options under
+discussion (Azure AI Speech / Amazon Transcribe): a cloud provider's versioned
+SDK moves under a deprecation policy, not overnight.
+
 ## Three customer-facing falsehoods, live in a public repo right now
 
 These ship to anyone who reads the README or runs the app. They should be closed

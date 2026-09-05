@@ -194,3 +194,57 @@ export async function cloudFetch(path: string, init?: RequestInit): Promise<Resp
   }
   return res;
 }
+
+/**
+ * Start Stripe Checkout for a Pro subscription seat.
+ * If signed in, requests checkout URL from platform and opens it.
+ * If signed out or offline, directs to the saleshunterlive.com pricing section.
+ */
+export async function openProCheckout(priceId?: string): Promise<void> {
+  const { openUrl } = await import("@tauri-apps/plugin-opener");
+  const auth = useStore.getState().cloudAuth;
+  if (!auth) {
+    await openUrl("https://saleshunterlive.com/#pricing");
+    return;
+  }
+
+  try {
+    const res = await cloudFetch("/billing/checkout", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ priceId: priceId || "price_saleshunter_pro_placeholder" }),
+    });
+    const data = (await res.json()) as { url?: string };
+    if (data?.url) {
+      await openUrl(data.url);
+      return;
+    }
+  } catch (err) {
+    log.warn("cloud: checkout request failed", { error: String(err) });
+  }
+
+  await openUrl("https://saleshunterlive.com/#pricing");
+}
+
+/**
+ * Open the Stripe Customer Portal for self-service subscription management.
+ */
+export async function openBillingPortal(): Promise<void> {
+  const { openUrl } = await import("@tauri-apps/plugin-opener");
+  try {
+    const res = await cloudFetch("/billing/portal", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+    });
+    const data = (await res.json()) as { url?: string };
+    if (data?.url) {
+      await openUrl(data.url);
+      return;
+    }
+  } catch (err) {
+    log.warn("cloud: billing portal request failed", { error: String(err) });
+  }
+
+  await openUrl("https://saleshunterlive.com/#pricing");
+}
+

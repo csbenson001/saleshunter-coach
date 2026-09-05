@@ -75,6 +75,7 @@ async function openCaptureSession(settings: Settings, sttKey: string): Promise<v
     provider: settings.transcriptionProvider,
     model: provider.label,
     diarization: provider.diarization,
+    language: settings.transcriptionLanguage,
     inputDevice: settings.inputDevice,
     pipeline: "real",
   });
@@ -86,6 +87,10 @@ async function openCaptureSession(settings: Settings, sttKey: string): Promise<v
       provider: settings.transcriptionProvider,
       apiKey: sttKey,
       diarization: provider.diarization,
+      // Empty = let the provider auto-detect. Anything else pins it; without a
+      // pin the model re-guesses per fragment and mislabels noise as another
+      // language entirely.
+      languageHints: settings.transcriptionLanguage === "auto" ? [] : [settings.transcriptionLanguage],
       inputDevice: settings.inputDevice,
       relayUrl: sttRelayUrl(settings.transcriptionProvider, "meeting"),
     });

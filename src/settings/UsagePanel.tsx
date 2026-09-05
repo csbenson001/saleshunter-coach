@@ -10,6 +10,7 @@ import { readUsageEvents, type UsageEvent } from "../lib/usage/log";
 import { log } from "../lib/log";
 import { PRICING_NOTES } from "../lib/usage/pricing";
 import { PieChart, type PieSlice } from "../components/PieChart";
+import { openProCheckout, openBillingPortal } from "../lib/cloud/client";
 
 type Period = "today" | "7d" | "30d" | "all";
 
@@ -226,29 +227,108 @@ function HostedQuotaMeter() {
   const fmtCredits = (n: number) => n.toFixed(n >= 10 ? 0 : 1);
 
   return (
-    <div className="flex flex-col gap-3 rounded-lg border bg-muted/20 p-4">
-      <div className="flex items-baseline justify-between">
-        <h3 className="text-xs font-semibold tracking-tight">{t("settings.usage.quota.title")}</h3>
-        <span className="text-[11px] text-muted-foreground tabular-nums">
-          {t("settings.usage.quota.reset")}: {resetLabel}
-        </span>
+    <div className="flex flex-col gap-4">
+      <UpgradeSubscriptionCard quota={quota} />
+
+      <div className="flex flex-col gap-3 rounded-lg border bg-muted/20 p-4">
+        <div className="flex items-baseline justify-between">
+          <h3 className="text-xs font-semibold tracking-tight">{t("settings.usage.quota.title")}</h3>
+          <span className="text-[11px] text-muted-foreground tabular-nums">
+            {t("settings.usage.quota.reset")}: {resetLabel}
+          </span>
+        </div>
+        {hasStt && (
+          <QuotaBar
+            label={t("settings.usage.quota.stt")}
+            used={quota.sttSecondsUsed}
+            limit={quota.sttSecondsLimit}
+            format={fmtHours}
+          />
+        )}
+        {hasCredits && (
+          <QuotaBar
+            label={t("settings.usage.quota.credits")}
+            used={quota.llmCreditsUsed}
+            limit={quota.llmCreditsLimit}
+            format={fmtCredits}
+          />
+        )}
       </div>
-      {hasStt && (
-        <QuotaBar
-          label={t("settings.usage.quota.stt")}
-          used={quota.sttSecondsUsed}
-          limit={quota.sttSecondsLimit}
-          format={fmtHours}
-        />
-      )}
-      {hasCredits && (
-        <QuotaBar
-          label={t("settings.usage.quota.credits")}
-          used={quota.llmCreditsUsed}
-          limit={quota.llmCreditsLimit}
-          format={fmtCredits}
-        />
-      )}
     </div>
   );
 }
+
+function UpgradeSubscriptionCard({ quota }: { quota: HostedQuota | null }) {
+  const isPro = quota && (quota.plan.toUpperCase() === "PRO" || quota.plan.toUpperCase() === "TEAM");
+  const [loading, setLoading] = useState(false);
+
+  const handleUpgrade = async () => {
+    setLoading(true);
+    try {
+      await openProCheckout();
+    } catch {
+      toast.error("Failed to open checkout");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePortal = async () => {
+    setLoading(true);
+    try {
+      await openBillingPortal();
+    } catch {
+      toast.error("Failed to open billing portal");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (isPro) {
+    return (
+      <div className="flex items-center justify-between rounded-lg border border-sky-500/30 bg-sky-500/10 p-3.5">
+        <div className="flex items-center gap-2.5">
+          <span className="inline-flex items-center rounded-full bg-sky-500/20 px-2.5 py-0.5 text-xs font-semibold text-sky-400 border border-sky-500/30">
+            PRO ACTIVE
+          </span>
+          <span className="text-xs text-muted-foreground">Unlimited zero-setup coaching &amp; hosted transcription</span>
+        </div>
+        <button
+          type="button"
+          onClick={handlePortal}
+          disabled={loading}
+          className="rounded-md border bg-background/80 px-3 py-1.5 text-xs font-medium hover:bg-background transition-colors"
+        >
+          {loading ? "Opening…" : "Manage Billing"}
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative overflow-hidden rounded-xl border border-sky-500/40 bg-gradient-to-r from-sky-500/10 via-indigo-500/10 to-teal-500/10 p-4 shadow-sm">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2">
+            <h4 className="text-sm font-semibold tracking-tight text-foreground">SalesHunter Pro Coach</h4>
+            <span className="rounded-full bg-teal-500/20 px-2 py-0.5 text-[10px] font-bold text-teal-300 border border-teal-500/40">
+              ZERO-SETUP
+            </span>
+          </div>
+          <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
+            Upgrade to Pro for hosted Claude 3.5 Sonnet coaching and Soniox real-time live transcription. No API keys required.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={handleUpgrade}
+          disabled={loading}
+          className="shrink-0 rounded-lg bg-gradient-to-r from-teal-400 to-sky-400 px-4 py-2 text-xs font-bold text-slate-950 shadow-md transition-transform hover:-translate-y-0.5 active:translate-y-0"
+        >
+          {loading ? "Opening…" : "Upgrade ($49/mo)"}
+        </button>
+      </div>
+    </div>
+  );
+}
+

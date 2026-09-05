@@ -507,6 +507,8 @@ export const en = {
   "provider.tag.hosted": "Hosted",
   "settings.transcription.title": "Transcription",
   "settings.transcription.provider": "Transcription provider",
+  "settings.transcription.language": "Spoken language",
+  "settings.transcription.languageHelp": "The language you expect on the call. Leaving this on \u201cDetect automatically\u201d lets the model re-guess on every fragment, so coughs and half-words come back as another language.",
   "settings.transcription.apiKey": "{provider} API key",
   "settings.transcription.noDiarizationTag": "no diarization",
   "settings.transcription.noDiarizationWarning": "This provider can't tell speakers apart — multiple people on the other side collapse into one. Use Soniox or Deepgram for per-speaker separation.",

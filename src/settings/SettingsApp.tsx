@@ -61,6 +61,7 @@ const PROVIDER_TAG_TONES: Record<ProviderTagTone, string> = {
 };
 import type { AppTheme, EvalDef, LlmProvider,
   LlmWorkload, ReasoningEffort, Settings, SttProviderId } from "../lib/types";
+import { TRANSCRIPTION_LANGUAGES } from "../lib/transcriptionLanguages";
 import { VoiceTypingSettings } from "./VoiceTypingSettings";
 import { OrgSharePicker } from "../components/OrgSharePicker";
 import { PermissionsPanel } from "./PermissionsPanel";
@@ -664,6 +665,25 @@ export function SettingsApp() {
                 />
               </Field>
             )}
+            <Field label={t("settings.transcription.language")}>
+              <div className="flex max-w-sm flex-col gap-2">
+                <Select
+                  value={settings.transcriptionLanguage}
+                  disabled={recording}
+                  onValueChange={(v) => patch({ transcriptionLanguage: v })}
+                >
+                  <SelectTrigger className="w-full max-w-sm"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {TRANSCRIPTION_LANGUAGES.map((l) => (
+                      <SelectItem key={l.id} value={l.id}>{l.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-[11px] text-muted-foreground">
+                  {t("settings.transcription.languageHelp")}
+                </p>
+              </div>
+            </Field>
             {!sttInfo.diarization && (
               <p className="max-w-md rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-[11px] leading-relaxed text-amber-700 dark:text-amber-300">
                 {t("settings.transcription.noDiarizationWarning")}

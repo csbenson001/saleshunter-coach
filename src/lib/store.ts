@@ -134,6 +134,7 @@ const DEFAULT_SETTINGS: Settings = {
   reasoningEffort: { realtime: "low", deep: "medium" },
   models: DEFAULT_MODELS,
   transcriptionProvider: "soniox",
+  transcriptionLanguage: "en",
   sonioxApiKey: "",
   deepgramApiKey: "",
   assemblyaiApiKey: "",

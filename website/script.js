@@ -55,7 +55,28 @@ document.querySelectorAll(".copy").forEach((btn) => {
       /* clipboard unavailable — no-op */
     }
   });
-});
+// Pricing monthly / annual toggle
+const pricingToggle = document.getElementById("pricing-toggle");
+const monthlyLabel = document.getElementById("monthly-label");
+const annualLabel = document.getElementById("annual-label");
+let isAnnual = false;
+
+function setBilling(annual) {
+  isAnnual = annual;
+  pricingToggle?.classList.toggle("is-active", isAnnual);
+  pricingToggle?.setAttribute("aria-checked", String(isAnnual));
+  monthlyLabel?.classList.toggle("is-active", !isAnnual);
+  annualLabel?.classList.toggle("is-active", isAnnual);
+
+  document.querySelectorAll("[data-monthly][data-annual]").forEach((el) => {
+    const val = isAnnual ? el.getAttribute("data-annual") : el.getAttribute("data-monthly");
+    if (val) el.textContent = val;
+  });
+}
+
+pricingToggle?.addEventListener("click", () => setBilling(!isAnnual));
+monthlyLabel?.addEventListener("click", () => setBilling(false));
+annualLabel?.addEventListener("click", () => setBilling(true));
 
 /**
  * Auto-swap a media slot if a matching asset exists.

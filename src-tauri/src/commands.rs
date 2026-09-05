@@ -656,6 +656,7 @@ pub fn start_oauth_loopback(app: AppHandle) -> Result<u16, String> {
                         let mut kv = pair.splitn(2, '=');
                         match (kv.next(), kv.next()) {
                             (Some("token"), Some(v)) => token = Some(urldecode(v)),
+                            (Some("exchange_code"), Some(v)) => token = Some(urldecode(v)),
                             (Some("error"), Some(v)) => error = Some(urldecode(v)),
                             _ => {}
                         }

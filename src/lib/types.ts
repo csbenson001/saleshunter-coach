@@ -299,6 +299,16 @@ export interface Settings {
   models: Record<LlmProvider, ProviderModels>;
   /** Active speech-to-text provider. */
   transcriptionProvider: SttProviderId;
+  /**
+   * The language people are expected to speak, as a BCP-47 code ("en"), or
+   * "auto" to let the provider detect it per utterance.
+   *
+   * "auto" is not the safe default it looks like. Detection runs per fragment,
+   * so a cough or a half-word gets fitted to whatever language it resembles —
+   * observed 2026-08-31 producing Japanese, Arabic and Icelandic inside an
+   * all-English call. Pin the language unless a call really is multilingual.
+   */
+  transcriptionLanguage: string;
   sonioxApiKey: string;
   deepgramApiKey: string;
   assemblyaiApiKey: string;
