@@ -1,5 +1,5 @@
 # SalesHunter Battlefield Proving Ground: Proof Dossier
-*Generated: 2026-09-05T14:36:00.025Z*
+*Generated: 2026-09-05T14:55:16.209Z*
 
 ## Executive Summary
 This dossier represents **proven, live execution evidence** across all 10 SalesHunter Coach sales intelligence systems under adversarial conditions. Features are verified not through synthetic mocks, but through multi-turn combat simulations evaluated by **Marcus 'The Closer' Vance**.
@@ -8,8 +8,8 @@ This dossier represents **proven, live execution evidence** across all 10 SalesH
 
 | Scenario | Target Deal | Latency | Scorecard | MEDDIC | The Closer Verdict | Proof Status |
 |---|---|---|---|---|---|---|
-| **The Ruthless CFO Budget Freeze** | $85,000 | 18ms | A+ (90) | 33% | CONDITIONAL_PASS (79) | **PROVEN_VIABLE** |
-| **The Gong / Chorus Incumbent Ambush** | $55,000 | 5ms | A+ (90) | 0% | REJECT_AS_SHELFWARE (62) | **PROVEN_VIABLE** |
+| **The Ruthless CFO Budget Freeze** | $85,000 | 16ms | A+ (90) | 33% | CONDITIONAL_PASS (79) | **PROVEN_VIABLE** |
+| **The Gong / Chorus Incumbent Ambush** | $55,000 | 4ms | A+ (90) | 0% | REJECT_AS_SHELFWARE (62) | **PROVEN_VIABLE** |
 | **The Vague 'Send Me an Email' Trap** | $40,000 | 0ms | A (80) | 0% | REJECT_AS_SHELFWARE (58) | **PROVEN_VIABLE** |
 
 ## Detailed Combat Log & Tactical Transcripts
