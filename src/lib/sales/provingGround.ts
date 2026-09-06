@@ -9,6 +9,7 @@ import { evaluateCallScorecard, type TranscriptUtterance } from "./scorecard";
 import { analyzeDealSignals, calculateDealHealth } from "./dealSignals";
 import { evaluateMeddicProgress } from "./meddic";
 import { matchObjection } from "./objectionBuster";
+import { matchConcessionTrade } from "./concessionMatrix";
 import { formatForSalesforce } from "./crmExport";
 import { auditSalesCapability, type ToughJudgeAuditResult } from "./salesJudge";
 
@@ -35,6 +36,8 @@ export interface ProvingGroundExecutionResult {
   meddicCoveragePercent: number;
   matchedObjection: string | null;
   objectionPivotTrack: string | null;
+  matchedConcession?: string | null;
+  concessionCounterpunch?: string | null;
   scorecardGrade: string;
   scorecardNumeric: number;
   crmPayloadGenerated: boolean;
@@ -91,6 +94,22 @@ export const BATTLE_SCENARIOS: BattleScenario[] = [
       { speaker: "customer", text: "Thursday at 2 PM works. Let's do that." },
     ],
   },
+  {
+    id: "procurement_30_percent_bully",
+    name: "The Procurement 30% Bully Drill",
+    difficulty: "Extreme",
+    buyerPersona: "Strategic Sourcing Director",
+    buyerRole: "VP Procurement",
+    targetDealSizeUsd: 65000,
+    description: "Strategic Sourcing demands an immediate 30% discount or they walk to a cheaper competitor. Rep must trade contract terms rather than concede on price.",
+    dialogueScript: [
+      { speaker: "customer", text: "We like the platform, but finance mandates a 30% discount across all new software vendors, otherwise we walk to a cheaper alternative." },
+      { speaker: "rep", text: "We do not offer unearned price concessions, but we do trade for commercial value. If you commit to a 2-year agreement with upfront pre-pay to protect your budget and timeline, who on your executive committee makes the final decision to close this week?" },
+      { speaker: "customer", text: "Our VP of Finance can approve and sign the contract by Friday if you lock in that multi-year rate." },
+      { speaker: "rep", text: "Agreed. Let's schedule the contract review with your VP of Finance for Thursday at 2 PM to finalize the agreement." },
+      { speaker: "customer", text: "Thursday at 2 PM works. Send the calendar invite." },
+    ],
+  },
 ];
 
 /**
@@ -113,9 +132,12 @@ export function executeProvingGroundSimulation(scenarioId: string): ProvingGroun
   const { updated: meddicItems, scorePercent: meddicPercent } = evaluateMeddicProgress(allText);
   const getDetected = (key: string) => !!meddicItems.find((i) => i.key === key)?.detected;
 
-  // 3. Evaluate Objection Buster
+  // 3. Evaluate Objection Buster & Concession Trade Matrix
   const objectionMatches = customerUtterances.map((text) => matchObjection(text)).filter(Boolean);
   const topObjection = objectionMatches[0] || null;
+
+  const concessionMatches = customerUtterances.map((text) => matchConcessionTrade(text)).filter(Boolean);
+  const topConcession = concessionMatches[0] || null;
 
   // 4. Evaluate Scorecard
   const scorecard = evaluateCallScorecard(scenario.dialogueScript);
@@ -146,7 +168,11 @@ export function executeProvingGroundSimulation(scenarioId: string): ProvingGroun
     featureName: `Battlefield Simulation: ${scenario.name}`,
     category: "objection_response" as const,
     inputContext: scenario.description,
-    solutionOutput: topObjection ? `${topObjection.rebuttalScript} ${topObjection.followUpQuestion}` : scenario.dialogueScript[scenario.dialogueScript.length - 1].text,
+    solutionOutput: topConcession
+      ? topConcession.exactCounterpunchScript
+      : topObjection
+      ? `${topObjection.rebuttalScript} ${topObjection.followUpQuestion}`
+      : scenario.dialogueScript[scenario.dialogueScript.length - 1].text,
     targetBuyerPersona: scenario.buyerPersona,
     dealSizeUsd: scenario.targetDealSizeUsd,
   };
@@ -174,6 +200,8 @@ export function executeProvingGroundSimulation(scenarioId: string): ProvingGroun
     meddicCoveragePercent: meddicPercent,
     matchedObjection: topObjection?.title || null,
     objectionPivotTrack: topObjection ? `${topObjection.rebuttalScript} ${topObjection.followUpQuestion}` : null,
+    matchedConcession: topConcession?.category || null,
+    concessionCounterpunch: topConcession?.exactCounterpunchScript || null,
     scorecardGrade: scorecard.overallGrade,
     scorecardNumeric: scorecard.numericScore,
     crmPayloadGenerated: salesforcePayload.length > 50,

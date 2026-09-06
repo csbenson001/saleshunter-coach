@@ -14,6 +14,7 @@ import { TodosPanel } from "../sidebar/TodosPanel";
 import { FindingsPanel } from "../analysis/FindingsPanel";
 import { DealRiskHud } from "../sales/DealRiskHud";
 import { CompetitorBattlecardBar } from "../sales/CompetitorBattlecardBar";
+import { LiveConcessionBar } from "../sales/LiveConcessionBar";
 
 /**
  * Persistent mic-only warning (⑥): the system-audio tap failing means the
@@ -66,6 +67,7 @@ export function LiveScreen() {
     <SystemAudioBanner />
     <DealRiskHud />
     <CompetitorBattlecardBar />
+    <LiveConcessionBar />
     <ResizablePanelGroup
       key={layout}
       orientation="horizontal"

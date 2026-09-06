@@ -59,7 +59,7 @@ export const CONCESSION_TRADE_MATRIX: ConcessionDemand[] = [
       },
     ],
     exactCounterpunchScript:
-      "We don't do unearned discounting, but we do trade for partnership value. If you can commit to a 2-year term with annual upfront pre-pay, I can unlock our tier-2 partner rate today.",
+      "We do not offer unearned price concessions, but we do trade for commercial value. If you commit to a 2-year agreement with upfront pre-pay to protect your budget and timeline, who on your executive committee makes the final decision to close this week?",
     quotaImpactEstimateUsd: 4200,
   },
   {
