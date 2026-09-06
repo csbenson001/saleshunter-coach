@@ -28,5 +28,14 @@ describe("objectionBuster engine", () => {
     expect(categories).toContain("competitor");
     expect(categories).toContain("timing");
     expect(categories).toContain("authority");
+    expect(categories).toContain("currency");
+  });
+
+  it("matches multi-currency and FX risk pushback", () => {
+    const card = matchObjection("We cannot pay in USD, we can only pay in euros due to currency fluctuation.");
+    expect(card).toBeDefined();
+    expect(card?.category).toBe("currency");
+    expect(card?.rebuttalScript).toContain("fixed exchange rate collars");
+    expect(card?.followUpQuestion).toContain("decision sign-off");
   });
 });

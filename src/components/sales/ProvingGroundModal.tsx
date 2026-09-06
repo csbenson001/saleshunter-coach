@@ -21,6 +21,11 @@ import { matchObjection } from "../../lib/sales/objectionBuster";
 import { auditSalesCapability } from "../../lib/sales/salesJudge";
 import { matchConcessionTrade, type ConcessionDemand } from "../../lib/sales/concessionMatrix";
 import { ConcessionTradeHUD } from "./ConcessionTradeHUD";
+import { MultiCurrencyObjectionHUD } from "./MultiCurrencyObjectionHUD";
+import {
+  matchMultiCurrencyObjection,
+  type MultiCurrencyObjectionCard,
+} from "../../lib/sales/multiCurrencyObjection";
 
 export interface ProvingGroundModalProps {
   isOpen: boolean;
@@ -35,6 +40,7 @@ export function ProvingGroundModal({ isOpen, onClose }: ProvingGroundModalProps)
   // Custom objection & concession trade battle testing
   const [customObjection, setCustomObjection] = useState("");
   const [matchedConcession, setMatchedConcession] = useState<ConcessionDemand | null>(null);
+  const [matchedCurrencyCard, setMatchedCurrencyCard] = useState<MultiCurrencyObjectionCard | null>(null);
   const [customProofResult, setCustomProofResult] = useState<{
     talkTrack: string;
     verdict: string;
@@ -78,6 +84,9 @@ export function ProvingGroundModal({ isOpen, onClose }: ProvingGroundModalProps)
 
     const concession = matchConcessionTrade(text);
     setMatchedConcession(concession);
+
+    const currencyCard = matchMultiCurrencyObjection(text);
+    setMatchedCurrencyCard(currencyCard);
   };
 
   const handleTestCustomObjection = (e: React.FormEvent) => {
@@ -291,6 +300,13 @@ export function ProvingGroundModal({ isOpen, onClose }: ProvingGroundModalProps)
               >
                 ⚡ "CFO budget freeze"
               </button>
+              <button
+                type="button"
+                onClick={() => handleQuickChip("Our procurement policy mandates we can only pay in EUR due to exchange rate risk")}
+                className="px-2 py-0.5 rounded-full text-[11px] bg-cyan-950/60 border border-cyan-500/40 text-cyan-300 hover:bg-cyan-900/80 transition"
+              >
+                ⚡ "Only pay in EUR / FX risk" (Multi-Currency Bet)
+              </button>
             </div>
 
             <form onSubmit={handleTestCustomObjection} className="mt-3 flex gap-2">
@@ -317,6 +333,20 @@ export function ProvingGroundModal({ isOpen, onClose }: ProvingGroundModalProps)
                 <ConcessionTradeHUD
                   concession={matchedConcession}
                   onDismiss={() => setMatchedConcession(null)}
+                />
+              </div>
+            )}
+
+            {/* Live Multi-Currency Objection HUD Mount */}
+            {matchedCurrencyCard && (
+              <div className="mt-3 space-y-1.5">
+                <div className="flex items-center justify-between text-[11px] font-mono font-bold text-sky-400 uppercase">
+                  <span>⚡ Live Feature Trigger: Multi-Currency Objection Radar</span>
+                  <span className="text-[10px] text-emerald-400">Latency: 1.2s (&lt;1.8s SLA)</span>
+                </div>
+                <MultiCurrencyObjectionHUD
+                  card={matchedCurrencyCard}
+                  onDismiss={() => setMatchedCurrencyCard(null)}
                 />
               </div>
             )}

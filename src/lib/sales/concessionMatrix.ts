@@ -10,7 +10,7 @@
 
 export interface ConcessionDemand {
   id: string;
-  category: "discount" | "payment_terms" | "onboarding" | "free_seats" | "pilot" | "sla";
+  category: "discount" | "payment_terms" | "onboarding" | "free_seats" | "pilot" | "sla" | "currency";
   buyerPhrases: string[];
   repWarning: string;
   recommendedTradeDemands: {
@@ -133,6 +133,41 @@ export const CONCESSION_TRADE_MATRIX: ConcessionDemand[] = [
     exactCounterpunchScript:
       "I can add the manager console licenses to the agreement if you can introduce us to Sarah in Customer Success to evaluate roll-out across her account managers next month.",
     quotaImpactEstimateUsd: 2400,
+  },
+  {
+    id: "concession_multi_currency",
+    category: "currency",
+    buyerPhrases: [
+      "pay in eur",
+      "pay in euros",
+      "pay in gbp",
+      "pay in pounds",
+      "pay in local currency",
+      "exchange rate lock",
+      "fx risk",
+      "multi-currency contract",
+      "invoice in euros",
+      "invoice in gbp",
+      "fixed exchange rate",
+      "foreign exchange",
+    ],
+    repWarning:
+      "🌍 MULTI-CURRENCY FX RISK: Invoicing in non-USD currencies introduces 3-5% FX exposure. Require annual prepay or multi-year commitment to absorb currency risk.",
+    recommendedTradeDemands: [
+      {
+        label: "Annual Upfront FX Lock",
+        tradeAsk: "Lock fixed EUR/GBP exchange rate collar only in exchange for 100% upfront annual pre-pay.",
+        commercialValue: "+$8,500 ARR protected cash flow",
+      },
+      {
+        label: "2-Year Global Commitment",
+        tradeAsk: "Guarantee local entity currency billing if customer commits to a 24-month contract term.",
+        commercialValue: "+$24,000 multi-year ARR backlog",
+      },
+    ],
+    exactCounterpunchScript:
+      "We support multi-currency billing in EUR and GBP with guaranteed fixed exchange rate collars to eliminate your FX risk on annual contracts. If we fix the exchange rate and bill in your local currency, can we secure decision sign-off this timeline to close this quarter with an annual upfront commitment?",
+    quotaImpactEstimateUsd: 8500,
   },
 ];
 

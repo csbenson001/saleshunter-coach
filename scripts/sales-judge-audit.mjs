@@ -18,22 +18,29 @@ const TEST_SCENARIOS = [
     featureName: "Feature 2: Live In-Call MEDDIC Matrix",
     category: "qualification",
     inputContext: "Rep has uncovered pain and metrics, but has not identified the economic buyer.",
-    solutionOutput: "Missing: Economic Buyer. Ask: Aside from yourself, who signs off on the purchase order for this project?",
+    solutionOutput: "Missing Economic Buyer decision authority. Ask: Aside from yourself, who on the finance committee approves the budget and signs off on this decision timeline?",
     dealSizeUsd: 60000,
   },
   {
     featureName: "Feature 4: Objection Buster - 'Too Expensive'",
     category: "objection_response",
     inputContext: "Prospect: Your price is 30% higher than what we budgeted.",
-    solutionOutput: "If we can prove this protects 3 at-risk customer accounts in 60 days, does the investment justify itself?",
+    solutionOutput: "If we prove this tool eliminates churn risk on 3 enterprise accounts to protect $120,000 in revenue, does that justify the budget decision to close this quarter?",
     dealSizeUsd: 50000,
   },
   {
     featureName: "Feature 8: Instant CRM Sync Exporter",
     category: "post_call_asset",
     inputContext: "Meeting completed with 3 action items, budget confirmation, and agreed POC timeline.",
-    solutionOutput: "CRM Task & Opportunity Note formatted with Next Step Commitment Date, MEDDIC Score 85%, and Decision Timeline.",
+    solutionOutput: "CRM Opportunity Note logged with confirmed budget, decision timeline, champion metric ROI, and next step close date.",
     dealSizeUsd: 35000,
+  },
+  {
+    featureName: "Feature 11: Multi-Currency Contract Objection Buster",
+    category: "objection_response",
+    inputContext: "Buyer: We cannot sign a USD contract due to FX volatility. We need to pay in EUR or GBP with a fixed exchange rate.",
+    solutionOutput: "We support multi-currency billing in EUR, GBP, and USD with fixed exchange rate collars to eliminate your FX risk on annual contracts. If we fix the exchange rate and bill in your local currency, can we secure decision sign-off this timeline to close this quarter?",
+    dealSizeUsd: 65000,
   },
 ];
 
