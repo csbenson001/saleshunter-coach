@@ -10,8 +10,10 @@ import { analyzeDealSignals, calculateDealHealth } from "./dealSignals";
 import { evaluateMeddicProgress } from "./meddic";
 import { matchObjection } from "./objectionBuster";
 import { matchConcessionTrade } from "./concessionMatrix";
+import { GONG_COEXISTENCE_PROOF, detectGongIncumbentObjection } from "./gongCoexistence";
 import { formatForSalesforce } from "./crmExport";
 import { auditSalesCapability, type ToughJudgeAuditResult } from "./salesJudge";
+import { translate } from "../../i18n/messages";
 
 export interface BattleScenario {
   id: string;
@@ -36,6 +38,8 @@ export interface ProvingGroundExecutionResult {
   meddicCoveragePercent: number;
   matchedObjection: string | null;
   objectionPivotTrack: string | null;
+  coexistenceDefenseTriggered: boolean;
+  pilotSuccessMetric: string | null;
   matchedConcession?: string | null;
   concessionCounterpunch?: string | null;
   scorecardGrade: string;
@@ -71,10 +75,10 @@ export const BATTLE_SCENARIOS: BattleScenario[] = [
     targetDealSizeUsd: 55000,
     description: "Prospect is currently locked into a 2-year enterprise agreement with Gong and questions why they should even evaluate SalesHunter Coach.",
     dialogueScript: [
-      { speaker: "customer", text: "We already have Gong deployed across 120 reps. It records all calls and gives us conversation intelligence, so why do we need you?" },
-      { speaker: "rep", text: "Gong is great for telling managers what went wrong 2 hours after the call is lost. What is your strategy for helping reps win the deal while they are still on the phone?" },
+      { speaker: "customer", text: "We already have Gong deployed across 200 reps. It records all calls and gives us conversation intelligence, so why do we need you?" },
+      { speaker: "rep", text: translate("en", "coexistence.positioning") },
       { speaker: "customer", text: "That is our biggest gap. Our reps don't look at Gong's call recordings after the fact, so objection handling latency is killing our conversion." },
-      { speaker: "rep", text: "SalesHunter operates in real-time in the rep's ear and screen with 3-second objection battlecards, without touching your existing CRM pipeline." },
+      { speaker: "rep", text: translate("en", "coexistence.question") },
       { speaker: "customer", text: "That actually solves our in-call execution problem. What does a 20-seat evaluation look like?" },
     ],
   },
@@ -135,6 +139,11 @@ export function executeProvingGroundSimulation(scenarioId: string): ProvingGroun
   // 3. Evaluate Objection Buster & Concession Trade Matrix
   const objectionMatches = customerUtterances.map((text) => matchObjection(text)).filter(Boolean);
   const topObjection = objectionMatches[0] || null;
+  const coexistenceDefenseTriggered = customerUtterances.some(detectGongIncumbentObjection);
+  const coexistenceTalkTrack = `${translate("en", "coexistence.positioning")} ${translate(
+    "en",
+    "coexistence.question"
+  )}`;
 
   const concessionMatches = customerUtterances.map((text) => matchConcessionTrade(text)).filter(Boolean);
   const topConcession = concessionMatches[0] || null;
@@ -168,7 +177,9 @@ export function executeProvingGroundSimulation(scenarioId: string): ProvingGroun
     featureName: `Battlefield Simulation: ${scenario.name}`,
     category: "objection_response" as const,
     inputContext: scenario.description,
-    solutionOutput: topConcession
+    solutionOutput: coexistenceDefenseTriggered
+      ? coexistenceTalkTrack
+      : topConcession
       ? topConcession.exactCounterpunchScript
       : topObjection
       ? `${topObjection.rebuttalScript} ${topObjection.followUpQuestion}`
@@ -199,7 +210,13 @@ export function executeProvingGroundSimulation(scenarioId: string): ProvingGroun
     signalsDetected: [...signals.map((s) => s.label), ...risks.map((r) => r.label)],
     meddicCoveragePercent: meddicPercent,
     matchedObjection: topObjection?.title || null,
-    objectionPivotTrack: topObjection ? `${topObjection.rebuttalScript} ${topObjection.followUpQuestion}` : null,
+    objectionPivotTrack: coexistenceDefenseTriggered
+      ? coexistenceTalkTrack
+      : topObjection
+      ? `${topObjection.rebuttalScript} ${topObjection.followUpQuestion}`
+      : null,
+    coexistenceDefenseTriggered,
+    pilotSuccessMetric: coexistenceDefenseTriggered ? GONG_COEXISTENCE_PROOF.successMetric : null,
     matchedConcession: topConcession?.category || null,
     concessionCounterpunch: topConcession?.exactCounterpunchScript || null,
     scorecardGrade: scorecard.overallGrade,

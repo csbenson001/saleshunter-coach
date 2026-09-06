@@ -113,6 +113,25 @@ export const en = {
   "feed.analyze": "Analyze now",
   "feed.empty": "Your coach is standing by — alerts, progress and answers land here",
   "feed.askPlaceholder": "Ask your coach anything…",
+  "coexistence.detected": "Incumbent objection detected",
+  "coexistence.strategy": "Coexist, don't replace",
+  "coexistence.say": "Say",
+  "coexistence.ask": "Ask",
+  "coexistence.positioning":
+    "Keep Gong as the recording system. SalesHunter coaches the rep during the live objection, before it costs the deal.",
+  "coexistence.question":
+    "Which time-to-close, win rate, or ROI metric must a 20-seat pilot improve for you to make a decision this quarter?",
+  "coexistence.proof": "Pilot: {seats} seats · measure time to close · target {roi}× ROI",
+  "competitor.detected": "Competitor mentioned: {name}",
+  "competitor.ask": "Ask",
+  "competitor.zoominfo.differentiation":
+    "They provide contact data; SalesHunter Coach improves the live conversation after the rep connects.",
+  "competitor.zoominfo.question":
+    "Once the rep connects, how do you ensure they qualify the deal consistently?",
+  "competitor.clari.differentiation":
+    "Forecasting depends on accurate CRM inputs; SalesHunter surfaces qualification gaps from the call itself.",
+  "competitor.clari.question":
+    "How consistently are reps capturing decision criteria in Clari today?",
   "saveDest.empty": "No matching folder",
 
   // ── Folder picker ──

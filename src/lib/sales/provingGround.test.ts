@@ -18,4 +18,15 @@ describe("Battlefield Proving Ground Engine", () => {
     expect(result.scorecardNumeric).toBeGreaterThanOrEqual(75);
     expect(result.signalsDetected.length).toBeGreaterThan(0);
   });
+
+  it("certifies the Gong coexistence defense under incumbent pressure", () => {
+    const result = executeProvingGroundSimulation("gong_competitor_ambush");
+
+    expect(result.coexistenceDefenseTriggered).toBe(true);
+    expect(result.pilotSuccessMetric).toBe("time_to_close");
+    expect(result.closerAudit.verdict).toBe("DEAL_CLOSER_CERTIFIED");
+    expect(result.closerAudit.repUsabilityVerdict).toBe("Glanceable & lethal");
+    expect(result.closerAudit.dollarRoiMultiplierEstimate).toContain("100x");
+    expect(result.proofVerdict).toBe("PROVEN_LETHAL");
+  });
 });
