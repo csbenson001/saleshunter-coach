@@ -1,18 +1,68 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AlertTriangle, TrendingUp, ShieldCheck, Zap } from "lucide-react";
-import { analyzeDealSignals, calculateDealHealth } from "../../lib/sales/dealSignals";
-import { useStore } from "../../lib/store";
+import {
+  analyzeDealSignals,
+  analyzeStakeholderCoverage,
+  calculateDealHealth,
+  stakeholderBlindspotRisk,
+} from "../../lib/sales/dealSignals";
+import { meetingElapsedMs, useStore } from "../../lib/store";
 import type { TranscriptSegment } from "../../lib/types";
+import { useI18n } from "../../i18n";
 
 export function DealRiskHud() {
+  const { t } = useI18n();
   const segments = useStore((s) => s.segments);
+  const speakerNames = useStore((s) => s.speakerNames);
+  const meetingStatus = useStore((s) => s.meetingStatus);
+  const meetingStartedAt = useStore((s) => s.meetingStartedAt);
+  const meetingPausedAt = useStore((s) => s.meetingPausedAt);
+  const meetingPausedTotalMs = useStore((s) => s.meetingPausedTotalMs);
+  const systemAudioWarning = useStore((s) => s.systemAudioWarning);
+  const [nowMs, setNowMs] = useState(() => Date.now());
+
+  useEffect(() => {
+    setNowMs(Date.now());
+    if (meetingStatus !== "recording") return;
+    const timer = setInterval(() => setNowMs(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, [meetingStartedAt, meetingStatus]);
 
   const { signals, risks, health } = useMemo(() => {
     const fullText = (segments || []).map((u: TranscriptSegment) => u.text || "").join(" ");
     const { signals: sList, risks: rList } = analyzeDealSignals(fullText);
-    const h = calculateDealHealth(sList, rList);
-    return { signals: sList, risks: rList, health: h };
-  }, [segments]);
+    const elapsedMs =
+      meetingStartedAt != null
+        ? meetingElapsedMs(
+            { meetingStartedAt, meetingPausedAt, meetingPausedTotalMs },
+            nowMs
+          )
+        : Math.max(0, ...segments.map((segment) => segment.endMs));
+    const coverage = analyzeStakeholderCoverage(segments, elapsedMs, speakerNames);
+    const blindspot = systemAudioWarning
+      ? null
+      : stakeholderBlindspotRisk(coverage, {
+          label: t("dealRadar.stakeholderBlindspot.label"),
+          coachingAdvice:
+            coverage.stakeholderCount === 0
+              ? t("dealRadar.stakeholderBlindspot.noBuyerAdvice")
+              : coverage.stakeholderCount === 1
+                ? t("dealRadar.stakeholderBlindspot.singleThreadAdvice")
+                : t("dealRadar.stakeholderBlindspot.multiThreadAdvice"),
+        });
+    const allRisks = blindspot ? [...rList, blindspot] : rList;
+    const h = calculateDealHealth(sList, allRisks);
+    return { signals: sList, risks: allRisks, health: h };
+  }, [
+    meetingPausedAt,
+    meetingPausedTotalMs,
+    meetingStartedAt,
+    nowMs,
+    segments,
+    speakerNames,
+    systemAudioWarning,
+    t,
+  ]);
 
   if (signals.length === 0 && risks.length === 0) {
     return (
@@ -61,7 +111,11 @@ export function DealRiskHud() {
 
       {/* Top coaching insight if risk exists */}
       {risks.length > 0 && (
-        <div className="mt-1.5 flex items-start gap-1.5 rounded border border-amber-900/30 bg-amber-950/20 px-2 py-1 text-[11px] text-amber-300">
+        <div
+          role="status"
+          aria-live="polite"
+          className="mt-1.5 flex items-start gap-1.5 rounded border border-amber-900/30 bg-amber-950/20 px-2 py-1 text-[11px] text-amber-300"
+        >
           <span className="font-semibold text-amber-400 shrink-0">⚠️ Coaching Tip:</span>
           <span>{risks[risks.length - 1].coachingAdvice}</span>
         </div>

@@ -1,3 +1,5 @@
+import type { TranscriptSegment } from "../types";
+
 /**
  * SalesHunter Deal Risk & Buying Signals Intelligence Engine
  *
@@ -7,7 +9,13 @@
  */
 
 export type SignalCategory = "pricing" | "timeline" | "champion" | "technical_fit";
-export type RiskCategory = "budget_freeze" | "authority_gap" | "competitor_threat" | "timeline_slip" | "inertia";
+export type RiskCategory =
+  | "budget_freeze"
+  | "authority_gap"
+  | "competitor_threat"
+  | "timeline_slip"
+  | "inertia"
+  | "stakeholder_blindspot";
 
 export interface DealSignal {
   id: string;
@@ -33,6 +41,87 @@ export interface DealHealthReport {
   momentum: "positive" | "neutral" | "at_risk";
   buyingSignals: DealSignal[];
   risks: DealRisk[];
+}
+
+export const STAKEHOLDER_BLINDSPOT_THRESHOLD_MS = 15 * 60 * 1000;
+
+export interface StakeholderCoverage {
+  elapsedMs: number;
+  stakeholderCount: number;
+  economicBuyerConfirmed: boolean;
+  blindspotDetected: boolean;
+}
+
+export interface StakeholderBlindspotCopy {
+  label: string;
+  coachingAdvice: string;
+}
+
+const ECONOMIC_BUYER_ROLE =
+  /\b(economic buyer|budget owner|chief financial officer|cfo|chief revenue officer|cro|chief executive officer|ceo|vp(?:\s+of)?\s+finance|vice president(?:\s+of)?\s+finance|finance director)\b/i;
+const SELF_IDENTIFIED_BUYER =
+  /\b(?:i am|i'm)\s+(?:the\s+|our\s+|your\s+)?(?:economic buyer|budget owner|chief financial officer|cfo|chief revenue officer|cro|chief executive officer|ceo|vp(?:\s+of)?\s+finance|vice president(?:\s+of)?\s+finance|finance director)\b/i;
+const FIRST_PERSON_AUTHORITY = [
+  /\b(?:i|we)\s+(?:can|will)\s+(?:approve|sign(?:\s+off)?|authorize)\b/i,
+  /\bi\s+am\s+authorized\s+to\s+(?:approve|sign(?:\s+off)?|authorize)\b/i,
+  /\b(?:i|we)\s+have\s+(?:the\s+)?(?:authority\s+to\s+(?:approve|sign(?:\s+off)?|authorize)|final say|final approval|signing authority)\b/i,
+  /\b(?:i|we)\s+(?:own|control|manage)\s+(?:the\s+|our\s+)?(?:budget|purchasing)\b/i,
+  /\b(?:the\s+)?final decision is mine\b/i,
+];
+
+function participantKey(segment: Pick<TranscriptSegment, "source" | "speaker">): string {
+  return `${segment.source}-${segment.speaker}`;
+}
+
+/**
+ * Detect a live-call stakeholder gap without sending transcript data to an LLM.
+ *
+ * Multiple counterpart voices prove multi-threading, but do not prove budget
+ * authority. Authority is confirmed only when a speaking participant is named
+ * with an economic-buyer role or explicitly claims first-person authority.
+ */
+export function analyzeStakeholderCoverage(
+  segments: TranscriptSegment[],
+  elapsedMs: number,
+  speakerNames: Record<string, string> = {}
+): StakeholderCoverage {
+  const spoken = segments.filter((segment) => segment.isFinal && segment.text.trim());
+  const counterparts = spoken.filter((segment) => segment.source !== "me");
+  const stakeholderCount = new Set(counterparts.map(participantKey)).size;
+  const economicBuyerConfirmed = counterparts.some((segment) => {
+    const assignedName = speakerNames[participantKey(segment)] ?? "";
+    return (
+      ECONOMIC_BUYER_ROLE.test(assignedName) ||
+      SELF_IDENTIFIED_BUYER.test(segment.text) ||
+      FIRST_PERSON_AUTHORITY.some((pattern) => pattern.test(segment.text))
+    );
+  });
+
+  return {
+    elapsedMs,
+    stakeholderCount,
+    economicBuyerConfirmed,
+    blindspotDetected:
+      elapsedMs >= STAKEHOLDER_BLINDSPOT_THRESHOLD_MS && !economicBuyerConfirmed,
+  };
+}
+
+/** Convert the coverage snapshot into the existing deal-risk feed contract. */
+export function stakeholderBlindspotRisk(
+  coverage: StakeholderCoverage,
+  copy: StakeholderBlindspotCopy
+): DealRisk | null {
+  if (!coverage.blindspotDetected) return null;
+  const voiceLabel = `${coverage.stakeholderCount} buyer voice${coverage.stakeholderCount === 1 ? "" : "s"}`;
+  return {
+    id: "risk_stakeholder_blindspot_15m",
+    category: "stakeholder_blindspot",
+    label: copy.label,
+    severity: "high",
+    matchedPhrase: `${voiceLabel}; economic buyer unconfirmed after 15 minutes`,
+    timestampMs: STAKEHOLDER_BLINDSPOT_THRESHOLD_MS,
+    coachingAdvice: copy.coachingAdvice,
+  };
 }
 
 const BUYING_SIGNAL_PATTERNS: Array<{
