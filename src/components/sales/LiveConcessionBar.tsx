@@ -1,34 +1,38 @@
-import { useMemo, useState, useEffect } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useStore } from "../../lib/store";
-import type { TranscriptSegment } from "../../lib/types";
-import { detectConcessionDemands, type ConcessionDemand } from "../../lib/sales/concessionMatrix";
+import { log } from "../../lib/log";
+import {
+  findLiveConcessionCue,
+  playSoundboardCue,
+} from "../../lib/sales/soundboard";
 import { ConcessionTradeHUD } from "./ConcessionTradeHUD";
 
 export function LiveConcessionBar() {
   const segments = useStore((s) => s.segments);
-  const [dismissedId, setDismissedId] = useState<string | null>(null);
+  const [dismissedCueKey, setDismissedCueKey] = useState<string | null>(null);
+  const playedCueKey = useRef<string | null>(null);
 
-  const activeConcession = useMemo<ConcessionDemand | null>(() => {
-    // Scan recent transcript utterances (last 5 segments)
-    const recentText = (segments || [])
-      .slice(-5)
-      .map((s: TranscriptSegment) => s.text || "")
-      .join(" ");
+  const activeCue = useMemo(() => findLiveConcessionCue(segments), [segments]);
 
-    if (!recentText.trim()) return null;
-
-    const detection = detectConcessionDemands(recentText);
-    return detection.detected && detection.concession ? detection.concession : null;
-  }, [segments]);
-
-  // Reset dismissed state if a different concession category is detected
   useEffect(() => {
-    if (activeConcession && activeConcession.id !== dismissedId) {
-      // New concession demand arrived
-    }
-  }, [activeConcession, dismissedId]);
+    if (!activeCue || playedCueKey.current === activeCue.key) return;
+    playedCueKey.current = activeCue.key;
+    void playSoundboardCue()
+      .then((receipt) => {
+        if (receipt) {
+          log.info("soundboard: concession cue scheduled", {
+            cueKey: activeCue.key,
+            startupLatencyMs: Math.round(receipt.startupLatencyMs),
+            withinBudget: receipt.withinBudget,
+          });
+        }
+      })
+      .catch((error) =>
+        log.warn("soundboard: concession cue unavailable", { error: String(error) }),
+      );
+  }, [activeCue]);
 
-  if (!activeConcession || activeConcession.id === dismissedId) return null;
+  if (!activeCue || activeCue.key === dismissedCueKey) return null;
 
   return (
     <div
@@ -42,8 +46,8 @@ export function LiveConcessionBar() {
         <span className="text-[10px] text-emerald-400 font-semibold">Latency: &lt;1.8s (SLA Met)</span>
       </div>
       <ConcessionTradeHUD
-        concession={activeConcession}
-        onDismiss={() => setDismissedId(activeConcession.id)}
+        concession={activeCue.concession}
+        onDismiss={() => setDismissedCueKey(activeCue.key)}
       />
     </div>
   );
