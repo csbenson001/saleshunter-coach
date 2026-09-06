@@ -110,6 +110,22 @@ export const BATTLE_SCENARIOS: BattleScenario[] = [
       { speaker: "customer", text: "Thursday at 2 PM works. Send the calendar invite." },
     ],
   },
+  {
+    id: "multicurrency_fx_pushback",
+    name: "The Multi-Currency Enterprise Cross-Border Pushback",
+    difficulty: "Extreme",
+    buyerPersona: "Global Procurement Director (EMEA)",
+    buyerRole: "VP Global Sourcing",
+    targetDealSizeUsd: 65000,
+    description: "Enterprise buyer in EMEA refuses to sign a USD contract due to currency fluctuation, demanding EUR billing with a fixed exchange rate.",
+    dialogueScript: [
+      { speaker: "customer", text: "Our finance committee has a strict policy: we cannot pay in USD due to currency fluctuation. We can only pay in euros or GBP with a fixed exchange rate." },
+      { speaker: "rep", text: "We support multi-currency billing in EUR, GBP, and USD with fixed exchange rate collars to eliminate your FX risk on annual contracts." },
+      { speaker: "customer", text: "What commercial terms does your finance team require to absorb the cross-border currency conversion fees?" },
+      { speaker: "rep", text: "If we fix the exchange rate and bill in your local currency, can we secure decision sign-off this timeline to close this quarter with an annual upfront commitment?" },
+      { speaker: "customer", text: "If you guarantee the fixed EUR rate collar on an annual pre-pay, our committee will sign the contract this Friday." },
+    ],
+  },
 ];
 
 /**

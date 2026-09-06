@@ -18,4 +18,12 @@ describe("Battlefield Proving Ground Engine", () => {
     expect(result.scorecardNumeric).toBeGreaterThanOrEqual(75);
     expect(result.signalsDetected.length).toBeGreaterThan(0);
   });
+
+  it("proves lethal multi-currency objection handling with The Closer certification", () => {
+    const result = executeProvingGroundSimulation("multicurrency_fx_pushback");
+    expect(result.matchedObjection).toBe("Multi-Currency & FX Contract Pushback");
+    expect(result.proofVerdict).toBe("PROVEN_LETHAL");
+    expect(result.closerAudit.verdict).toBe("DEAL_CLOSER_CERTIFIED");
+    expect(result.closerAudit.overallScore).toBeGreaterThanOrEqual(90);
+  });
 });

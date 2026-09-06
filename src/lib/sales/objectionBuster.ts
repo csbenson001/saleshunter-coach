@@ -13,7 +13,7 @@
 
 export interface ObjectionBattlecard {
   id: string;
-  category: "budget" | "competitor" | "timing" | "authority" | "in_house" | "priority" | "implementation";
+  category: "budget" | "competitor" | "timing" | "authority" | "in_house" | "priority" | "implementation" | "currency";
   title: string;
   triggerPhrases: string[];
   rebuttalScript: string;
@@ -109,6 +109,37 @@ export const OBJECTION_BATTLECARDS: ObjectionBattlecard[] = [
     framingPivots: [
       "Tie inactivity to target failure.",
       "Quantify the cost of waiting: 3 months of lost win rate.",
+    ],
+  },
+  {
+    id: "obj_multi_currency",
+    category: "currency",
+    title: "Multi-Currency & FX Contract Pushback",
+    triggerPhrases: [
+      "multi-currency",
+      "pay in eur",
+      "pay in euros",
+      "pay in gbp",
+      "pay in pounds",
+      "local currency",
+      "exchange rate",
+      "fx risk",
+      "currency fluctuation",
+      "foreign exchange",
+      "conversion fee",
+      "cross-border payment",
+      "cannot pay in usd",
+      "invoice in eur",
+      "invoice in gbp",
+    ],
+    rebuttalScript:
+      "We support multi-currency billing in EUR, GBP, and USD with fixed exchange rate collars to eliminate your FX risk on annual contracts.",
+    followUpQuestion:
+      "If we fix the exchange rate and bill in your local currency, can we secure decision sign-off this timeline to close this quarter?",
+    framingPivots: [
+      "Fixed FX collar: Lock exchange rate for 12 months with zero conversion penalty.",
+      "Local currency invoicing: Trade currency accommodations for upfront annual payment.",
+      "Consolidated MSA: Combine international entities to unlock enterprise multi-currency terms.",
     ],
   },
 ];

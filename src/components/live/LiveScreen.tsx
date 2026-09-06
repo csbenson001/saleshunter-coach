@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useDefaultLayout } from "react-resizable-panels";
 import { MicOff, X } from "lucide-react";
 import {
@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/resizable";
 import { useStore } from "../../lib/store";
 import { useI18n } from "../../i18n";
+import type { TranscriptSegment } from "../../lib/types";
 import { MeetingView } from "../MeetingView";
 import { CoachFeed } from "./CoachFeed";
 import { TodosPanel } from "../sidebar/TodosPanel";
@@ -15,6 +16,8 @@ import { FindingsPanel } from "../analysis/FindingsPanel";
 import { DealRiskHud } from "../sales/DealRiskHud";
 import { CompetitorBattlecardBar } from "../sales/CompetitorBattlecardBar";
 import { LiveConcessionBar } from "../sales/LiveConcessionBar";
+import { MultiCurrencyObjectionHUD } from "../sales/MultiCurrencyObjectionHUD";
+import { matchMultiCurrencyObjection } from "../../lib/sales/multiCurrencyObjection";
 
 /**
  * Persistent mic-only warning (⑥): the system-audio tap failing means the
@@ -39,6 +42,25 @@ function SystemAudioBanner() {
       >
         <X className="size-3.5" />
       </button>
+    </div>
+  );
+}
+
+function LiveMultiCurrencyBanner() {
+  const segments = useStore((s) => s.segments);
+  const [dismissed, setDismissed] = useState(false);
+
+  const matchedCard = useMemo(() => {
+    if (dismissed) return null;
+    const text = (segments || []).slice(-5).map((s: TranscriptSegment) => s.text || "").join(" ");
+    return matchMultiCurrencyObjection(text);
+  }, [segments, dismissed]);
+
+  if (!matchedCard) return null;
+
+  return (
+    <div className="p-2 border-b border-sky-500/30 bg-slate-950/80">
+      <MultiCurrencyObjectionHUD card={matchedCard} onDismiss={() => setDismissed(true)} />
     </div>
   );
 }
@@ -68,6 +90,7 @@ export function LiveScreen() {
     <DealRiskHud />
     <CompetitorBattlecardBar />
     <LiveConcessionBar />
+    <LiveMultiCurrencyBanner />
     <ResizablePanelGroup
       key={layout}
       orientation="horizontal"
