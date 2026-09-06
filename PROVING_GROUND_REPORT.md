@@ -1,5 +1,5 @@
 # SalesHunter Battlefield Proving Ground: Proof Dossier
-*Generated: 2026-09-06T02:42:12.219Z*
+*Generated: 2026-09-06T03:30:21.150Z*
 
 ## Executive Summary
 This dossier represents **proven, live execution evidence** across all 10 SalesHunter Coach sales intelligence systems under adversarial conditions. Features are verified not through synthetic mocks, but through multi-turn combat simulations evaluated by **Marcus 'The Closer' Vance**.
@@ -8,9 +8,9 @@ This dossier represents **proven, live execution evidence** across all 10 SalesH
 
 | Scenario | Target Deal | Latency | Scorecard | MEDDIC | The Closer Verdict | Proof Status |
 |---|---|---|---|---|---|---|
-| **The Ruthless CFO Budget Freeze** | $85,000 | 16ms | A+ (90) | 33% | CONDITIONAL_PASS (79) | **PROVEN_VIABLE** |
-| **The Gong / Chorus Incumbent Ambush** | $55,000 | 5ms | A+ (90) | 0% | REJECT_AS_SHELFWARE (62) | **PROVEN_VIABLE** |
-| **The Vague 'Send Me an Email' Trap** | $40,000 | 0ms | A (80) | 0% | REJECT_AS_SHELFWARE (58) | **PROVEN_VIABLE** |
+| **The Ruthless CFO Budget Freeze** | $85,000 | 25ms | A+ (90) | 33% | CONDITIONAL_PASS (79) | **PROVEN_VIABLE** |
+| **The Gong / Chorus Incumbent Ambush** | $55,000 | 2ms | A+ (90) | 17% | DEAL_CLOSER_CERTIFIED (97) | **PROVEN_LETHAL** |
+| **The Vague 'Send Me an Email' Trap** | $40,000 | 4ms | A (80) | 0% | REJECT_AS_SHELFWARE (58) | **PROVEN_VIABLE** |
 | **The Procurement 30% Bully Drill** | $65,000 | 0ms | A (80) | 0% | DEAL_CLOSER_CERTIFIED (97) | **PROVEN_LETHAL** |
 
 ## Detailed Combat Log & Tactical Transcripts
@@ -25,8 +25,8 @@ This dossier represents **proven, live execution evidence** across all 10 SalesH
 ### The Gong / Chorus Incumbent Ambush
 - **Buyer Persona**: Head of Revenue Operations (VP RevOps)
 - **Context**: Prospect is currently locked into a 2-year enterprise agreement with Gong and questions why they should even evaluate SalesHunter Coach.
-- **In-Call Objection Pivot**: `Dynamic commercial value inquiry`
-- **Marcus Vance Critique**: *"[REJECTED AS SHELFWARE]: "Battlefield Simulation: The Gong / Chorus Incumbent Ambush" feels like an engineer's toy rather than a sales tool. No AE will use this under live battlefield conditions unless you make it 10x faster and strictly ROI-driven."*
+- **In-Call Objection Pivot**: `Keep Gong as the recording system. SalesHunter coaches the rep during the live objection, before it costs the deal. Which time-to-close, win rate, or ROI metric must a 20-seat pilot improve for you to make a decision this quarter?`
+- **Marcus Vance Critique**: *"[CERTIFIED BY THE CLOSER]: "Battlefield Simulation: The Gong / Chorus Incumbent Ambush" delivers real revenue leverage. Reps will actually use this because it makes them money and protects their commission checks."*
 - **CRM Payload Status**: Verified (Salesforce & HubSpot ready)
 
 ### The Vague 'Send Me an Email' Trap

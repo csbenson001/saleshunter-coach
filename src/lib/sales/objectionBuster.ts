@@ -41,7 +41,15 @@ export const OBJECTION_BATTLECARDS: ObjectionBattlecard[] = [
     id: "obj_competitor",
     category: "competitor",
     title: "We Already Use Gong / Chorus",
-    triggerPhrases: ["we use gong", "we already have chorus", "using gong", "using clari", "have another tool"],
+    triggerPhrases: [
+      "we use gong",
+      "we already have gong",
+      "gong deployed",
+      "we already have chorus",
+      "using gong",
+      "using clari",
+      "have another tool",
+    ],
     rebuttalScript:
       "Gong and Chorus are great recording archives for managers to review on Friday after the deal is already lost. SalesHunter Coach is the in-ear co-pilot whispering live objection handling to the rep while they are speaking.",
     followUpQuestion:
