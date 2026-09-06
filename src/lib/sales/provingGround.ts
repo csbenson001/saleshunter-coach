@@ -168,10 +168,10 @@ export function executeProvingGroundSimulation(scenarioId: string): ProvingGroun
     featureName: `Battlefield Simulation: ${scenario.name}`,
     category: "objection_response" as const,
     inputContext: scenario.description,
-    solutionOutput: topConcession
+    solutionOutput: topObjection
+      ? topObjection.liveCounterpunch
+      : topConcession
       ? topConcession.exactCounterpunchScript
-      : topObjection
-      ? `${topObjection.rebuttalScript} ${topObjection.followUpQuestion}`
       : scenario.dialogueScript[scenario.dialogueScript.length - 1].text,
     targetBuyerPersona: scenario.buyerPersona,
     dealSizeUsd: scenario.targetDealSizeUsd,
@@ -199,7 +199,7 @@ export function executeProvingGroundSimulation(scenarioId: string): ProvingGroun
     signalsDetected: [...signals.map((s) => s.label), ...risks.map((r) => r.label)],
     meddicCoveragePercent: meddicPercent,
     matchedObjection: topObjection?.title || null,
-    objectionPivotTrack: topObjection ? `${topObjection.rebuttalScript} ${topObjection.followUpQuestion}` : null,
+    objectionPivotTrack: topObjection?.liveCounterpunch || null,
     matchedConcession: topConcession?.category || null,
     concessionCounterpunch: topConcession?.exactCounterpunchScript || null,
     scorecardGrade: scorecard.overallGrade,

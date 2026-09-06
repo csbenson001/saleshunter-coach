@@ -3,6 +3,7 @@ import {
   detectConcessionDemands,
   type ConcessionDemand,
 } from "./concessionMatrix";
+import { matchObjection, type ObjectionBattlecard } from "./objectionBuster";
 
 /** Keep the local cue well inside the end-to-end 1.8 second coaching SLA. */
 export const SOUNDBOARD_START_BUDGET_MS = 250;
@@ -11,6 +12,34 @@ const CUE_LOOKBACK_SEGMENTS = 5;
 export interface LiveConcessionCue {
   key: string;
   concession: ConcessionDemand;
+}
+
+export interface LiveObjectionCue {
+  key: string;
+  objection: ObjectionBattlecard;
+}
+
+/**
+ * Find the newest buyer-side objection without waiting for a final transcript.
+ * Interim updates keep the same segment id, so callers can alert once while a
+ * later buyer utterance with the same objection correctly re-arms the cue.
+ */
+export function findLiveObjectionCue(
+  segments: readonly TranscriptSegment[],
+): LiveObjectionCue | null {
+  const first = Math.max(0, segments.length - CUE_LOOKBACK_SEGMENTS);
+  for (let i = segments.length - 1; i >= first; i -= 1) {
+    const segment = segments[i];
+    if (segment.source === "me" || !segment.text.trim()) continue;
+    const objection = matchObjection(segment.text);
+    if (objection) {
+      return {
+        key: `${segment.id}:${objection.id}`,
+        objection,
+      };
+    }
+  }
+  return null;
 }
 
 /**
@@ -25,7 +54,7 @@ export function findLiveConcessionCue(
   const first = Math.max(0, segments.length - CUE_LOOKBACK_SEGMENTS);
   for (let i = segments.length - 1; i >= first; i -= 1) {
     const segment = segments[i];
-    if (!segment.text.trim()) continue;
+    if (segment.source === "me" || !segment.text.trim()) continue;
     const detection = detectConcessionDemands(segment.text);
     if (detection.detected && detection.concession) {
       return {
