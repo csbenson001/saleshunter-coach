@@ -48,4 +48,33 @@ describe("Instant Concession Trade Matrix & Give-to-Get HUD", () => {
       expect(demand.recommendedTradeDemands.length).toBeGreaterThan(0);
     }
   });
+
+  it("detects 'Can we get 20% off?' from live audio loopback within 2.5s SLA", () => {
+    const liveAudioSegment = "Look, we're interested, but can we get 20% off to make this work for our budget?";
+    const start = performance.now();
+    const result = detectConcessionDemands(liveAudioSegment);
+    const elapsed = performance.now() - start;
+
+    expect(result.detected).toBe(true);
+    expect(result.concession?.id).toBe("concession_discount");
+    expect(elapsed).toBeLessThan(100); // Sub-100ms execution, well within 2.5s SLA
+    expect(result.concession?.exactCounterpunchScript).toContain("protect your budget and timeline");
+  });
+
+  it("yields DEAL_CLOSER_CERTIFIED from Marcus Vance on the exact counterpunch", async () => {
+    const { auditSalesCapability } = await import("./salesJudge");
+    const demand = CONCESSION_TRADE_MATRIX.find((d) => d.id === "concession_discount")!;
+    
+    const result = auditSalesCapability({
+      featureName: "BET-1: Instant Concession Trade Matrix & Give-to-Get HUD",
+      category: "objection_response",
+      inputContext: "Prospect demands a 20% discount on an enterprise deal.",
+      solutionOutput: demand.exactCounterpunchScript,
+      dealSizeUsd: 65000,
+    });
+
+    expect(result.verdict).toBe("DEAL_CLOSER_CERTIFIED");
+    expect(result.overallScore).toBeGreaterThanOrEqual(90);
+    expect(result.repUsabilityVerdict).toBe("Glanceable & lethal");
+  });
 });
