@@ -6,12 +6,23 @@
  */
 
 import { evaluateCallScorecard, type TranscriptUtterance } from "./scorecard";
-import { analyzeDealSignals, calculateDealHealth } from "./dealSignals";
+import {
+  analyzeDealSignals,
+  analyzeStakeholderCoverage,
+  calculateDealHealth,
+  stakeholderBlindspotRisk,
+} from "./dealSignals";
 import { evaluateMeddicProgress } from "./meddic";
 import { matchObjection } from "./objectionBuster";
 import { matchConcessionTrade } from "./concessionMatrix";
 import { formatForSalesforce } from "./crmExport";
 import { auditSalesCapability, type ToughJudgeAuditResult } from "./salesJudge";
+import { en } from "../../i18n/messages";
+
+interface BattleUtterance extends TranscriptUtterance {
+  speakerId?: number;
+  atMs?: number;
+}
 
 export interface BattleScenario {
   id: string;
@@ -21,7 +32,9 @@ export interface BattleScenario {
   buyerRole: string;
   targetDealSizeUsd: number;
   description: string;
-  dialogueScript: TranscriptUtterance[];
+  dialogueScript: BattleUtterance[];
+  elapsedMs?: number;
+  expectStakeholderBlindspot?: boolean;
 }
 
 export interface ProvingGroundExecutionResult {
@@ -41,6 +54,8 @@ export interface ProvingGroundExecutionResult {
   scorecardGrade: string;
   scorecardNumeric: number;
   crmPayloadGenerated: boolean;
+  stakeholderBlindspotDetected: boolean;
+  stakeholderCount: number;
   closerAudit: ToughJudgeAuditResult;
   proofVerdict: "PROVEN_LETHAL" | "PROVEN_VIABLE" | "FAILED_UNDER_FIRE";
 }
@@ -95,6 +110,24 @@ export const BATTLE_SCENARIOS: BattleScenario[] = [
     ],
   },
   {
+    id: "single_threaded_champion",
+    name: "The Friendly Champion Single-Thread Trap",
+    difficulty: "Nightmare",
+    buyerPersona: "Enthusiastic Director without budget authority",
+    buyerRole: "Director of Revenue Enablement",
+    targetDealSizeUsd: 72000,
+    description: "The champion likes the product, but the economic buyer has not joined or spoken after 15 minutes.",
+    elapsedMs: 15 * 60 * 1000,
+    expectStakeholderBlindspot: true,
+    dialogueScript: [
+      { speaker: "customer", speakerId: 1, atMs: 30_000, text: "My enablement team would use this on every enterprise call." },
+      { speaker: "rep", speakerId: 0, atMs: 180_000, text: "What revenue metric would make this rollout a priority?" },
+      { speaker: "customer", speakerId: 1, atMs: 420_000, text: "Faster ramp time is our biggest goal, and I can champion the pilot internally." },
+      { speaker: "rep", speakerId: 0, atMs: 660_000, text: "How does your team make the final purchase decision?" },
+      { speaker: "customer", speakerId: 1, atMs: 840_000, text: "Send me the business case and I will circulate it after this call." },
+    ],
+  },
+  {
     id: "procurement_30_percent_bully",
     name: "The Procurement 30% Bully Drill",
     difficulty: "Extreme",
@@ -124,7 +157,23 @@ export function executeProvingGroundSimulation(scenarioId: string): ProvingGroun
   const allText = scenario.dialogueScript.map((u) => u.text).join(" ");
 
   const { signals, risks } = analyzeDealSignals(allText);
-  const healthReport = calculateDealHealth(signals, risks);
+  const stakeholderSegments = scenario.dialogueScript.map((utterance, index) => ({
+    id: `${scenario.id}_${index}`,
+    source: utterance.speaker === "rep" ? "me" as const : "them" as const,
+    speaker: utterance.speakerId ?? (utterance.speaker === "rep" ? 0 : 1),
+    text: utterance.text,
+    isFinal: true,
+    startMs: utterance.atMs ?? index * 60_000,
+    endMs: (utterance.atMs ?? index * 60_000) + (utterance.durationMs ?? 3_000),
+  }));
+  const elapsedMs = scenario.elapsedMs ?? Math.max(0, ...stakeholderSegments.map((s) => s.endMs));
+  const stakeholderCoverage = analyzeStakeholderCoverage(stakeholderSegments, elapsedMs);
+  const blindspotRisk = stakeholderBlindspotRisk(stakeholderCoverage, {
+    label: en["dealRadar.stakeholderBlindspot.label"],
+    coachingAdvice: en["dealRadar.stakeholderBlindspot.singleThreadAdvice"],
+  });
+  const allRisks = blindspotRisk ? [...risks, blindspotRisk] : risks;
+  const healthReport = calculateDealHealth(signals, allRisks);
   const healthInitial = 55;
   const healthFinal = healthReport.healthScore;
 
@@ -168,7 +217,9 @@ export function executeProvingGroundSimulation(scenarioId: string): ProvingGroun
     featureName: `Battlefield Simulation: ${scenario.name}`,
     category: "objection_response" as const,
     inputContext: scenario.description,
-    solutionOutput: topConcession
+    solutionOutput: blindspotRisk
+      ? blindspotRisk.coachingAdvice
+      : topConcession
       ? topConcession.exactCounterpunchScript
       : topObjection
       ? `${topObjection.rebuttalScript} ${topObjection.followUpQuestion}`
@@ -182,7 +233,13 @@ export function executeProvingGroundSimulation(scenarioId: string): ProvingGroun
   const latencyMs = Math.round(end - start);
 
   let proofVerdict: ProvingGroundExecutionResult["proofVerdict"] = "FAILED_UNDER_FIRE";
-  if (scorecard.numericScore >= 80 && closerAudit.overallScore >= 80 && salesforcePayload.length > 50) {
+  const requiredFeatureDetected = !scenario.expectStakeholderBlindspot || !!blindspotRisk;
+  if (
+    scorecard.numericScore >= 80 &&
+    closerAudit.overallScore >= 80 &&
+    salesforcePayload.length > 50 &&
+    requiredFeatureDetected
+  ) {
     proofVerdict = "PROVEN_LETHAL";
   } else if (scorecard.numericScore >= 65) {
     proofVerdict = "PROVEN_VIABLE";
@@ -196,7 +253,7 @@ export function executeProvingGroundSimulation(scenarioId: string): ProvingGroun
     dealHealthInitial: healthInitial,
     dealHealthFinal: healthFinal,
     dealHealthTrend: healthFinal >= healthInitial ? "RECOVERED_TO_WIN" : "STABLE",
-    signalsDetected: [...signals.map((s) => s.label), ...risks.map((r) => r.label)],
+    signalsDetected: [...signals.map((s) => s.label), ...allRisks.map((r) => r.label)],
     meddicCoveragePercent: meddicPercent,
     matchedObjection: topObjection?.title || null,
     objectionPivotTrack: topObjection ? `${topObjection.rebuttalScript} ${topObjection.followUpQuestion}` : null,
@@ -205,6 +262,8 @@ export function executeProvingGroundSimulation(scenarioId: string): ProvingGroun
     scorecardGrade: scorecard.overallGrade,
     scorecardNumeric: scorecard.numericScore,
     crmPayloadGenerated: salesforcePayload.length > 50,
+    stakeholderBlindspotDetected: !!blindspotRisk,
+    stakeholderCount: stakeholderCoverage.stakeholderCount,
     closerAudit,
     proofVerdict,
   };

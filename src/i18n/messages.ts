@@ -607,6 +607,13 @@ export const en = {
   "meeting.speakers": "Speakers:",
   "meeting.listening": "Listening…",
   "meeting.startPrompt": "Press “Start meeting” to begin transcribing.",
+  "dealRadar.stakeholderBlindspot.label": "Stakeholder blindspot",
+  "dealRadar.stakeholderBlindspot.noBuyerAdvice":
+    "No buyer voice detected. Ask: “Who owns the budget, and can we bring them into this decision now?”",
+  "dealRadar.stakeholderBlindspot.singleThreadAdvice":
+    "Single-threaded deal: economic buyer absent. Ask: “Who owns the budget, and can we bring them into this decision now?”",
+  "dealRadar.stakeholderBlindspot.multiThreadAdvice":
+    "Economic buyer unconfirmed. Ask: “Who owns the budget, and can we bring them into this decision now?”",
 
   "work.ask": "Ask",
   "work.todos": "TODO",
