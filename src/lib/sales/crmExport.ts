@@ -18,6 +18,9 @@ export interface MeetingExportData {
   meddicStatus: Record<string, boolean>;
   prospectName?: string;
   companyName?: string;
+  attributedBetId?: string;
+  concessionDefendedUsd?: number;
+  closedWonArrUsd?: number;
 }
 
 export function formatForSalesforce(data: MeetingExportData): string {
@@ -78,8 +81,11 @@ export function formatWebhookPayload(data: MeetingExportData): Record<string, un
   return {
     source: "SalesHunter Coach",
     version: "1.0",
-    event: "meeting_completed",
+    event: data.closedWonArrUsd ? "deal.closed_won" : "meeting_completed",
     timestamp: new Date().toISOString(),
+    attributedBetId: data.attributedBetId || "TASK-100",
+    concessionDefendedUsd: data.concessionDefendedUsd,
+    closedWonArrUsd: data.closedWonArrUsd,
     meeting: {
       title: data.title,
       date: data.date,
@@ -93,3 +99,42 @@ export function formatWebhookPayload(data: MeetingExportData): Record<string, un
     },
   };
 }
+
+/**
+ * Dispatch closed-loop commercial attribution directly to SalesHunter Factory Brains.
+ */
+export async function sendAttributionToFactory(
+  data: MeetingExportData,
+  factoryBaseUrl = "http://127.0.0.1:3002"
+): Promise<{ success: boolean; message?: string }> {
+  try {
+    const url = `${factoryBaseUrl}/api/factory/webhook`;
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        source: "saleshunter-coach",
+        event: data.closedWonArrUsd ? "deal.closed_won" : "meeting.completed",
+        taskId: data.attributedBetId || "TASK-100",
+        closedWonArrUsd: data.closedWonArrUsd,
+        concessionDefendedUsd: data.concessionDefendedUsd,
+        title: data.title,
+        metadata: {
+          company: data.companyName,
+          healthScore: data.dealHealthScore,
+        },
+      }),
+    });
+    if (res.ok) {
+      const parsed = (await res.json()) as { message?: string };
+      return { success: true, message: parsed.message };
+    }
+    return { success: false, message: `HTTP ${res.status}` };
+  } catch (err: unknown) {
+    return {
+      success: false,
+      message: err instanceof Error ? err.message : String(err),
+    };
+  }
+}
+

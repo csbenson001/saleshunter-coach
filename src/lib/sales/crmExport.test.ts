@@ -48,9 +48,18 @@ describe("crmExport connectors", () => {
     expect(md).toContain("- [ ] Send 7-day trial link");
   });
 
-  it("formats standard JSON webhook payload", () => {
-    const payload = formatWebhookPayload(mockData);
+  it("formats standard JSON webhook payload with closed-loop commercial attribution", () => {
+    const payload = formatWebhookPayload({
+      ...mockData,
+      attributedBetId: "TASK-100",
+      concessionDefendedUsd: 4200,
+      closedWonArrUsd: 28500,
+    });
     expect(payload.source).toBe("SalesHunter Coach");
+    expect(payload.event).toBe("deal.closed_won");
+    expect(payload.attributedBetId).toBe("TASK-100");
+    expect(payload.concessionDefendedUsd).toBe(4200);
+    expect(payload.closedWonArrUsd).toBe(28500);
     expect((payload.meeting as { healthScore: number }).healthScore).toBe(88);
   });
 });
