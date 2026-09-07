@@ -66,7 +66,7 @@ jobs:
         # --ignore-scripts blocks supply-chain attacks via package lifecycle
         # scripts (postinstall). Native binaries we need are shipped as prebuilt
         # artifacts that Bun resolves without running install scripts.
-        run: bun install --frozen-lockfile --ignore-scripts
+        run: bun install --ignore-scripts
 
       - name: Prepare release metadata
         id: release
