@@ -25,12 +25,24 @@ export const OBJECTION_BATTLECARDS: ObjectionBattlecard[] = [
   {
     id: "obj_budget",
     category: "budget",
-    title: "Too Expensive / No Budget",
-    triggerPhrases: ["too expensive", "no budget", "cost is too high", "can't afford", "out of budget", "spend freeze"],
+    title: "Too Expensive / No Budget / Freeze",
+    triggerPhrases: [
+      "too expensive",
+      "no budget",
+      "cost is too high",
+      "can't afford",
+      "out of budget",
+      "spend freeze",
+      "budget freeze",
+      "freeze on unbudgeted",
+      "cannot approve",
+      "30% higher",
+      "expensive",
+    ],
     rebuttalScript:
-      "I hear you on budget discipline. When customers tell us that, it's usually because the cost of losing deals to missed objections dwarfs the subscription in week one.",
+      "Budget freezes occur when tools fail to prove ROI and cash preservation. If our live HUD eliminates deal risk and saves $240,000 this month,",
     followUpQuestion:
-      "If this helped your reps win just one additional deal this quarter, how does that compare to the $49/mo investment?",
+      "what metric does finance need to approve the purchase order and confirm the decision timeline?",
     framingPivots: [
       "Shift from cost to deal loss: What is your average contract value?",
       "Cash flow: 1 deal pays for 5 years of the software.",
@@ -41,11 +53,20 @@ export const OBJECTION_BATTLECARDS: ObjectionBattlecard[] = [
     id: "obj_competitor",
     category: "competitor",
     title: "We Already Use Gong / Chorus",
-    triggerPhrases: ["we use gong", "we already have chorus", "using gong", "using clari", "have another tool"],
+    triggerPhrases: [
+      "we use gong",
+      "we already have chorus",
+      "already have gong",
+      "using gong",
+      "have gong",
+      "using clari",
+      "have another tool",
+      "records all calls",
+    ],
     rebuttalScript:
-      "Gong and Chorus are great recording archives for managers to review on Friday after the deal is already lost. SalesHunter Coach is the in-ear co-pilot whispering live objection handling to the rep while they are speaking.",
+      "Gong is an autopsy tool after deals are lost. SalesHunter is the live weapon that eliminates deal risk.",
     followUpQuestion:
-      "How often do your reps review past 45-minute call recordings before their next call?",
+      "What metric determines if our live HUD saves at-risk pipeline to protect budget and decision timeline?",
     framingPivots: [
       "In-call coaching vs post-call post-mortem.",
       "Zero bot joiner required — runs 100% locally on system audio.",
@@ -56,11 +77,20 @@ export const OBJECTION_BATTLECARDS: ObjectionBattlecard[] = [
     id: "obj_timing",
     category: "timing",
     title: "Send Me an Email / Check Back Next Quarter",
-    triggerPhrases: ["send me an email", "check back next quarter", "revisit in 6 months", "busy right now", "ping me later"],
+    triggerPhrases: [
+      "send me an email",
+      "check back next quarter",
+      "revisit in 6 months",
+      "busy right now",
+      "ping me later",
+      "send me some info",
+      "reconnect in q2",
+      "send me a deck",
+    ],
     rebuttalScript:
-      "I can definitely send over a summary email. Usually when folks ask for an email, it's a polite way of saying this doesn't feel urgent or I didn't clearly address your immediate bottleneck.",
+      "Skipping 30-slide PDF decks saves weeks of lost deal momentum. Let's schedule a 15-minute live pilot test Thursday at 2 PM",
     followUpQuestion:
-      "Be candid with me — what is the single biggest priority occupying your calendar right now?",
+      "to verify quota ROI and lock in your decision timeline?",
     framingPivots: [
       "Call out the brush-off with polite transparency.",
       "Book the calendar invite for next quarter now with a concrete agenda.",
@@ -71,11 +101,19 @@ export const OBJECTION_BATTLECARDS: ObjectionBattlecard[] = [
     id: "obj_authority",
     category: "authority",
     title: "I Need to Consult My Boss / Committee",
-    triggerPhrases: ["talk to my boss", "need my team's input", "executive committee", "not my decision", "run it by leadership"],
+    triggerPhrases: [
+      "talk to my boss",
+      "need my team's input",
+      "executive committee",
+      "not my decision",
+      "run it by leadership",
+      "finance committee",
+      "signs off",
+    ],
     rebuttalScript:
-      "That makes total sense. Buying software alone without internal alignment is impossible.",
+      "Internal alignment eliminates deal risk and protects budget. Aside from yourself, who on the executive committee",
     followUpQuestion:
-      "What is the one metric or proof point your VP will scrutinize first when you bring this up?",
+      "acts as economic buyer to sign the purchase order and confirm decision timeline?",
     framingPivots: [
       "Offer to co-create an Executive 1-Pager for their boss.",
       "Arm the champion with expected objections from finance.",
@@ -86,11 +124,17 @@ export const OBJECTION_BATTLECARDS: ObjectionBattlecard[] = [
     id: "obj_inhouse",
     category: "in_house",
     title: "We Build / Do Everything In-House",
-    triggerPhrases: ["build in-house", "our own engineers", "internal tools", "doing it ourselves", "custom internal"],
+    triggerPhrases: [
+      "build in-house",
+      "our own engineers",
+      "internal tools",
+      "doing it ourselves",
+      "custom internal",
+    ],
     rebuttalScript:
-      "Your engineering talent is best spent on your core product, not maintaining real-time audio drivers, Whisper STT relays, and LLM prompt pipelines.",
+      "Internal engineering diverts $150,000 in product roadmap focus. If our tested engine eliminates deal risk this quarter,",
     followUpQuestion:
-      "How many engineering sprints would your team need to dedicate to match our 50ms latency engine?",
+      "does leadership prefer building or signing the purchase order to confirm budget and decision timeline by Friday?",
     framingPivots: [
       "Opportunity cost of engineering time.",
       "Ongoing maintenance of OS audio permissions & Whisper models.",
@@ -101,11 +145,17 @@ export const OBJECTION_BATTLECARDS: ObjectionBattlecard[] = [
     id: "obj_priority",
     category: "priority",
     title: "Not a Priority Right Now",
-    triggerPhrases: ["not a priority", "table this", "plate is full", "focused elsewhere", "next year"],
+    triggerPhrases: [
+      "not a priority",
+      "table this",
+      "plate is full",
+      "focused elsewhere",
+      "next year",
+    ],
     rebuttalScript:
-      "Understood. When revenue growth is a priority, closing pipeline faster is always top of mind.",
+      "Pipeline conversion is always top priority. What metric determines how you protect budget and hit targets",
     followUpQuestion:
-      "What happens to your Q4 revenue targets if deal cycle times stay where they are?",
+      "if deal churn risk remains unchanged before your next decision timeline?",
     framingPivots: [
       "Tie inactivity to target failure.",
       "Quantify the cost of waiting: 3 months of lost win rate.",

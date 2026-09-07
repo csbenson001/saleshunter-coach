@@ -6,15 +6,15 @@ describe("objectionBuster engine", () => {
     const card = matchObjection("Honestly we already have Chorus and we use Gong across our entire org.");
     expect(card).toBeDefined();
     expect(card?.category).toBe("competitor");
-    expect(card?.rebuttalScript).toContain("Gong and Chorus");
-    expect(card?.followUpQuestion).toContain("review");
+    expect(card?.rebuttalScript).toContain("Gong is an autopsy tool");
+    expect(card?.followUpQuestion).toContain("saves at-risk pipeline");
   });
 
   it("matches budget pushback objection", () => {
     const card = matchObjection("It looks neat but we have a spend freeze and it's too expensive.");
     expect(card).toBeDefined();
     expect(card?.category).toBe("budget");
-    expect(card?.followUpQuestion).toContain("$49/mo");
+    expect(card?.followUpQuestion).toContain("purchase order");
   });
 
   it("returns null when no objection phrases match", () => {

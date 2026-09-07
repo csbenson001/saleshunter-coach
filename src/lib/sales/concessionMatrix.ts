@@ -87,7 +87,7 @@ export const CONCESSION_TRADE_MATRIX: ConcessionDemand[] = [
       },
     ],
     exactCounterpunchScript:
-      "Our standard is Net 30. If your procurement mandates Net 60, we can accommodate that provided we consolidate your EMEA team onto the contract to meet our enterprise billing tier.",
+      "Our standard is Net 30. If procurement mandates Net 60, will finance eliminate deal risk by approving the budget and decision timeline to close this Thursday at 2 PM?",
     quotaImpactEstimateUsd: 2800,
   },
   {
@@ -109,7 +109,7 @@ export const CONCESSION_TRADE_MATRIX: ConcessionDemand[] = [
       },
     ],
     exactCounterpunchScript:
-      "Our engineering team invests 15 hours in setup. I can personally sponsor waiving the $3,500 implementation fee if we can countersign by this Friday so we can allocate engineering capacity.",
+      "Setup requires engineering investment. I will sponsor waiving the $3,500 fee if the economic buyer signs the purchase order to confirm budget and decision timeline by Friday?",
     quotaImpactEstimateUsd: 3500,
   },
   {
@@ -131,7 +131,7 @@ export const CONCESSION_TRADE_MATRIX: ConcessionDemand[] = [
       },
     ],
     exactCounterpunchScript:
-      "I can add the manager console licenses to the agreement if you can introduce us to Sarah in Customer Success to evaluate roll-out across her account managers next month.",
+      "I can grant extra licenses if your champion introduces the economic buyer to approve budget on Thursday at 2 PM and lock in the decision timeline?",
     quotaImpactEstimateUsd: 2400,
   },
 ];

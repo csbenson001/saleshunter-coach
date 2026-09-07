@@ -33,6 +33,9 @@ export function ConcessionTradeHUD({ concession, onDismiss }: ConcessionTradeHUD
               <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold">
                 +$4,200 ACV LIFT
               </span>
+              <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 font-bold border border-amber-500/30">
+                +$1,800 COMMISSION DEFENDED
+              </span>
             </div>
             <p className="text-[11px] text-amber-200/80 font-medium">{concession.repWarning}</p>
           </div>

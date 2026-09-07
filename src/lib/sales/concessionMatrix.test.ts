@@ -30,7 +30,7 @@ describe("Instant Concession Trade Matrix & Give-to-Get HUD", () => {
 
     expect(result.detected).toBe(true);
     expect(result.concession?.id).toBe("concession_onboarding");
-    expect(result.concession?.exactCounterpunchScript).toContain("countersign by this Friday");
+    expect(result.concession?.exactCounterpunchScript).toContain("signs the purchase order to confirm budget and decision timeline by Friday");
   });
 
   it("returns detected: false cleanly for normal discovery dialogue", () => {
