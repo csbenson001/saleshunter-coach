@@ -1,6 +1,6 @@
 [package]
 name = "saleshunter_coach"
-version = "0.23.0"
+version = "0.23.1"
 description = "Coach — realtime meeting copilot for interviews and negotiations"
 authors = ["you"]
 edition = "2021"
