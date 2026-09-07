@@ -57,12 +57,17 @@ export function ProvingGroundModal({ isOpen, onClose }: ProvingGroundModalProps)
     if (!text.trim()) return;
 
     const matched = matchObjection(text);
+    const concession = matchConcessionTrade(text);
+    setMatchedConcession(concession);
+
     const talkTrack = matched
       ? `${matched.rebuttalScript} ${matched.followUpQuestion}`
-      : "What specific business metric would we need to change in the next 30 days to make this a high-priority initiative?";
+      : concession
+      ? concession.exactCounterpunchScript
+      : "If our tested engine eliminates deal risk and protects budget, what metric does finance need to confirm the decision timeline by Friday?";
 
     const audit = auditSalesCapability({
-      featureName: "Ad-Hoc Live Buyer Objection Test",
+      featureName: concession ? `Concession Trade: ${concession.category}` : "Ad-Hoc Live Buyer Objection Test",
       category: "objection_response",
       inputContext: text,
       solutionOutput: talkTrack,
@@ -75,9 +80,6 @@ export function ProvingGroundModal({ isOpen, onClose }: ProvingGroundModalProps)
       score: audit.overallScore,
       critique: audit.executiveCritique,
     });
-
-    const concession = matchConcessionTrade(text);
-    setMatchedConcession(concession);
   };
 
   const handleTestCustomObjection = (e: React.FormEvent) => {
