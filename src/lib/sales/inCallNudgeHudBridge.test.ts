@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { readFileSync } from "node:fs";
 import type { InCallHudState } from "./inCallNudgeHud";
 
 const tauri = vi.hoisted(() => ({
@@ -50,6 +51,15 @@ describe("in-call HUD native bridge", () => {
   beforeEach(() => {
     tauri.emit.mockClear();
     tauri.windows.length = 0;
+  });
+
+  it("authorizes the HUD window and cursor-event permission in Tauri", () => {
+    const capability = JSON.parse(
+      readFileSync(new URL("../../../src-tauri/capabilities/default.json", import.meta.url), "utf8"),
+    ) as { windows: string[]; permissions: string[] };
+
+    expect(capability.windows).toContain("in-call-nudge-hud");
+    expect(capability.permissions).toContain("core:window:allow-set-ignore-cursor-events");
   });
 
   it("creates click-through, then enables hit testing only while a card is visible", async () => {

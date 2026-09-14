@@ -26,6 +26,10 @@ fn is_secret_key(key: &str) -> bool {
     SECRET_KEYS.contains(&key)
 }
 
+fn is_missing_credential(error: &keyring::Error) -> bool {
+    matches!(error, keyring::Error::NoEntry)
+}
+
 #[cfg(target_os = "macos")]
 fn keychain_entry(key: &str) -> Result<keyring::Entry, String> {
     keyring::Entry::new(SERVICE, key).map_err(|e| format!("keychain entry: {e}"))
@@ -47,8 +51,7 @@ pub fn get_secure_settings() -> Result<HashMap<String, String>, String> {
                 Ok(value) => {
                     values.insert((*key).to_string(), value);
                 }
-                Err(error) if error.to_string().to_lowercase().contains("not found") => {}
-                Err(error) if error.to_string().to_lowercase().contains("no entry") => {}
+                Err(error) if is_missing_credential(&error) => {}
                 Err(error) => return Err(format!("read keychain credential {key}: {error}")),
             }
         }
@@ -75,12 +78,7 @@ pub fn set_secure_setting(key: String, value: String) -> Result<(), String> {
         if value.is_empty() {
             match entry.delete_credential() {
                 Ok(()) => Ok(()),
-                Err(error)
-                    if error.to_string().to_lowercase().contains("not found")
-                        || error.to_string().to_lowercase().contains("no entry") =>
-                {
-                    Ok(())
-                }
+                Err(error) if is_missing_credential(&error) => Ok(()),
                 Err(error) => Err(format!("delete keychain credential {key}: {error}")),
             }
         } else {
@@ -93,7 +91,12 @@ pub fn set_secure_setting(key: String, value: String) -> Result<(), String> {
 
 #[cfg(test)]
 mod tests {
-    use super::is_secret_key;
+    use super::{is_missing_credential, is_secret_key};
+
+    #[test]
+    fn recognizes_keyring_v4_typed_missing_entry() {
+        assert!(is_missing_credential(&keyring::Error::NoEntry));
+    }
 
     #[test]
     fn only_known_provider_credentials_are_accepted() {

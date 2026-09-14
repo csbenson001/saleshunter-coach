@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useState } from "react";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useI18n } from "../../i18n";
@@ -18,14 +18,20 @@ import { log } from "../../lib/log";
 export function InCallNudgeHudContent({
   state,
   onDismiss,
+  emission,
+  onCommit,
 }: {
   state: InCallHudState;
   onDismiss: () => void;
+  emission?: { id: number; emittedAtMs: number } | null;
+  onCommit?: (measurement: { id: number; latencyMs: number }) => void;
 }) {
   const { t } = useI18n();
   const ratio = state.talkTimeRatio;
   return (
-    <main className="flex h-screen flex-col gap-2 rounded-xl border border-sky-400/30 bg-slate-950/90 p-3 text-slate-100 shadow-2xl backdrop-blur-md">
+    <>
+      {emission && onCommit && <InCallNudgeHudCommitProbe emission={emission} onCommit={onCommit} />}
+      <main className="flex h-screen flex-col gap-2 rounded-xl border border-sky-400/30 bg-slate-950/90 p-3 text-slate-100 shadow-2xl backdrop-blur-md">
       <header className="flex items-center justify-between">
         <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-sky-300">
           {t("hud.title")}
@@ -61,8 +67,26 @@ export function InCallNudgeHudContent({
           </div>
         </section>
       )}
-    </main>
+      </main>
+    </>
   );
+}
+
+/** Runs in React's layout-effect phase, immediately after each HUD commit. */
+export function InCallNudgeHudCommitProbe({
+  emission,
+  onCommit,
+}: {
+  emission: { id: number; emittedAtMs: number } | null;
+  onCommit: (measurement: { id: number; latencyMs: number }) => void;
+}) {
+  const emittedAtMs = emission?.emittedAtMs ?? null;
+  const emissionId = emission?.id ?? null;
+  useLayoutEffect(() => {
+    if (emissionId === null || emittedAtMs === null) return;
+    onCommit({ id: emissionId, latencyMs: Math.max(0, Date.now() - emittedAtMs) });
+  }, [emissionId, emittedAtMs, onCommit]);
+  return null;
 }
 
 export function InCallNudgeHud() {
@@ -72,19 +96,12 @@ export function InCallNudgeHud() {
     cardEmissionId: null,
     cardEmittedAtMs: null,
   }));
-  const pendingEmissionAtMs = useRef<number | null>(null);
-  const lastEmissionId = useRef<number | null>(null);
   const cardId = message.state.card?.id ?? null;
-  const cardEmissionId = message.cardEmissionId;
 
   useEffect(() => {
     let active = true;
     const subscription = listenForInCallHudState((next) => {
       if (!active) return;
-      if (next.cardEmissionId !== null && next.cardEmissionId !== lastEmissionId.current) {
-        pendingEmissionAtMs.current = next.cardEmittedAtMs ?? next.emittedAtMs;
-        lastEmissionId.current = next.cardEmissionId;
-      }
       setMessage(next);
     });
     void helloInCallNudgeHud();
@@ -94,12 +111,12 @@ export function InCallNudgeHud() {
     };
   }, []);
 
-  useLayoutEffect(() => {
-    if (!cardId || cardEmissionId === null || pendingEmissionAtMs.current === null) return;
-    const latencyMs = Date.now() - pendingEmissionAtMs.current;
-    log.info("in-call-nudge-hud: card committed", { cardId, cardEmissionId, latencyMs });
-    pendingEmissionAtMs.current = null;
-  }, [cardEmissionId, cardId]);
+  const onCommit = useCallback(
+    ({ id, latencyMs }: { id: number; latencyMs: number }) => {
+      log.info("in-call-nudge-hud: card committed", { cardId, cardEmissionId: id, latencyMs });
+    },
+    [cardId],
+  );
 
   async function dismiss() {
     // The window is click-through by default. The bridge enables hit testing
@@ -112,5 +129,16 @@ export function InCallNudgeHud() {
     }
   }
 
-  return <InCallNudgeHudContent state={message.state} onDismiss={() => void dismiss()} />;
+  return (
+    <InCallNudgeHudContent
+      state={message.state}
+      onDismiss={() => void dismiss()}
+      emission={
+        message.cardEmissionId === null || message.cardEmittedAtMs === null
+          ? null
+          : { id: message.cardEmissionId, emittedAtMs: message.cardEmittedAtMs }
+      }
+      onCommit={onCommit}
+    />
+  );
 }
