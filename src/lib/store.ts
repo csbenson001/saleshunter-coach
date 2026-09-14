@@ -485,6 +485,9 @@ interface CoachState {
    *  pause-compacted recording + transcript timeline. */
   meetingPausedTotalMs: number;
   segments: TranscriptSegment[];
+  /** Greatest accepted live transcript end timestamp; keeps late events from
+   * moving the rolling context window backwards after older segments evict. */
+  transcriptWindowEndMs: number;
   evaluations: Evaluation[];
   settings: Settings;
   /** Live speaker-key → custom name map (e.g. "them-1" → "重高"). Per meeting. */
@@ -624,6 +627,7 @@ export const useStore = create<CoachState>()(
       meetingPausedAt: null,
       meetingPausedTotalMs: 0,
       segments: [],
+      transcriptWindowEndMs: 0,
       evaluations: evalsFromDefs(DEFAULT_SETTINGS.evaluations),
       settings: DEFAULT_SETTINGS,
       speakerNames: {},
@@ -689,6 +693,7 @@ export const useStore = create<CoachState>()(
       replayPlayheadMs: 0,
       replayTrim: null,
       segments: session.segments,
+      transcriptWindowEndMs: 0,
       speakerNames: session.speakerNames,
       meetingStatus: "stopped",
       highlightMs: null,
@@ -728,6 +733,7 @@ export const useStore = create<CoachState>()(
       ingestWizardOpen: false,
       ingestAudioPath: null,
       segments: entry.segments,
+      transcriptWindowEndMs: 0,
       speakerNames: entry.speakerNames,
       meetingStatus: "stopped",
       highlightMs: null,
@@ -768,6 +774,7 @@ export const useStore = create<CoachState>()(
       ingestWizardOpen: false,
       ingestAudioPath: null,
       segments: [],
+      transcriptWindowEndMs: 0,
       speakerNames: {},
       meetingStatus: "idle",
       highlightMs: null,
@@ -952,6 +959,7 @@ export const useStore = create<CoachState>()(
       loadedHistoryId: null,
       replayFolderId: null,
       segments: [],
+      transcriptWindowEndMs: 0,
       speakerNames: {},
       ...CLEARED_STUDY_SLICE,
       prosody: null,
@@ -994,6 +1002,7 @@ export const useStore = create<CoachState>()(
       meetingPausedAt: null,
       meetingPausedTotalMs: 0,
       segments: [],
+      transcriptWindowEndMs: 0,
       speakerNames: {},
       ...CLEARED_STUDY_SLICE,
       prosody: null,
@@ -1053,16 +1062,26 @@ export const useStore = create<CoachState>()(
         }
       }
 
+      // Provider timestamps are the source of truth for the live context
+      // window. Keep the high-water mark separately because an older segment
+      // may already have been evicted when a late packet arrives.
+      const windowEndMs = Math.max(state.transcriptWindowEndMs, segment.endMs);
+      const windowStartMs = windowEndMs - 30_000;
       const idx = state.segments.findIndex((s) => s.id === segment.id);
-      if (idx === -1) {
-        return { segments: [...state.segments, segment], ...fillerPatch };
-      }
       const next = state.segments.slice();
-      next[idx] = segment;
-      return { segments: next, ...fillerPatch };
+      if (idx === -1) next.push(segment);
+      else next[idx] = segment;
+
+      return {
+        segments: next
+          .filter((s) => s.endMs > windowStartMs)
+          .sort((a, b) => a.startMs - b.startMs || a.endMs - b.endMs),
+        transcriptWindowEndMs: windowEndMs,
+        ...fillerPatch,
+      };
     }),
 
-  clearTranscript: () => set({ segments: [] }),
+  clearTranscript: () => set({ segments: [], transcriptWindowEndMs: 0 }),
 
   updateSettings: (patch) =>
     set((state) => {
