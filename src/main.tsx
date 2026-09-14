@@ -5,6 +5,7 @@ import "./index.css";
 import { attachConsoleOnce, log } from "./lib/log";
 import { initFolderRegistry } from "./lib/history/folders";
 import { initZoomShortcuts } from "./lib/zoom";
+import { InCallNudgeHud } from "./components/sales/InCallNudgeHud";
 
 // Mirror webview console.* into the rotating log file (no-op outside Tauri).
 void attachConsoleOnce();
@@ -29,6 +30,7 @@ const ROUTES = [
   "finding-solution",
   "diagnostics",
   "voice-typing",
+  "in-call-nudge-hud",
 ] as const;
 const window_ = ROUTES.find((r) => route.startsWith(r)) ?? "main";
 log.info("ui: boot", { window: window_ });
@@ -61,6 +63,8 @@ function Root() {
       return <DiagnosticsApp />;
     case "voice-typing":
       return <VoiceTypingApp />;
+    case "in-call-nudge-hud":
+      return <InCallNudgeHud />;
     default:
       return <App />;
   }

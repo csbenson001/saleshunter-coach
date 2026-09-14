@@ -147,6 +147,12 @@ export const en = {
   "titlebar.status.recording": "Recording",
   "titlebar.status.stopped": "Stopped",
   "titlebar.status.idle": "Idle",
+  "hud.title": "In-call coach",
+  "hud.objections": "Objections",
+  "hud.talkTime": "Talk time",
+  "hud.unavailable": "unavailable",
+  "hud.followUp": "Follow-up question",
+  "hud.dismiss": "Dismiss objection card",
   // Live delivery coaching (issue #22) — gauges, nudges, settings.
   "delivery.gauge.pace": "Pace",
   "delivery.gauge.pace.tip": "Your speaking speed (relative to your own baseline). Turns red when you're rushing.",

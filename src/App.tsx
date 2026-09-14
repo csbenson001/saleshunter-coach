@@ -43,6 +43,7 @@ import { refreshSession } from "./lib/cloud/client";
 import { CLOUD_ENABLED } from "./lib/flags";
 import { initVoiceTyping } from "./lib/voiceTyping/host";
 import { log } from "./lib/log";
+import { useInCallNudgeHudHost } from "./lib/sales/useInCallNudgeHudHost";
 
 /**
  * Build the window-resize handler that re-syncs fullscreen state. Extracted to
@@ -258,6 +259,10 @@ const App = () => {
 
   // Drive the standalone "how to reply" window (Tauri); no-op in browser dev.
   useFindingSolutionHost();
+
+  // Drive the meeting-only, click-through HUD from the main window's live
+  // transcript and metrics state.
+  useInCallNudgeHudHost();
 
   return (
     <div
