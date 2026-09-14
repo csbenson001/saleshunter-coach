@@ -1,0 +1,4 @@
+interface:
+  display_name: "Codebase Learner"
+  short_description: "Map unfamiliar repositories into durable architecture docs"
+  default_prompt: "Use $codebase-learner to analyze this repository and produce architecture documentation."
