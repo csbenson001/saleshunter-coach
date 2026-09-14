@@ -451,10 +451,8 @@ async fn run_upload_and_transcribe(
     // 3. Poll until completed or error.
     let audio_duration_ms = loop_poll(client, api_key, &transcription_id).await?;
 
-    // 4. Fetch the transcript tokens. We capture the RAW response body text (not
-    // just the parsed struct) so we can write it verbatim to a diagnostic log
-    // below — this lets the user inspect exactly what Soniox returned (per-token
-    // speaker labels, distinct speaker count, …) when diarization looks wrong.
+    // 4. Fetch the transcript tokens. The response is parsed in memory only;
+    // transcript text must never be copied into a local diagnostic log.
     let transcript_resp = client
         .get(format!(
             "{SONIOX_BASE}/transcriptions/{transcription_id}/transcript"
@@ -463,8 +461,7 @@ async fn run_upload_and_transcribe(
         .send()
         .await
         .map_err(|e| format!("Fetch transcript failed: {e}"))?;
-    let (raw_transcript, transcript): (String, TranscriptResponse) =
-        read_json_with_raw(transcript_resp, "fetch transcript").await?;
+    let transcript: TranscriptResponse = read_json(transcript_resp, "fetch transcript").await?;
 
     // Diagnostics: surface how well Soniox actually diarized, so a real
     // diarization problem (few/empty distinct speakers) can be told apart from a
@@ -487,8 +484,8 @@ async fn run_upload_and_transcribe(
         (toks.len(), with_spk, speakers)
     };
 
-    // Persist a reviewable log of the raw Soniox response + request context.
-    // Best-effort: never let a logging failure abort the transcription.
+    // Persist only non-content diagnostics. Best-effort: never let a logging
+    // failure abort the transcription.
     write_soniox_log(SonioxLogContext {
         model,
         enable_speaker_diarization: diarization,
@@ -498,7 +495,6 @@ async fn run_upload_and_transcribe(
         token_count,
         tokens_with_speaker,
         distinct_speakers: &distinct_speakers,
-        raw_transcript: &raw_transcript,
     });
 
     // 5. Best-effort cleanup of the uploaded file + transcription on Soniox.
@@ -1194,28 +1190,6 @@ async fn read_json<T: serde::de::DeserializeOwned>(
     serde_json::from_str(&text).map_err(|e| format!("{ctx}: bad response JSON: {e} — {text}"))
 }
 
-/// Like `read_json`, but also returns the RAW response body text alongside the
-/// parsed struct. Used for the transcript fetch so the exact bytes Soniox sent
-/// can be written to a diagnostic log. Error handling matches `read_json`: HTTP
-/// status + body are surfaced on failure.
-async fn read_json_with_raw<T: serde::de::DeserializeOwned>(
-    resp: reqwest::Response,
-    ctx: &str,
-) -> Result<(String, T), String> {
-    let status = resp.status();
-    let text = resp
-        .text()
-        .await
-        .map_err(|e| format!("{ctx}: failed to read response: {e}"))?;
-    if !status.is_success() {
-        log::error!("replay: {} http error status={}", ctx, status);
-        return Err(format!("{ctx}: HTTP {status}: {text}"));
-    }
-    let parsed = serde_json::from_str(&text)
-        .map_err(|e| format!("{ctx}: bad response JSON: {e} — {text}"))?;
-    Ok((text, parsed))
-}
-
 /// Inputs for the Soniox diagnostic log. Bundled into one struct so the call
 /// site stays readable and the writer can stay best-effort.
 struct SonioxLogContext<'a> {
@@ -1227,12 +1201,10 @@ struct SonioxLogContext<'a> {
     token_count: usize,
     tokens_with_speaker: usize,
     distinct_speakers: &'a std::collections::BTreeSet<i64>,
-    /// The full, verbatim transcript JSON body returned by Soniox.
-    raw_transcript: &'a str,
 }
 
-/// Write a reviewable JSON log of the raw Soniox transcript response plus the
-/// request context to `~/Documents/Coach/logs/soniox-<timestamp>.json`.
+/// Write non-content Soniox diagnostics to
+/// `~/Documents/Coach/logs/soniox-<timestamp>.json`.
 ///
 /// Best-effort: any failure (no HOME, IO error, …) is reported via `log::warn!`
 /// and swallowed — logging must NEVER fail the transcription.
@@ -1264,11 +1236,15 @@ fn try_write_soniox_log(ctx: &SonioxLogContext) -> Result<(), String> {
     let suffix = &suffix[..8];
     let path = dir.join(format!("soniox-{unix_secs}-{suffix}.json"));
 
-    // Embed the raw transcript as parsed JSON when it parses, else keep it as a
-    // string so nothing is ever lost.
-    let raw_value: serde_json::Value = serde_json::from_str(ctx.raw_transcript)
-        .unwrap_or_else(|_| serde_json::Value::String(ctx.raw_transcript.to_string()));
+    let pretty = soniox_log_json(ctx)?;
+    std::fs::write(&path, pretty).map_err(|e| e.to_string())?;
 
+    // Surface the absolute path in the dev log so the user can find the file.
+    log::info!("replay: saved soniox log path={}", path.to_string_lossy());
+    Ok(())
+}
+
+fn soniox_log_json(ctx: &SonioxLogContext<'_>) -> Result<String, String> {
     let distinct: Vec<i64> = ctx.distinct_speakers.iter().copied().collect();
     let log = serde_json::json!({
         "request": {
@@ -1284,13 +1260,33 @@ fn try_write_soniox_log(ctx: &SonioxLogContext) -> Result<(), String> {
             "distinct_speakers": distinct,
             "distinct_speaker_count": distinct.len(),
         },
-        "raw_transcript": raw_value,
     });
 
-    let pretty = serde_json::to_string_pretty(&log).map_err(|e| e.to_string())?;
-    std::fs::write(&path, pretty).map_err(|e| e.to_string())?;
+    serde_json::to_string_pretty(&log).map_err(|e| e.to_string())
+}
 
-    // Surface the absolute path in the dev log so the user can find the file.
-    log::info!("replay: saved soniox log path={}", path.to_string_lossy());
-    Ok(())
+#[cfg(test)]
+mod log_tests {
+    use super::{soniox_log_json, SonioxLogContext};
+    use std::collections::BTreeSet;
+
+    #[test]
+    fn diagnostic_log_contains_metadata_but_never_transcript_content() {
+        let speakers = BTreeSet::from([1, 2]);
+        let json = soniox_log_json(&SonioxLogContext {
+            model: "stt-async-v5",
+            enable_speaker_diarization: true,
+            language_hints: &["en".to_string()],
+            file_name: "call.wav",
+            audio_duration_ms: 12_000,
+            token_count: 4,
+            tokens_with_speaker: 4,
+            distinct_speakers: &speakers,
+        })
+        .unwrap();
+
+        assert!(json.contains("distinct_speaker_count"));
+        assert!(!json.contains("raw_transcript"));
+        assert!(!json.contains("secret transcript"));
+    }
 }
