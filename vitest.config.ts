@@ -12,7 +12,7 @@ export default defineConfig({
   test: {
     environment: "node",
     globals: true,
-    include: ["src/**/*.test.ts", "tests/**/*.test.ts"],
+    include: ["src/**/*.test.ts", "src/**/*.test.tsx", "tests/**/*.test.ts"],
     // Keep the native/IPC/heavy boundaries out of the unit suite entirely.
     exclude: ["node_modules/**", "src-tauri/**"],
   },

@@ -9,6 +9,7 @@ mod menu;
 mod permissions;
 mod replay;
 mod replay_audio;
+mod secure_store;
 mod transcription;
 mod usage;
 mod voice_typing;
@@ -103,6 +104,8 @@ pub fn run() {
             commands::stop_mic_test,
             commands::meeting_active,
             commands::save_transcript,
+            secure_store::get_secure_settings,
+            secure_store::set_secure_setting,
             commands::export_recording,
             commands::start_oauth_loopback,
             commands::read_templates,

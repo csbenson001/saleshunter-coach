@@ -7,10 +7,13 @@ import {
   destroyInCallNudgeHudWindow,
   ensureInCallNudgeHudWindow,
   listenForInCallHudRequests,
+  setInCallNudgeHudInteractive,
 } from "./inCallNudgeHudBridge";
 import {
   initialInCallHudState,
+  createInCallHudCardEmission,
   reduceInCallHudState,
+  shouldShowInCallNudgeHud,
   type InCallHudEvent,
 } from "./inCallNudgeHud";
 import { isTauri } from "../tauriEvents";
@@ -31,6 +34,7 @@ export function useInCallNudgeHudHost(): void {
   const seenSegmentId = useRef<string | null>(null);
   const objectionCount = useRef(0);
   const meetingRef = useRef<number | null>(null);
+  const cardEmission = useRef<{ id: number; emittedAtMs: number } | null>(null);
   stateRef.current = state;
 
   // Reset state and detection counters for each recording. Paused meetings are
@@ -41,6 +45,7 @@ export function useInCallNudgeHudHost(): void {
     meetingRef.current = meetingStartedAt;
     seenSegmentId.current = null;
     objectionCount.current = 0;
+    cardEmission.current = null;
     dispatch({ type: "dismiss-card" });
     dispatch({ type: "metrics", objectionCount: 0, talkTimeRatio: null });
   }, [meetingStartedAt, meetingStatus]);
@@ -62,6 +67,12 @@ export function useInCallNudgeHudHost(): void {
     const card = matchObjection(latest.text);
     if (!card) return;
     objectionCount.current += 1;
+    const emission = createInCallHudCardEmission(
+      cardEmission.current?.id ?? null,
+      card.id,
+      Date.now(),
+    );
+    cardEmission.current = { id: emission.id, emittedAtMs: emission.emittedAtMs };
     dispatch({
       type: "metrics",
       objectionCount: objectionCount.current,
@@ -90,8 +101,8 @@ export function useInCallNudgeHudHost(): void {
   // Broadcast after React has reduced the event so the secondary window only
   // ever sees complete immutable state snapshots.
   useEffect(() => {
-    if (!isTauri() || meetingStatus !== "recording") return;
-    void broadcastInCallHudState(state).catch((error) =>
+    if (!isTauri() || !shouldShowInCallNudgeHud(meetingStatus)) return;
+    void broadcastInCallHudState(state, cardEmission.current).catch((error) =>
       log.warn("in-call-nudge-hud: state broadcast failed", { error: String(error) }),
     );
   }, [meetingStatus, state]);
@@ -99,10 +110,10 @@ export function useInCallNudgeHudHost(): void {
   useEffect(() => {
     if (!isTauri()) return;
     let active = true;
-    if (meetingStatus === "recording") {
-      void ensureInCallNudgeHudWindow().catch((error) =>
-        log.warn("in-call-nudge-hud: open failed", { error: String(error) }),
-      );
+    if (shouldShowInCallNudgeHud(meetingStatus)) {
+      void ensureInCallNudgeHudWindow()
+        .then(() => setInCallNudgeHudInteractive(stateRef.current.card !== null))
+        .catch((error) => log.warn("in-call-nudge-hud: open failed", { error: String(error) }));
     } else {
       void destroyInCallNudgeHudWindow();
     }
@@ -110,7 +121,7 @@ export function useInCallNudgeHudHost(): void {
     const requests = listenForInCallHudRequests({
       onHello: () => {
         if (active && meetingStatus === "recording") {
-          void broadcastInCallHudState(stateRef.current);
+          void broadcastInCallHudState(stateRef.current, cardEmission.current);
         }
       },
       onDismiss: () => {

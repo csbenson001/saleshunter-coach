@@ -20,6 +20,12 @@ export interface InCallHudState {
   cardExpiresAtMs: number | null;
 }
 
+export interface HudCardEmission {
+  id: number;
+  cardId: string;
+  emittedAtMs: number;
+}
+
 export type InCallHudEvent =
   | { type: "metrics"; objectionCount: number; talkTimeRatio: HudTalkTimeRatio | null }
   | { type: "objection-card"; card: HudObjectionCard }
@@ -43,6 +49,25 @@ export function initialInCallHudState(): InCallHudState {
     card: null,
     cardExpiresAtMs: null,
   };
+}
+
+/** The HUD is a live-call surface, never a paused/replay/stopped surface. */
+export function shouldShowInCallNudgeHud(meetingStatus: string): boolean {
+  return meetingStatus === "recording";
+}
+
+/** Keep the native surface pass-through unless its dismiss affordance exists. */
+export function hudShouldIgnoreCursorEvents(state: InCallHudState): boolean {
+  return state.card === null;
+}
+
+/** Card ids are not unique across repeated objection matches; emissions are. */
+export function createInCallHudCardEmission(
+  previousId: number | null,
+  cardId: string,
+  emittedAtMs: number,
+): HudCardEmission {
+  return { id: (previousId ?? 0) + 1, cardId, emittedAtMs };
 }
 
 export function reduceInCallHudState(

@@ -3,12 +3,20 @@ import ReactDOM from "react-dom/client";
 import App from "./App";
 import "./index.css";
 import { attachConsoleOnce, log } from "./lib/log";
+import { initSecureSettingsSync } from "./lib/secureSettings";
 import { initFolderRegistry } from "./lib/history/folders";
 import { initZoomShortcuts } from "./lib/zoom";
 import { InCallNudgeHud } from "./components/sales/InCallNudgeHud";
 
 // Mirror webview console.* into the rotating log file (no-op outside Tauri).
 void attachConsoleOnce();
+
+// Hydrate provider credentials from the OS Keychain. This runs for every
+// webview route because Settings is a separate native window; credentials are
+// never restored from the browser-persisted settings snapshot.
+void initSecureSettingsSync().catch((error) =>
+  log.warn("secure settings: initialization failed", { error: String(error) }),
+);
 
 // ⌘+ / ⌘− / ⌘0 page zoom, per window, persisted across launches.
 initZoomShortcuts();

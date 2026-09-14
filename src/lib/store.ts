@@ -159,6 +159,30 @@ const DEFAULT_SETTINGS: Settings = {
   defaultSaveLocation: { scope: "personal", folderId: null },
 };
 
+/** Provider credentials are entered in-memory and must not enter localStorage. */
+export const SECRET_SETTING_KEYS = [
+  "anthropicApiKey",
+  "openaiApiKey",
+  "geminiApiKey",
+  "groqApiKey",
+  "qwenApiKey",
+  "kimiApiKey",
+  "ollamaApiKey",
+  "openrouterApiKey",
+  "coachApiKey",
+  "sonioxApiKey",
+  "deepgramApiKey",
+  "assemblyaiApiKey",
+] as const satisfies readonly (keyof Settings)[];
+
+type PersistedSettings = Omit<Settings, (typeof SECRET_SETTING_KEYS)[number]>;
+
+export function settingsForPersistence(settings: Settings): PersistedSettings {
+  const safe = { ...settings } as Partial<Settings>;
+  for (const key of SECRET_SETTING_KEYS) delete safe[key];
+  return safe as PersistedSettings;
+}
+
 /**
  * Which top-level screen is active. Since #195 these are ROUTES under a
  * persistent shell, not modes you enter and exit: the left tree is always on
@@ -1110,7 +1134,7 @@ export const useStore = create<CoachState>()(
       name: "saleshunter-coach-settings",
       version: 3,
       // Persist settings + the cloud sign-in — transcript/eval state is per-session.
-      partialize: (state) => ({ settings: state.settings, cloudAuth: state.cloudAuth }),
+      partialize: (state) => ({ settings: settingsForPersistence(state.settings), cloudAuth: state.cloudAuth }),
       // Backfill any settings fields missing from older persisted state.
       merge: (persisted, current) => {
         const p = (persisted as { settings?: Partial<Settings> } | undefined)?.settings ?? {};

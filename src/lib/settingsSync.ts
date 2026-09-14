@@ -4,6 +4,7 @@ import { isTauri } from "./tauriEvents";
 import { log } from "./log";
 import type { Settings } from "./types";
 import type { CloudAuth } from "./cloud/types";
+import { mergeSecureSettings } from "./secureSettings";
 
 const SETTINGS_EVENT = "settings://updated";
 
@@ -96,7 +97,8 @@ export async function listenForSettings(): Promise<UnlistenFn> {
         language: settings.language,
         transcriptionProvider: settings.transcriptionProvider,
       });
-      useStore.getState().applySettings(settings);
+      const current = useStore.getState().settings;
+      useStore.getState().applySettings(mergeSecureSettings(settings, current));
     }
     // Cloud sign-in/out done in the other window (it's persisted under the same key).
     useStore.getState().setCloudAuth(cloudAuthFromPersist(e.newValue));
@@ -111,7 +113,8 @@ export async function listenForSettings(): Promise<UnlistenFn> {
       llm: e.payload.llmProviders,
       language: e.payload.language,
     });
-    useStore.getState().applySettings(e.payload);
+    const current = useStore.getState().settings;
+    useStore.getState().applySettings(mergeSecureSettings(e.payload, current));
   });
   return () => {
     window.removeEventListener("storage", onStorage);

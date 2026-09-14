@@ -44,6 +44,9 @@ futures-util = "0.3"
 anyhow = "1"
 axum = "0.7"
 uuid = { version = "1", features = ["v4"] }
+# Provider credentials are stored in the platform keychain, never app config
+# or webview localStorage.
+keyring = { version = "4", default-features = false, features = ["v1"] }
 # Audio framed as base64 JSON for OpenAI/Gemini realtime transcription adapters.
 base64 = "0.22"
 audiopus = "0.2.0"

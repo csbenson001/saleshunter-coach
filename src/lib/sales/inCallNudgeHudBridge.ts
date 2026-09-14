@@ -3,6 +3,7 @@ import { isTauri } from "../tauriEvents";
 import { log } from "../log";
 import {
   IN_CALL_NUDGE_HUD_LABEL,
+  hudShouldIgnoreCursorEvents,
   inCallHudWindowOptions,
   type InCallHudState,
 } from "./inCallNudgeHud";
@@ -14,6 +15,8 @@ export const IN_CALL_HUD_DISMISS_EVENT = "in-call-nudge-hud://dismiss";
 export interface InCallHudStateMessage {
   state: InCallHudState;
   emittedAtMs: number;
+  cardEmissionId: number | null;
+  cardEmittedAtMs: number | null;
 }
 
 const WIDTH = 360;
@@ -66,6 +69,14 @@ export async function ensureInCallNudgeHudWindow(): Promise<void> {
   }
 }
 
+/** Toggle native hit testing only while a dismissible card is visible. */
+export async function setInCallNudgeHudInteractive(interactive: boolean): Promise<void> {
+  if (!isTauri()) return;
+  const { WebviewWindow } = await import("@tauri-apps/api/webviewWindow");
+  const win = await WebviewWindow.getByLabel(IN_CALL_NUDGE_HUD_LABEL);
+  if (win) await win.setIgnoreCursorEvents(!interactive);
+}
+
 /** End the HUD lifecycle with the recording; it is never left over for replay. */
 export async function destroyInCallNudgeHudWindow(): Promise<void> {
   if (!isTauri()) return;
@@ -77,9 +88,20 @@ export async function destroyInCallNudgeHudWindow(): Promise<void> {
   );
 }
 
-export async function broadcastInCallHudState(state: InCallHudState): Promise<void> {
+export async function broadcastInCallHudState(
+  state: InCallHudState,
+  emission: { id: number; emittedAtMs: number } | null = null,
+): Promise<void> {
   if (!isTauri()) return;
-  const message: InCallHudStateMessage = { state, emittedAtMs: Date.now() };
+  const message: InCallHudStateMessage = {
+    state,
+    emittedAtMs: Date.now(),
+    cardEmissionId: emission?.id ?? null,
+    cardEmittedAtMs: emission?.emittedAtMs ?? null,
+  };
+  void setInCallNudgeHudInteractive(!hudShouldIgnoreCursorEvents(state)).catch((error) =>
+    log.warn("in-call-nudge-hud: interaction mode update failed", { error: String(error) }),
+  );
   await emit(IN_CALL_HUD_STATE_EVENT, message);
 }
 
