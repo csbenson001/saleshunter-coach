@@ -282,7 +282,13 @@ pub fn start_meeting(
             );
             match (rx_me, rx_them) {
                 (Some(a), Some(b)) => {
-                    let rx_mix = spawn_meeting_audio_tap(app.clone(), a, b, meeting_started);
+                    let rx_mix = spawn_meeting_audio_tap(
+                        app.clone(),
+                        a,
+                        b,
+                        meeting_started,
+                        gate.clone(),
+                    );
                     // Record the one chronological stream → the saved file holds both sides.
                     tasks.push(run_metered_session(
                         &app,
@@ -807,6 +813,7 @@ fn spawn_meeting_audio_tap(
     mut mic: UnboundedReceiver<CapturedAudio>,
     mut loopback: UnboundedReceiver<CapturedAudio>,
     meeting_started: Instant,
+    capture_gate: std::sync::Arc<std::sync::atomic::AtomicBool>,
 ) -> UnboundedReceiver<Vec<i16>> {
     let (tx, rx) = tokio::sync::mpsc::unbounded_channel::<Vec<i16>>();
     tauri::async_runtime::spawn(async move {
@@ -844,14 +851,17 @@ fn spawn_meeting_audio_tap(
                 tap.drain_ready(elapsed_ms(meeting_started, Instant::now()))
             };
             if !send_audio_chunks(&tx, ready) {
+                capture_gate.store(false, std::sync::atomic::Ordering::SeqCst);
                 return;
             }
             if disconnected.is_some() {
+                capture_gate.store(false, std::sync::atomic::Ordering::SeqCst);
                 break;
             }
         }
 
         let _ = send_audio_chunks(&tx, tap.end_meeting());
+        capture_gate.store(false, std::sync::atomic::Ordering::SeqCst);
         log::debug!("meeting: timestamped audio tap stopped");
         let _ = app;
     });
