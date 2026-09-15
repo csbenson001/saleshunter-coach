@@ -1,4 +1,5 @@
-import { act, create } from "react-test-renderer";
+import React from "react";
+import { create } from "react-test-renderer";
 import { describe, expect, it, vi } from "vitest";
 import { FollowUpPackModal } from "./FollowUpPackModal";
 import type { ExecutiveDealMemo } from "../../lib/sales/executiveDealMemo";
@@ -35,7 +36,7 @@ describe("FollowUpPackModal delivery actions", () => {
     const openEmail = vi.fn();
     let renderer!: ReturnType<typeof create>;
 
-    act(() => {
+    React.act(() => {
       renderer = create(
         <FollowUpPackModal
           isOpen
@@ -49,10 +50,10 @@ describe("FollowUpPackModal delivery actions", () => {
       );
     });
 
-    await act(async () => {
+    await React.act(async () => {
       await buttonWithLabel(renderer, "Copy").props.onClick();
     });
-    act(() => buttonWithLabel(renderer, "Open Email Client").props.onClick());
+    React.act(() => buttonWithLabel(renderer, "Open Email Client").props.onClick());
 
     expect(clipboard).toHaveBeenCalledWith(memo.clientFacing.emailBody);
     expect(openEmail).toHaveBeenCalledWith(expect.stringContaining("mailto:jordan%40example.com"));
@@ -63,7 +64,7 @@ describe("FollowUpPackModal delivery actions", () => {
     const clipboard = vi.fn().mockRejectedValue(new Error("clipboard unavailable"));
     let renderer!: ReturnType<typeof create>;
 
-    act(() => {
+    React.act(() => {
       renderer = create(
         <FollowUpPackModal
           isOpen
@@ -75,7 +76,7 @@ describe("FollowUpPackModal delivery actions", () => {
         />,
       );
     });
-    await act(async () => {
+    await React.act(async () => {
       await buttonWithLabel(renderer, "Copy").props.onClick();
     });
 

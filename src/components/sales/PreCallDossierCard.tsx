@@ -4,7 +4,7 @@ import type { PreCallDossier } from "../../lib/sales/preCallDossier";
 function DossierText({ value }: { value: string }): JSX.Element {
   // Keep prose punctuation readable in static markup while still treating
   // dossier content as untrusted text, never as executable markup.
-  const html = value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
+  const html = value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   return <span dangerouslySetInnerHTML={{ __html: html }} />;
 }
 
