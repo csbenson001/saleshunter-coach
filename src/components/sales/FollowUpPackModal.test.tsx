@@ -1,4 +1,4 @@
-import { create } from "react-test-renderer";
+import * as TestRenderer from "react-test-renderer";
 import { describe, expect, it, vi } from "vitest";
 import { FollowUpPackModal } from "./FollowUpPackModal";
 import type { ExecutiveDealMemo } from "../../lib/sales/executiveDealMemo";
@@ -23,7 +23,7 @@ const memo: ExecutiveDealMemo = {
   },
 };
 
-function buttonWithLabel(renderer: ReturnType<typeof create>, label: string) {
+function buttonWithLabel(renderer: ReturnType<typeof TestRenderer.create>, label: string) {
   return renderer.root.findAll(
     (node) => node.type === "button" && node.children.some((child) => child === label),
   )[0];
@@ -33,9 +33,10 @@ describe("FollowUpPackModal delivery actions", () => {
   it("copies the generated email and opens a mailto URL through injected adapters", async () => {
     const clipboard = vi.fn().mockResolvedValue(undefined);
     const openEmail = vi.fn();
-    let renderer!: ReturnType<typeof create>;
+    let renderer!: ReturnType<typeof TestRenderer.create>;
 
-    renderer = create(
+    TestRenderer.act(() => {
+      renderer = TestRenderer.create(
       <FollowUpPackModal
         isOpen
         onClose={() => undefined}
@@ -45,10 +46,13 @@ describe("FollowUpPackModal delivery actions", () => {
         clipboard={clipboard}
         openEmail={openEmail}
       />,
-    );
+      );
+    });
 
-    await buttonWithLabel(renderer, "Copy").props.onClick();
-    buttonWithLabel(renderer, "Open Email Client").props.onClick();
+    await TestRenderer.act(async () => {
+      await buttonWithLabel(renderer, "Copy").props.onClick();
+    });
+    TestRenderer.act(() => buttonWithLabel(renderer, "Open Email Client").props.onClick());
 
     expect(clipboard).toHaveBeenCalledWith(memo.clientFacing.emailBody);
     expect(openEmail).toHaveBeenCalledWith(expect.stringContaining("mailto:jordan%40example.com"));
@@ -57,9 +61,10 @@ describe("FollowUpPackModal delivery actions", () => {
 
   it("renders a visible error when the clipboard adapter fails", async () => {
     const clipboard = vi.fn().mockRejectedValue(new Error("clipboard unavailable"));
-    let renderer!: ReturnType<typeof create>;
+    let renderer!: ReturnType<typeof TestRenderer.create>;
 
-    renderer = create(
+    TestRenderer.act(() => {
+      renderer = TestRenderer.create(
       <FollowUpPackModal
         isOpen
         onClose={() => undefined}
@@ -68,8 +73,11 @@ describe("FollowUpPackModal delivery actions", () => {
         clipboard={clipboard}
         openEmail={() => undefined}
       />,
-    );
-    await buttonWithLabel(renderer, "Copy").props.onClick();
+      );
+    });
+    await TestRenderer.act(async () => {
+      await buttonWithLabel(renderer, "Copy").props.onClick();
+    });
 
     expect(renderer.root.findByProps({ role: "alert" }).children.join("")).toContain("clipboard unavailable");
   });
