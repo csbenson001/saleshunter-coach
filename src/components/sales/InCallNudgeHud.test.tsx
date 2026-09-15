@@ -54,6 +54,30 @@ describe("in-call nudge HUD rendering", () => {
     expect(html).not.toContain("Infinity");
   });
 
+  it("renders manager whispers as an amber coaching banner above call cards", () => {
+    const html = renderToStaticMarkup(
+      <InCallNudgeHudContent
+        state={{
+          objectionCount: 0,
+          talkTimeRatio: null,
+          card: null,
+          cardExpiresAtMs: null,
+          managerWhisper: {
+            id: "manager-1",
+            message: "Ask who else needs to approve this.",
+            sentAtMs: 10_000,
+          },
+          managerWhisperExpiresAtMs: 25_000,
+        }}
+        onDismiss={() => undefined}
+      />,
+    );
+
+    expect(html).toContain("Manager coaching");
+    expect(html).toContain("Ask who else needs to approve this.");
+    expect(html).toContain("border-amber");
+  });
+
   it("measures 100 actual React layout commits under the HUD budget", () => {
     const latencies: number[] = [];
     let renderer: ReactTestRenderer | undefined;

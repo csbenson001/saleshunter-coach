@@ -153,6 +153,7 @@ export const en = {
   "hud.unavailable": "unavailable",
   "hud.followUp": "Follow-up question",
   "hud.dismiss": "Dismiss objection card",
+  "hud.managerCoaching": "Manager coaching",
   // Live delivery coaching (issue #22) — gauges, nudges, settings.
   "delivery.gauge.pace": "Pace",
   "delivery.gauge.pace.tip": "Your speaking speed (relative to your own baseline). Turns red when you're rushing.",

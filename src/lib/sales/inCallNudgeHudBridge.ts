@@ -6,17 +6,21 @@ import {
   hudShouldIgnoreCursorEvents,
   inCallHudWindowOptions,
   type InCallHudState,
+  type HudWhisperCard,
 } from "./inCallNudgeHud";
 
 export const IN_CALL_HUD_STATE_EVENT = "in-call-nudge-hud://state";
 export const IN_CALL_HUD_HELLO_EVENT = "in-call-nudge-hud://hello";
 export const IN_CALL_HUD_DISMISS_EVENT = "in-call-nudge-hud://dismiss";
+export const IN_CALL_MANAGER_WHISPER_EVENT = "in-call-nudge-hud://manager-whisper";
+const MANAGER_WHISPER_CHANNEL = "saleshunter-coach://manager-whisper";
 
 export interface InCallHudStateMessage {
   state: InCallHudState;
   emittedAtMs: number;
   cardEmissionId: number | null;
   cardEmittedAtMs: number | null;
+  managerWhisperSentAtMs?: number | null;
 }
 
 const WIDTH = 360;
@@ -98,11 +102,48 @@ export async function broadcastInCallHudState(
     emittedAtMs: Date.now(),
     cardEmissionId: emission?.id ?? null,
     cardEmittedAtMs: emission?.emittedAtMs ?? null,
+    managerWhisperSentAtMs: state.managerWhisper?.sentAtMs ?? null,
   };
   void setInCallNudgeHudInteractive(!hudShouldIgnoreCursorEvents(state)).catch((error) =>
     log.warn("in-call-nudge-hud: interaction mode update failed", { error: String(error) }),
   );
   await emit(IN_CALL_HUD_STATE_EVENT, message);
+}
+
+/**
+ * Send a manager instruction over the dedicated cross-window IPC seam. In a
+ * browser dashboard/dev session, BroadcastChannel provides the same small
+ * fan-out contract without requiring a native window.
+ */
+export async function broadcastManagerWhisper(whisper: HudWhisperCard): Promise<void> {
+  const message: HudWhisperCard = { ...whisper, sentAtMs: whisper.sentAtMs ?? Date.now() };
+  if (isTauri()) {
+    await emit(IN_CALL_MANAGER_WHISPER_EVENT, message);
+    return;
+  }
+  if (typeof BroadcastChannel !== "undefined") {
+    const channel = new BroadcastChannel(MANAGER_WHISPER_CHANNEL);
+    channel.postMessage(message);
+    channel.close();
+  }
+}
+
+export const sendManagerWhisper = broadcastManagerWhisper;
+
+export async function listenForManagerWhispers(
+  onWhisper: (whisper: HudWhisperCard) => void,
+): Promise<UnlistenFn> {
+  const unlisten = isTauri()
+    ? await listen<HudWhisperCard>(IN_CALL_MANAGER_WHISPER_EVENT, (event) => onWhisper(event.payload))
+    : () => {};
+  const channel = typeof BroadcastChannel === "undefined"
+    ? null
+    : new BroadcastChannel(MANAGER_WHISPER_CHANNEL);
+  if (channel) channel.onmessage = (event: MessageEvent<HudWhisperCard>) => onWhisper(event.data);
+  return () => {
+    unlisten();
+    channel?.close();
+  };
 }
 
 export async function listenForInCallHudState(

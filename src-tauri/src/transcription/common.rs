@@ -22,6 +22,8 @@ use crate::audio::TARGET_SAMPLE_RATE;
 pub const TRANSCRIPT_EVENT: &str = "transcript://segment";
 /// Event the frontend listens on for the live input-level meter.
 pub const LEVEL_EVENT: &str = "audio://level";
+/// Maximum timestamp span for one live transcript update.
+pub const TRANSCRIPT_CHUNK_MS: u64 = 500;
 /// Event the frontend listens on for live delivery-coaching prosody metrics
 /// (pitch variation, pauses) computed on the "me" mic stream — see
 /// [`crate::audio::prosody::ProsodyAnalyzer`].
@@ -102,6 +104,65 @@ pub fn emit_segment(
             end_ms,
         },
     );
+}
+
+/// A timestamp-based transcript window. Providers deliver words in uneven
+/// network-sized messages; this keeps the frontend's live updates bounded to
+/// the same 500 ms cadence regardless of that message framing.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct TranscriptChunk {
+    pub text: String,
+    pub start_ms: u64,
+    pub end_ms: u64,
+}
+
+#[derive(Default)]
+pub struct TranscriptChunker {
+    current: Option<TranscriptChunk>,
+}
+
+impl TranscriptChunker {
+    /// Add one finalized provider token. A completed 500 ms window is returned
+    /// immediately; the token that begins the next window remains pending.
+    pub fn push(&mut self, text: &str, start_ms: u64, end_ms: u64) -> Vec<TranscriptChunk> {
+        if text.is_empty() {
+            return Vec::new();
+        }
+        let end_ms = end_ms.max(start_ms);
+        match self.current.as_mut() {
+            Some(current) => {
+                current.text.push_str(text);
+                current.end_ms = current.end_ms.max(end_ms);
+            }
+            None => {
+                self.current = Some(TranscriptChunk {
+                    text: text.to_string(),
+                    start_ms,
+                    end_ms,
+                });
+            }
+        }
+
+        if self
+            .current
+            .as_ref()
+            .is_some_and(|chunk| chunk.end_ms.saturating_sub(chunk.start_ms) >= TRANSCRIPT_CHUNK_MS)
+        {
+            return self.flush().into_iter().collect();
+        }
+        Vec::new()
+    }
+
+    /// Commit any partial window, such as when a provider marks an utterance
+    /// complete or the capture session is stopping.
+    pub fn flush(&mut self) -> Option<TranscriptChunk> {
+        self.current.take()
+    }
+
+    /// Inspect the current partial window without committing it.
+    pub fn pending(&self) -> Option<&TranscriptChunk> {
+        self.current.as_ref()
+    }
 }
 
 /// Open a WebSocket with extra request headers (provider auth lives here).
@@ -246,9 +307,8 @@ pub struct SegmentBuilder {
     seg_index: u64,
     /// Speaker of the open run, or `None` when no run is open.
     cur_speaker: Option<i64>,
-    cur_final: String,
-    cur_start: u64,
-    cur_end: u64,
+    chunks: TranscriptChunker,
+    last_end: u64,
 }
 
 impl SegmentBuilder {
@@ -259,9 +319,8 @@ impl SegmentBuilder {
             event,
             seg_index: 0,
             cur_speaker: None,
-            cur_final: String::new(),
-            cur_start: 0,
-            cur_end: 0,
+            chunks: TranscriptChunker::default(),
+            last_end: 0,
         }
     }
 
@@ -272,7 +331,9 @@ impl SegmentBuilder {
 
     /// The end timestamp of the current open run — useful as a tail start.
     pub fn current_end(&self) -> u64 {
-        self.cur_end
+        self.chunks
+            .pending()
+            .map_or(self.last_end, |chunk| chunk.end_ms)
     }
 
     /// Add a finalized token to the run. A speaker change closes the open run
@@ -282,52 +343,64 @@ impl SegmentBuilder {
         match self.cur_speaker {
             None => {
                 self.cur_speaker = Some(speaker);
-                self.cur_start = start_ms;
             }
             Some(cur) if speaker != cur => {
-                if !self.cur_final.trim().is_empty() {
-                    self.commit();
-                }
+                self.commit_pending();
                 self.cur_speaker = Some(speaker);
-                self.cur_final.clear();
-                self.cur_start = start_ms;
             }
             Some(_) => {}
         }
-        self.cur_final.push_str(text);
-        self.cur_end = end_ms;
+
+        for chunk in self.chunks.push(text, start_ms, end_ms) {
+            self.emit_chunk(chunk);
+        }
     }
 
-    /// Emit the open run under a fresh segment id and advance the index.
-    fn commit(&mut self) {
+    /// Emit a completed timestamp window under a fresh segment id.
+    fn emit_chunk(&mut self, chunk: TranscriptChunk) {
+        self.last_end = chunk.end_ms;
         emit_segment(
             &self.app,
             self.event,
             self.source,
             format!("{}-{}", self.source, self.seg_index),
             self.current_speaker(),
-            self.cur_final.clone(),
+            chunk.text,
             true,
-            self.cur_start,
-            self.cur_end,
+            chunk.start_ms,
+            chunk.end_ms,
         );
         self.seg_index += 1;
     }
 
-    /// Surface the current open run as solid (settled) text without advancing —
-    /// it keeps growing under the same id until an endpoint or speaker change.
+    /// Commit the partial window when a speaker changes or an utterance ends.
+    fn commit_pending(&mut self) {
+        if let Some(chunk) = self.chunks.flush() {
+            if !chunk.text.trim().is_empty() {
+                self.emit_chunk(chunk);
+            }
+        }
+    }
+
+    /// Surface the current partial window as solid (settled) text without
+    /// advancing — it keeps growing under the same id until the 500 ms window,
+    /// endpoint, or speaker change commits it.
     pub fn emit_committed(&self) {
-        if !self.cur_final.trim().is_empty() {
+        if let Some(chunk) = self
+            .chunks
+            .pending()
+            .filter(|chunk| !chunk.text.trim().is_empty())
+        {
             emit_segment(
                 &self.app,
                 self.event,
                 self.source,
                 format!("{}-{}", self.source, self.seg_index),
                 self.current_speaker(),
-                self.cur_final.clone(),
+                chunk.text.clone(),
                 true,
-                self.cur_start,
-                self.cur_end,
+                chunk.start_ms,
+                chunk.end_ms,
             );
         }
     }
@@ -350,10 +423,27 @@ impl SegmentBuilder {
 
     /// End-of-utterance: commit the open run (if any) and reset for the next one.
     pub fn endpoint(&mut self) {
-        if !self.cur_final.trim().is_empty() {
-            self.commit();
-        }
+        self.commit_pending();
         self.cur_speaker = None;
-        self.cur_final.clear();
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{TranscriptChunker, TRANSCRIPT_CHUNK_MS};
+
+    #[test]
+    fn transcript_chunks_flush_at_500ms_and_keep_the_next_token_pending() {
+        let mut chunks = TranscriptChunker::default();
+
+        assert!(chunks.push("hello ", 0, 240).is_empty());
+        let committed = chunks.push("there ", 240, TRANSCRIPT_CHUNK_MS);
+
+        assert_eq!(committed.len(), 1);
+        assert_eq!(committed[0].text, "hello there ");
+        assert_eq!(committed[0].start_ms, 0);
+        assert_eq!(committed[0].end_ms, TRANSCRIPT_CHUNK_MS);
+        assert!(chunks.push("friend", 500, 720).is_empty());
+        assert_eq!(chunks.flush().unwrap().text, "friend");
     }
 }

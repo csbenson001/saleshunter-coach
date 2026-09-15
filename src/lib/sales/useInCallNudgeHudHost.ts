@@ -3,10 +3,15 @@ import { useStore } from "../store";
 import { talkTimeRatio } from "../analysis/delivery";
 import { matchObjection } from "./objectionBuster";
 import {
+  competitiveKillCardForHud,
+  matchCompetitiveKillCard,
+} from "./competitiveBattlecards";
+import {
   broadcastInCallHudState,
   destroyInCallNudgeHudWindow,
   ensureInCallNudgeHudWindow,
   listenForInCallHudRequests,
+  listenForManagerWhispers,
   setInCallNudgeHudInteractive,
 } from "./inCallNudgeHudBridge";
 import {
@@ -47,6 +52,7 @@ export function useInCallNudgeHudHost(): void {
     objectionCount.current = 0;
     cardEmission.current = null;
     dispatch({ type: "dismiss-card" });
+    dispatch({ type: "dismiss-whisper" });
     dispatch({ type: "metrics", objectionCount: 0, talkTimeRatio: null });
   }, [meetingStartedAt, meetingStatus]);
 
@@ -64,7 +70,10 @@ export function useInCallNudgeHudHost(): void {
     const latest = [...segments].reverse().find((segment) => segment.isFinal);
     if (!latest || latest.id === seenSegmentId.current) return;
     seenSegmentId.current = latest.id;
-    const card = matchObjection(latest.text);
+    const competitiveCard = matchCompetitiveKillCard(latest.text);
+    const card = competitiveCard
+      ? competitiveKillCardForHud(competitiveCard)
+      : matchObjection(latest.text);
     if (!card) return;
     objectionCount.current += 1;
     const emission = createInCallHudCardEmission(
@@ -83,6 +92,7 @@ export function useInCallNudgeHudHost(): void {
       card: {
         id: card.id,
         title: card.title,
+        trap: "trap" in card ? card.trap : undefined,
         rebuttalScript: card.rebuttalScript,
         followUpQuestion: card.followUpQuestion,
       },
@@ -108,13 +118,12 @@ export function useInCallNudgeHudHost(): void {
   }, [meetingStatus, state]);
 
   useEffect(() => {
-    if (!isTauri()) return;
     let active = true;
-    if (shouldShowInCallNudgeHud(meetingStatus)) {
+    if (isTauri() && shouldShowInCallNudgeHud(meetingStatus)) {
       void ensureInCallNudgeHudWindow()
         .then(() => setInCallNudgeHudInteractive(stateRef.current.card !== null))
         .catch((error) => log.warn("in-call-nudge-hud: open failed", { error: String(error) }));
-    } else {
+    } else if (isTauri()) {
       void destroyInCallNudgeHudWindow();
     }
 
@@ -128,10 +137,15 @@ export function useInCallNudgeHudHost(): void {
         if (active) dispatch({ type: "dismiss-card" });
       },
     });
+    const whispers = listenForManagerWhispers((whisper) => {
+      if (active && meetingStatus === "recording") dispatch({ type: "manager-whisper", whisper });
+    });
     requests.catch((error) => log.warn("in-call-nudge-hud: request listener failed", { error: String(error) }));
+    whispers.catch((error) => log.warn("in-call-nudge-hud: manager whisper listener failed", { error: String(error) }));
     return () => {
       active = false;
       requests.then((unlisten) => unlisten()).catch(() => undefined);
+      whispers.then((unlisten) => unlisten()).catch(() => undefined);
     };
   }, [meetingStatus]);
 }

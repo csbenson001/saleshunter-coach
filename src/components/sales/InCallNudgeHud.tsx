@@ -20,17 +20,24 @@ export function InCallNudgeHudContent({
   onDismiss,
   emission,
   onCommit,
+  whisperSentAtMs,
+  onWhisperCommit,
 }: {
   state: InCallHudState;
   onDismiss: () => void;
   emission?: { id: number; emittedAtMs: number } | null;
   onCommit?: (measurement: { id: number; latencyMs: number }) => void;
+  whisperSentAtMs?: number | null;
+  onWhisperCommit?: (latencyMs: number) => void;
 }) {
   const { t } = useI18n();
   const ratio = state.talkTimeRatio;
   return (
     <>
       {emission && onCommit && <InCallNudgeHudCommitProbe emission={emission} onCommit={onCommit} />}
+      {whisperSentAtMs != null && onWhisperCommit && (
+        <InCallNudgeHudWhisperCommitProbe sentAtMs={whisperSentAtMs} onCommit={onWhisperCommit} />
+      )}
       <main className="flex h-screen flex-col gap-2 rounded-xl border border-sky-400/30 bg-slate-950/90 p-3 text-slate-100 shadow-2xl backdrop-blur-md">
       <header className="flex items-center justify-between">
         <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-sky-300">
@@ -46,6 +53,21 @@ export function InCallNudgeHudContent({
         </div>
       </header>
 
+      {state.managerWhisper && (
+        <aside
+          role="status"
+          aria-live="polite"
+          className="rounded-lg border border-amber-400/80 bg-amber-500/20 px-2.5 py-2 shadow-[0_0_18px_rgba(251,191,36,0.18)]"
+        >
+          <div className="text-[9px] font-bold uppercase tracking-[0.16em] text-amber-300">
+            {t("hud.managerCoaching")}
+          </div>
+          <p className="mt-1 text-[12px] font-medium leading-snug text-amber-50">
+            {state.managerWhisper.message ?? state.managerWhisper.prompt}
+          </p>
+        </aside>
+      )}
+
       {state.card && (
         <section className="min-h-0 flex-1 rounded-lg border border-amber-400/40 bg-amber-950/45 p-2.5">
           <div className="flex items-start justify-between gap-2">
@@ -60,11 +82,20 @@ export function InCallNudgeHudContent({
               <X />
             </Button>
           </div>
+          {state.card.trap && (
+            <p className="mt-1.5 text-[11px] leading-snug text-slate-300">{state.card.trap}</p>
+          )}
           <p className="mt-2 text-[12px] leading-snug text-slate-100">{state.card.rebuttalScript}</p>
-          <div className="mt-2 border-t border-amber-300/20 pt-2">
-            <div className="text-[9px] font-bold uppercase tracking-wider text-amber-300">{t("hud.followUp")}</div>
-            <p className="mt-0.5 text-[11px] leading-snug text-slate-200">{state.card.followUpQuestion}</p>
-          </div>
+          {state.card.trap ? (
+            <p className="mt-2 border-t border-amber-300/20 pt-2 text-[11px] leading-snug text-slate-200">
+              {state.card.followUpQuestion}
+            </p>
+          ) : (
+            <div className="mt-2 border-t border-amber-300/20 pt-2">
+              <div className="text-[9px] font-bold uppercase tracking-wider text-amber-300">{t("hud.followUp")}</div>
+              <p className="mt-0.5 text-[11px] leading-snug text-slate-200">{state.card.followUpQuestion}</p>
+            </div>
+          )}
         </section>
       )}
       </main>
@@ -86,6 +117,20 @@ export function InCallNudgeHudCommitProbe({
     if (emissionId === null || emittedAtMs === null) return;
     onCommit({ id: emissionId, latencyMs: Math.max(0, Date.now() - emittedAtMs) });
   }, [emissionId, emittedAtMs, onCommit]);
+  return null;
+}
+
+/** Measures manager-submit to HUD-commit latency at the render seam. */
+export function InCallNudgeHudWhisperCommitProbe({
+  sentAtMs,
+  onCommit,
+}: {
+  sentAtMs: number;
+  onCommit: (latencyMs: number) => void;
+}) {
+  useLayoutEffect(() => {
+    onCommit(Math.max(0, Date.now() - sentAtMs));
+  }, [onCommit, sentAtMs]);
   return null;
 }
 
@@ -117,6 +162,15 @@ export function InCallNudgeHud() {
     },
     [cardId],
   );
+  const onWhisperCommit = useCallback(
+    (latencyMs: number) => {
+      log.info("in-call-nudge-hud: manager whisper committed", {
+        whisperId: message.state.managerWhisper?.id ?? null,
+        latencyMs,
+      });
+    },
+    [message.state.managerWhisper?.id],
+  );
 
   async function dismiss() {
     // The window is click-through by default. The bridge enables hit testing
@@ -139,6 +193,8 @@ export function InCallNudgeHud() {
           : { id: message.cardEmissionId, emittedAtMs: message.cardEmittedAtMs }
       }
       onCommit={onCommit}
+      whisperSentAtMs={message.managerWhisperSentAtMs}
+      onWhisperCommit={onWhisperCommit}
     />
   );
 }

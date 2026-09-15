@@ -60,6 +60,14 @@ html[data-app-window="main"] #root {
   background: transparent;
 }
 
+/* The in-call HUD owns its rounded glass surface. Keep the webview corners
+   transparent so the native floating window reveals the meeting desktop. */
+html[data-app-window="in-call-nudge-hud"],
+html[data-app-window="in-call-nudge-hud"] body,
+html[data-app-window="in-call-nudge-hud"] #root {
+  background: transparent;
+}
+
 body {
   -webkit-font-smoothing: antialiased;
   overflow: hidden;

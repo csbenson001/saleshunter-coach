@@ -52,6 +52,8 @@ use super::{AudioSource, TARGET_SAMPLE_RATE};
 const K_AUDIO_TAP_PROPERTY_FORMAT: u32 = fourcc(b"tfmt");
 const K_AUDIO_OBJECT_PROPERTY_SCOPE_GLOBAL: u32 = fourcc(b"glob");
 const K_AUDIO_OBJECT_PROPERTY_ELEMENT_MAIN: u32 = 0;
+const RECONNECT_BACKOFF: Duration = Duration::from_millis(250);
+const RECONNECT_BACKOFF_MAX: Duration = Duration::from_secs(2);
 
 const fn fourcc(b: &[u8; 4]) -> u32 {
     ((b[0] as u32) << 24) | ((b[1] as u32) << 16) | ((b[2] as u32) << 8) | (b[3] as u32)
@@ -157,6 +159,37 @@ struct TapContext {
 }
 
 fn run(tx: UnboundedSender<Vec<i16>>, running: Arc<AtomicBool>, app: &AppHandle) -> Result<()> {
+    let mut attempt = 0u32;
+    while running.load(Ordering::Relaxed) {
+        match run_once(tx.clone(), running.clone(), app) {
+            Ok(()) => return Ok(()),
+            Err(e) => {
+                attempt = attempt.saturating_add(1);
+                if attempt == 1 {
+                    let code = if e.to_string().contains("CATapDescription") {
+                        "system-audio-unsupported"
+                    } else {
+                        "system-audio-unavailable"
+                    };
+                    let _ = app.emit(
+                        "meeting://warning",
+                        serde_json::json!({ "code": code, "message": e.to_string() }),
+                    );
+                }
+                let delay = reconnect_delay(attempt);
+                log::warn!("[system] tap capture lost, retrying in {delay:?}: {e}");
+                sleep_while_running(&running, delay);
+            }
+        }
+    }
+    Ok(())
+}
+
+fn run_once(
+    tx: UnboundedSender<Vec<i16>>,
+    running: Arc<AtomicBool>,
+    app: &AppHandle,
+) -> Result<()> {
     unsafe {
         // 1. Describe a global stereo tap of all system output.
         let empty: *mut Object = msg_send![class!(NSArray), array];
@@ -257,7 +290,15 @@ fn run(tx: UnboundedSender<Vec<i16>>, running: Arc<AtomicBool>, app: &AppHandle)
             let _: () = msg_send![desc, release];
             return Err(anyhow!("AudioDeviceCreateIOProcID failed: {status}"));
         }
-        AudioDeviceStart(agg_id, proc_id);
+        let start_status = AudioDeviceStart(agg_id, proc_id);
+        if start_status != 0 {
+            AudioDeviceDestroyIOProcID(agg_id, proc_id);
+            AudioHardwareDestroyAggregateDevice(agg_id);
+            AudioHardwareDestroyProcessTap(tap_id);
+            drop(Box::from_raw(ctx_ptr as *mut TapContext));
+            let _: () = msg_send![desc, release];
+            return Err(anyhow!("AudioDeviceStart failed: {start_status}"));
+        }
         // Kick the tap awake. A global process tap only starts ticking once
         // SOME process renders audio; until then the tap-backed aggregate sits
         // dormant, and (observed on macOS 15) coreaudiod wedges the START of
@@ -277,11 +318,23 @@ fn run(tx: UnboundedSender<Vec<i16>>, running: Arc<AtomicBool>, app: &AppHandle)
         // a permission problem doesn't just look like a silent remote party.
         let started_at = Instant::now();
         let mut checked = false;
+        let mut previous_frames = 0;
+        let mut last_frame_at = Instant::now();
+        let mut disconnected = false;
         while running.load(Ordering::Relaxed) {
             std::thread::sleep(Duration::from_millis(100));
+            let current_frames = frames.load(Ordering::Relaxed);
+            if current_frames > previous_frames {
+                previous_frames = current_frames;
+                last_frame_at = Instant::now();
+            } else if previous_frames > 0 && last_frame_at.elapsed() >= Duration::from_secs(1) {
+                log::warn!("[system] tap stopped delivering frames");
+                disconnected = true;
+                break;
+            }
             if !checked && started_at.elapsed() >= Duration::from_secs(3) {
                 checked = true;
-                if frames.load(Ordering::Relaxed) == 0 {
+                if previous_frames == 0 {
                     log::warn!(
                         "[system] tap delivered no frames in 3s — grant \"System Audio \
                          Recording\" (Settings → Permissions) and restart the meeting"
@@ -301,8 +354,24 @@ fn run(tx: UnboundedSender<Vec<i16>>, running: Arc<AtomicBool>, app: &AppHandle)
         AudioHardwareDestroyProcessTap(tap_id);
         drop(Box::from_raw(ctx_ptr as *mut TapContext));
         let _: () = msg_send![desc, release];
+        if disconnected && running.load(Ordering::Relaxed) {
+            return Err(anyhow!("system audio device disconnected"));
+        }
     }
     Ok(())
+}
+
+fn reconnect_delay(attempt: u32) -> Duration {
+    let exponent = attempt.saturating_sub(1).min(3);
+    let millis = RECONNECT_BACKOFF.as_millis() * 2u128.pow(exponent);
+    Duration::from_millis(millis.min(RECONNECT_BACKOFF_MAX.as_millis()) as u64)
+}
+
+fn sleep_while_running(running: &AtomicBool, duration: Duration) {
+    let deadline = Instant::now() + duration;
+    while running.load(Ordering::Relaxed) && Instant::now() < deadline {
+        std::thread::sleep(Duration::from_millis(25));
+    }
 }
 
 /// Realtime callback: downmix the tapped interleaved float frames to mono,

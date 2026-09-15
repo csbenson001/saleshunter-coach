@@ -11,6 +11,9 @@ use tokio::sync::mpsc::UnboundedSender;
 use super::resample::LinearResampler;
 use super::{AudioSource, TARGET_SAMPLE_RATE};
 
+const RECONNECT_BACKOFF: Duration = Duration::from_millis(250);
+const RECONNECT_BACKOFF_MAX: Duration = Duration::from_secs(2);
+
 /// List the names of available input devices, for the Settings picker.
 pub fn list_input_devices() -> Vec<String> {
     let host = cpal::default_host();
@@ -54,6 +57,28 @@ fn run(
     tx: UnboundedSender<Vec<i16>>,
     running: Arc<AtomicBool>,
 ) -> Result<()> {
+    let mut attempt = 0u32;
+    while running.load(Ordering::Relaxed) {
+        match run_once(device_name.clone(), tx.clone(), running.clone()) {
+            Ok(()) => return Ok(()),
+            Err(e) => {
+                attempt = attempt.saturating_add(1);
+                log::warn!(
+                    "[mic] capture lost, retrying in {:?}: {e}",
+                    reconnect_delay(attempt)
+                );
+                sleep_while_running(&running, reconnect_delay(attempt));
+            }
+        }
+    }
+    Ok(())
+}
+
+fn run_once(
+    device_name: Option<String>,
+    tx: UnboundedSender<Vec<i16>>,
+    running: Arc<AtomicBool>,
+) -> Result<()> {
     let host = cpal::default_host();
     // Select the requested device by name, else fall back to the default.
     let device = match device_name.as_deref().filter(|n| !n.is_empty()) {
@@ -72,6 +97,7 @@ fn run(
     let config: cpal::StreamConfig = default_cfg.into();
     let channels = config.channels as usize;
     let in_rate = config.sample_rate.0;
+    let stream_error = Arc::new(AtomicBool::new(false));
 
     eprintln!(
         "[mic] capturing on {:?} @ {} Hz, {} ch ({:?}) → {} Hz mono",
@@ -84,9 +110,30 @@ fn run(
 
     // The cpal stream is !Send on macOS, so it lives entirely on this thread.
     let stream = match sample_format {
-        cpal::SampleFormat::F32 => build_stream::<f32>(&device, &config, channels, in_rate, tx)?,
-        cpal::SampleFormat::I16 => build_stream::<i16>(&device, &config, channels, in_rate, tx)?,
-        cpal::SampleFormat::U16 => build_stream::<u16>(&device, &config, channels, in_rate, tx)?,
+        cpal::SampleFormat::F32 => build_stream::<f32>(
+            &device,
+            &config,
+            channels,
+            in_rate,
+            tx,
+            stream_error.clone(),
+        )?,
+        cpal::SampleFormat::I16 => build_stream::<i16>(
+            &device,
+            &config,
+            channels,
+            in_rate,
+            tx,
+            stream_error.clone(),
+        )?,
+        cpal::SampleFormat::U16 => build_stream::<u16>(
+            &device,
+            &config,
+            channels,
+            in_rate,
+            tx,
+            stream_error.clone(),
+        )?,
         other => return Err(anyhow!("unsupported sample format: {other:?}")),
     };
     stream.play()?;
@@ -94,11 +141,15 @@ fn run(
     // Poll the gate tightly so the stream (and the device) is released within a
     // few ms of stop — voice typing cuts on release and a lingering device would
     // keep feeding the next moments of audio. A 10 ms tick is negligible CPU.
-    while running.load(Ordering::Relaxed) {
+    while running.load(Ordering::Relaxed) && !stream_error.load(Ordering::Relaxed) {
         std::thread::sleep(Duration::from_millis(10));
     }
     drop(stream);
-    Ok(())
+    if running.load(Ordering::Relaxed) {
+        Err(anyhow!("microphone input device disconnected"))
+    } else {
+        Ok(())
+    }
 }
 
 fn build_stream<T>(
@@ -107,6 +158,7 @@ fn build_stream<T>(
     channels: usize,
     in_rate: u32,
     tx: UnboundedSender<Vec<i16>>,
+    stream_error: Arc<AtomicBool>,
 ) -> Result<cpal::Stream>
 where
     T: SizedSample,
@@ -132,8 +184,24 @@ where
                 let _ = tx.send(out);
             }
         },
-        |e| eprintln!("[mic] stream error: {e}"),
+        move |e| {
+            stream_error.store(true, Ordering::Release);
+            eprintln!("[mic] stream error: {e}");
+        },
         None,
     )?;
     Ok(stream)
+}
+
+fn reconnect_delay(attempt: u32) -> Duration {
+    let exponent = attempt.saturating_sub(1).min(3);
+    let millis = RECONNECT_BACKOFF.as_millis() * 2u128.pow(exponent);
+    Duration::from_millis(millis.min(RECONNECT_BACKOFF_MAX.as_millis()) as u64)
+}
+
+fn sleep_while_running(running: &AtomicBool, duration: Duration) {
+    let deadline = std::time::Instant::now() + duration;
+    while running.load(Ordering::Relaxed) && std::time::Instant::now() < deadline {
+        std::thread::sleep(Duration::from_millis(25));
+    }
 }

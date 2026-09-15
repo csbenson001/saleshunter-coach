@@ -1,4 +1,5 @@
 export const HUD_CARD_TIMEOUT_MS = 12_000;
+export const HUD_WHISPER_TIMEOUT_MS = 15_000;
 export const IN_CALL_NUDGE_HUD_LABEL = "in-call-nudge-hud";
 
 export interface HudTalkTimeRatio {
@@ -9,8 +10,19 @@ export interface HudTalkTimeRatio {
 export interface HudObjectionCard {
   id: string;
   title: string;
+  trap?: string;
   rebuttalScript: string;
   followUpQuestion: string;
+}
+
+/** A short, non-interrupting instruction sent by a manager during a call. */
+export interface HudWhisperCard {
+  id: string;
+  /** `prompt` is accepted for dashboard clients that use the manager vocabulary. */
+  message?: string;
+  prompt?: string;
+  /** Timestamp from the manager submit boundary, used for the delivery SLA. */
+  sentAtMs?: number;
 }
 
 export interface InCallHudState {
@@ -18,6 +30,8 @@ export interface InCallHudState {
   talkTimeRatio: HudTalkTimeRatio | null;
   card: HudObjectionCard | null;
   cardExpiresAtMs: number | null;
+  managerWhisper?: HudWhisperCard | null;
+  managerWhisperExpiresAtMs?: number | null;
 }
 
 export interface HudCardEmission {
@@ -29,7 +43,9 @@ export interface HudCardEmission {
 export type InCallHudEvent =
   | { type: "metrics"; objectionCount: number; talkTimeRatio: HudTalkTimeRatio | null }
   | { type: "objection-card"; card: HudObjectionCard }
+  | { type: "manager-whisper"; whisper: HudWhisperCard }
   | { type: "dismiss-card" }
+  | { type: "dismiss-whisper" }
   | { type: "tick" };
 
 export interface InCallHudWindowOptions {
@@ -88,21 +104,35 @@ export function reduceInCallHudState(
         card: event.card,
         cardExpiresAtMs: nowMs + HUD_CARD_TIMEOUT_MS,
       };
+    case "manager-whisper":
+      return {
+        ...state,
+        managerWhisper: event.whisper,
+        managerWhisperExpiresAtMs: nowMs + HUD_WHISPER_TIMEOUT_MS,
+      };
     case "dismiss-card":
       return {
         ...state,
         card: null,
         cardExpiresAtMs: null,
       };
+    case "dismiss-whisper":
+      return {
+        ...state,
+        managerWhisper: null,
+        managerWhisperExpiresAtMs: null,
+      };
     case "tick":
-      if (state.cardExpiresAtMs !== null && nowMs >= state.cardExpiresAtMs) {
+      {
+        const whisperExpired = state.managerWhisperExpiresAtMs != null && nowMs >= state.managerWhisperExpiresAtMs;
+        const cardExpired = state.cardExpiresAtMs !== null && nowMs >= state.cardExpiresAtMs;
+        if (!whisperExpired && !cardExpired) return state;
         return {
           ...state,
-          card: null,
-          cardExpiresAtMs: null,
+          ...(whisperExpired ? { managerWhisper: null, managerWhisperExpiresAtMs: null } : {}),
+          ...(cardExpired ? { card: null, cardExpiresAtMs: null } : {}),
         };
       }
-      return state;
   }
 }
 
