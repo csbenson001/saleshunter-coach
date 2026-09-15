@@ -309,7 +309,7 @@ pub fn start_meeting(
                         provider,
                         make_config(),
                         "me",
-                        a,
+                        strip_timestamps(a),
                         Some(recorder),
                         "meeting://error",
                         Some(error_mute.clone()),
@@ -323,7 +323,7 @@ pub fn start_meeting(
                         provider,
                         make_config(),
                         "them",
-                        b,
+                        strip_timestamps(b),
                         Some(recorder),
                         "meeting://error",
                         Some(error_mute.clone()),
@@ -889,6 +889,18 @@ fn send_audio_chunks(
         }
     }
     true
+}
+
+fn strip_timestamps(mut rx: UnboundedReceiver<CapturedAudio>) -> UnboundedReceiver<Vec<i16>> {
+    let (tx, out_rx) = tokio::sync::mpsc::unbounded_channel::<Vec<i16>>();
+    tauri::async_runtime::spawn(async move {
+        while let Some(packet) = rx.recv().await {
+            if tx.send(packet.pcm).is_err() {
+                break;
+            }
+        }
+    });
+    out_rx
 }
 
 /// Get the absolute path to the templates.json file.
