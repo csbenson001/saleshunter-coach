@@ -1,4 +1,5 @@
 pub mod microphone;
+pub mod meeting_tap;
 pub mod mixer;
 pub mod prosody;
 pub mod resample;
