@@ -10,8 +10,8 @@ import type { TranscriptSegment } from "../types";
 export const TALK_TIME_ALERT_RATIO = 0.65;
 export const TALK_TIME_ALERT_SUSTAIN_MS = 90_000;
 
-type QualificationStatus = "confirmed" | "missing";
-type BadgeTone = "green" | "red";
+export type QualificationStatus = "confirmed" | "missing";
+export type BadgeTone = "green" | "red";
 
 export interface LiveQualificationEntry {
   key: "M" | "E" | "DC" | "DP" | "I" | "C";

@@ -17,6 +17,7 @@ export function MeddicMatrix() {
       return {
         ...criterion,
         detected: status?.status === "confirmed",
+        badgeTone: status?.badgeTone ?? "red",
         evidenceQuote: status?.evidenceQuote,
       };
     });
@@ -70,23 +71,25 @@ export function MeddicMatrix() {
               onClick={() => toggleItem(item.key)}
               className={`flex items-start gap-2 rounded border p-2 text-left transition-colors ${
                 item.detected
-                  ? "border-cyan-800/40 bg-cyan-950/20 text-cyan-200"
-                  : "border-border/30 bg-muted/10 text-muted-foreground hover:bg-muted/20"
+                  ? "border-emerald-800/40 bg-emerald-950/20 text-emerald-200"
+                  : "border-red-900/40 bg-red-950/20 text-red-200 hover:bg-red-950/30"
               }`}
             >
               {item.detected ? (
-                <CheckCircle2 className="size-3.5 shrink-0 text-cyan-400 mt-0.5" />
+                <CheckCircle2 className="size-3.5 shrink-0 text-emerald-400 mt-0.5" />
               ) : (
-                <Circle className="size-3.5 shrink-0 text-muted-foreground/60 mt-0.5" />
+                <Circle className="size-3.5 shrink-0 text-red-400/70 mt-0.5" />
               )}
               <div className="min-w-0 flex-1">
                 <div className="font-semibold flex items-center justify-between text-[11px]">
                   <span>[{item.key}] {item.name}</span>
-                  {item.detected && <span className="text-[9px] uppercase tracking-wider text-cyan-400">Verified</span>}
+                  <span className={`text-[9px] uppercase tracking-wider ${item.detected ? "text-emerald-400" : "text-red-400"}`}>
+                    {item.detected ? "Confirmed" : "Missing"}
+                  </span>
                 </div>
                 <div className="text-[10px] opacity-75 truncate">{item.shortDesc}</div>
                 {item.evidenceQuote && (
-                  <div className="mt-1 text-[9px] italic text-cyan-300/80 line-clamp-1">
+                  <div className="mt-1 text-[9px] italic text-emerald-300/80 line-clamp-1">
                     "{item.evidenceQuote}"
                   </div>
                 )}

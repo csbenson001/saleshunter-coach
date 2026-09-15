@@ -11,14 +11,30 @@ export function DealRiskHud() {
 
   if (signals.length === 0 && risks.length === 0 && talkTimeAlert === null) {
     return (
-      <div className="flex items-center justify-between border-b border-border/40 bg-card/40 px-3 py-1.5 text-xs text-muted-foreground backdrop-blur-sm">
-        <div className="flex items-center gap-1.5">
-          <Zap className="size-3.5 text-sky-400" />
-          <span className="font-medium text-foreground">Deal Radar Active</span>
-          <span className="text-[11px] opacity-70">— Listening for buying signals &amp; deal risks...</span>
+      <div className="border-b border-border/40 bg-card/40 px-3 py-1.5 text-xs text-muted-foreground backdrop-blur-sm">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1.5">
+            <Zap className="size-3.5 text-sky-400" />
+            <span className="font-medium text-foreground">Deal Radar Active</span>
+            <span className="text-[11px] opacity-70">— Listening for buying signals &amp; deal risks...</span>
+          </div>
+          <div className="flex items-center gap-1 rounded bg-muted/60 px-1.5 py-0.5 text-[10px] font-mono text-muted-foreground">
+            {healthScore}% Baseline
+          </div>
         </div>
-        <div className="flex items-center gap-1 rounded bg-muted/60 px-1.5 py-0.5 text-[10px] font-mono text-muted-foreground">
-          {healthScore}% Baseline
+        <div className="mt-1.5 flex flex-wrap items-center gap-1.5" aria-label="MEDDIC qualification status">
+          {qualification.map((criterion) => (
+            <span
+              key={criterion.key}
+              className={`rounded border px-1.5 py-0.5 text-[10px] font-semibold ${
+                criterion.badgeTone === "green"
+                  ? "border-emerald-800/40 bg-emerald-950/30 text-emerald-300"
+                  : "border-red-900/40 bg-red-950/20 text-red-300"
+              }`}
+            >
+              {criterion.key}: {criterion.status}
+            </span>
+          ))}
         </div>
       </div>
     );
