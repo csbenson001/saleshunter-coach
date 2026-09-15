@@ -8,16 +8,23 @@
  * Latency SLA: <1.8s detection, <3.0s glanceability
  */
 
+import {
+  CONCESSION_TRADE_OPTIONS,
+  type ConcessionTradeOption,
+} from "./concessionVault";
+
 export interface ConcessionDemand {
   id: string;
   category: "discount" | "payment_terms" | "onboarding" | "free_seats" | "pilot" | "sla";
   buyerPhrases: string[];
   repWarning: string;
   recommendedTradeDemands: {
+    id?: string;
     label: string;
     tradeAsk: string;
     commercialValue: string;
   }[];
+  tradeOptions?: readonly ConcessionTradeOption[];
   exactCounterpunchScript: string;
   quotaImpactEstimateUsd: number;
 }
@@ -43,16 +50,19 @@ export const CONCESSION_TRADE_MATRIX: ConcessionDemand[] = [
     repWarning: "🚨 PROCUREMENT DISCOUNT BLUFF: Do not concede list price for free. Demand contractual commitments.",
     recommendedTradeDemands: [
       {
+        id: "payment_terms",
         label: "Annual Upfront Pre-Pay",
         tradeAsk: "Trade 10% discount for 100% upfront annual wire payment instead of quarterly.",
         commercialValue: "+$12,000 upfront cash flow",
       },
       {
+        id: "contract_duration",
         label: "2-Year Multi-Year Lock",
         tradeAsk: "Trade 15% discount for a firm 24-month contract commitment without early termination.",
         commercialValue: "+$38,000 guaranteed backlog",
       },
       {
+        id: "marketing_value",
         label: "Executive Case Study & Reference",
         tradeAsk: "Trade concession for named press release and 2 customer reference calls per quarter.",
         commercialValue: "Enterprise brand halo",
@@ -61,6 +71,7 @@ export const CONCESSION_TRADE_MATRIX: ConcessionDemand[] = [
     exactCounterpunchScript:
       "We do not offer unearned price concessions, but we do trade for commercial value. If you commit to a 2-year agreement with upfront pre-pay to protect your budget and timeline, who on your executive committee makes the final decision to close this week?",
     quotaImpactEstimateUsd: 4200,
+    tradeOptions: CONCESSION_TRADE_OPTIONS,
   },
   {
     id: "concession_terms",
