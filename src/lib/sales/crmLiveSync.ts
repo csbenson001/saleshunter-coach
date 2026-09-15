@@ -166,6 +166,8 @@ function requiredString(value: unknown, field: string): string {
 }
 
 function formEncodeSecret(value: string): string {
+  // Encode every byte so request logs cannot expose the raw refresh token;
+  // application/x-www-form-urlencoded decoders restore the original value.
   return Array.from(new TextEncoder().encode(value), (byte) => `%${byte.toString(16).toUpperCase().padStart(2, "0")}`).join("");
 }
 
