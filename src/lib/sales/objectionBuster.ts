@@ -55,6 +55,8 @@ export const OBJECTION_BATTLECARDS: ObjectionBattlecard[] = [
     title: "We Already Use Gong / Chorus",
     triggerPhrases: [
       "we use gong",
+      "already use gong",
+      "use gong",
       "we already have chorus",
       "already have gong",
       "using gong",

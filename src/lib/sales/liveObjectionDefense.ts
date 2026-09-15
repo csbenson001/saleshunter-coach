@@ -106,9 +106,6 @@ export function reduceLiveObjectionDefense(
     };
   }
 
-  // Unrelated utterance: preserve current cue, record segment id as processed
-  return {
-    ...state,
-    processedSegmentIds: nextProcessed,
-  };
+  // Unrelated utterance: preserve current cue and state
+  return state;
 }
