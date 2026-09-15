@@ -43,7 +43,7 @@ export function runExecutiveDealMemo(
       }
 
       const memo = await generateExecutiveDealMemo(input, {
-        now: options.now,
+        now: options.now ?? (() => Date.now()),
         generateDraft:
           options.generateDraft ??
           ((memoInput) => generateExecutiveDealMemoDraft({ settings: state.settings, input: memoInput })),
