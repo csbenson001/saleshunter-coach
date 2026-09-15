@@ -69,7 +69,7 @@ export interface ReplayOptions {
   sleep?: (milliseconds: number) => Promise<void>;
 }
 
-const DEFAULT_SLEEP: ReplayOptions["sleep"] = (milliseconds) =>
+const DEFAULT_SLEEP = (milliseconds: number): Promise<void> =>
   new Promise((resolvePromise) => setTimeout(resolvePromise, milliseconds));
 
 function asRecord(value: unknown, label: string): JsonRecord {
