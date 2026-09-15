@@ -1,0 +1,7 @@
+{
+  "utterances": [
+    { "id": "smoke-1", "speaker": "prospect", "text": "We already use Gong.", "startMs": 0, "endMs": 10 },
+    { "id": "smoke-2", "speaker": "rep", "text": "That makes sense.", "startMs": 10, "endMs": 20 },
+    { "id": "smoke-3", "speaker": "prospect", "text": "Can we get a 20% discount?", "startMs": 20, "endMs": 30 }
+  ]
+}

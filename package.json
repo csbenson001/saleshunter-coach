@@ -12,6 +12,7 @@
     "test": "NODE_ENV=development vitest run",
     "test:run": "NODE_ENV=development vitest run",
     "test:watch": "vitest",
+    "test:replay": "vite-node scripts/replay-benchmark.ts",
     "prove": "npx tsx scripts/prove-it.mjs",
     "audit:sales": "npx tsx scripts/sales-judge-audit.mjs"
   },

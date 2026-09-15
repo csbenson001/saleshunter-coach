@@ -5,6 +5,9 @@ pub mod resample;
 #[cfg(target_os = "macos")]
 pub mod system_macos;
 
+#[cfg(test)]
+mod meeting_tap_contract;
+
 use std::sync::atomic::AtomicBool;
 use std::sync::Arc;
 use std::thread::JoinHandle;
