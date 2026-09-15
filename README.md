@@ -74,6 +74,20 @@ Stopping a meeting lands on its debrief. Any recording — just finished, from h
 
 Everything generates once and saves with the recording — reopen it a month later and the whole report loads instantly, no extra LLM calls. Plus **LLM speaker re-attribution** fixes diarization drift by conversational context.
 
+### Replay latency gate
+
+The holdout evaluator can replay transcript JSON at a controlled pace through the live objection/concession trigger path:
+
+```bash
+npm run test:replay -- \
+  --corpus /path/to/holdout-or-transcript-directory \
+  --pace 1 \
+  --report-out /path/to/replay-report.json \
+  --scorecard-out /path/to/replay-scorecard.md
+```
+
+The command prints P50/P95/P99 latency to stdout and exits nonzero when P95 exceeds 2,000 ms (or any sample exceeds the 2,500 ms instant-fail limit). Reports contain timestamps and cue/segment identifiers, never transcript text.
+
 ---
 
 ## 🗂️ Between calls

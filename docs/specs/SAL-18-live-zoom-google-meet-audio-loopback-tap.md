@@ -47,7 +47,7 @@ and terminating cleanly.
   no later drain can emit audio from the ended/disconnected meeting. A new
   meeting creates a fresh tap instance/state; old callbacks cannot revive it.
 
-- **AC-5 — Headless fallback harness:** The committed Rust contract tests run
+- **AC-5 — Headless fallback harness:** The Rust contract tests run
   without CoreAudio, Zoom, Google Meet, network access, or provider credentials.
   The harness must prove reversed callback order, timestamp ordering, the
   sub-500 ms release bound, meeting-end flush, source-disconnect flush, paused
@@ -97,7 +97,7 @@ wall-clock, and thread dependencies so the contract test remains headless.
 
 ## Red-bar gate
 
-The committed failing test is:
+The failing test to commit with this contract is:
 
 `src-tauri/src/audio/meeting_tap_contract.rs`
 

@@ -215,7 +215,7 @@ export async function replaySegments(
   }
 
   const clock = options.clock ?? (() => performance.now());
-  const sleep = options.sleep ?? DEFAULT_SLEEP;
+  const sleep: (milliseconds: number) => Promise<void> = options.sleep ?? DEFAULT_SLEEP;
   let state = initialLiveObjectionDefenseState();
   let previousTimelineMs = 0;
   const samples: LatencySample[] = [];
