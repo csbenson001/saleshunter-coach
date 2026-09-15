@@ -17,7 +17,6 @@ export function MeddicMatrix() {
       return {
         ...criterion,
         detected: status?.status === "confirmed",
-        badgeTone: status?.badgeTone ?? "red",
         evidenceQuote: status?.evidenceQuote,
       };
     });
