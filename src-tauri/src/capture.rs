@@ -24,7 +24,7 @@ use std::time::{Duration, Instant};
 use tauri::{AppHandle, Emitter};
 use tokio::sync::mpsc::{UnboundedReceiver, UnboundedSender};
 
-use crate::audio::AudioSource;
+use crate::audio::{AudioSource, CapturedAudio};
 use crate::transcription::{self, SttProvider, TranscribeConfig};
 
 /// Grace given to capture threads to release their device on stop. Threads
@@ -229,6 +229,26 @@ pub fn spawn_capture<S: AudioSource>(
         }
         Err(e) => {
             log::error!("[{label}] capture failed to start: {e}");
+            Err(e.to_string())
+        }
+    }
+}
+
+/// Start one capture backend for the timestamped live meeting tap.
+pub fn spawn_timestamped_capture<S: AudioSource>(
+    coord: &MicCoordinator,
+    user: MicUser,
+    source: S,
+    gate: Arc<AtomicBool>,
+) -> Result<UnboundedReceiver<CapturedAudio>, String> {
+    let (tx, rx) = tokio::sync::mpsc::unbounded_channel::<CapturedAudio>();
+    match source.start_timestamped(tx, gate) {
+        Ok(handle) => {
+            coord.add_thread(user, handle);
+            Ok(rx)
+        }
+        Err(e) => {
+            log::error!("[meeting] timestamped capture failed to start: {e}");
             Err(e.to_string())
         }
     }
