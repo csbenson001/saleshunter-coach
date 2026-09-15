@@ -2,6 +2,7 @@ import { useEffect, useReducer, useRef } from "react";
 import { useStore } from "../store";
 import { talkTimeRatio } from "../analysis/delivery";
 import { matchObjection } from "./objectionBuster";
+import { matchConcessionTrade } from "./concessionMatrix";
 import {
   competitiveKillCardForHud,
   matchCompetitiveKillCard,
@@ -70,6 +71,36 @@ export function useInCallNudgeHudHost(): void {
     const latest = [...segments].reverse().find((segment) => segment.isFinal);
     if (!latest || latest.id === seenSegmentId.current) return;
     seenSegmentId.current = latest.id;
+
+    // Check concession trades first (e.g. discount / terms pressure)
+    const concession = matchConcessionTrade(latest.text);
+    if (concession) {
+      objectionCount.current += 1;
+      const tradeOptions = (concession.recommendedTradeDemands || []).map((t) => t.label);
+      const emission = createInCallHudCardEmission(
+        cardEmission.current?.id ?? null,
+        concession.id,
+        Date.now(),
+      );
+      cardEmission.current = { id: emission.id, emittedAtMs: emission.emittedAtMs };
+      dispatch({
+        type: "metrics",
+        objectionCount: objectionCount.current,
+        talkTimeRatio: talkTimeRatio(segments),
+      });
+      dispatch({
+        type: "objection-card",
+        card: {
+          id: concession.id,
+          title: concession.category === "discount" ? "Discount Pressure Detected" : "Concession Pressure Detected",
+          rebuttalScript: concession.exactCounterpunchScript || "Trade price for commitment: require annual pre-pay or a 2-year agreement before discussing any discount.",
+          followUpQuestion: "What specific metric does finance need to confirm before we finalize?",
+          tradeOptions,
+        },
+      });
+      return;
+    }
+
     const competitiveCard = matchCompetitiveKillCard(latest.text);
     const card = competitiveCard
       ? competitiveKillCardForHud(competitiveCard)
@@ -104,8 +135,10 @@ export function useInCallNudgeHudHost(): void {
   // the dismissal boundary.
   useEffect(() => {
     if (meetingStatus !== "recording") return;
-    const id = window.setInterval(() => dispatch({ type: "tick" }), 250);
-    return () => window.clearInterval(id);
+    const timer = (typeof window !== "undefined" && typeof window.setInterval === "function") ? window.setInterval : setInterval;
+    const clear = (typeof window !== "undefined" && typeof window.clearInterval === "function") ? window.clearInterval : clearInterval;
+    const id = timer(() => dispatch({ type: "tick" }), 250);
+    return () => clear(id);
   }, [meetingStatus]);
 
   // Broadcast after React has reduced the event so the secondary window only

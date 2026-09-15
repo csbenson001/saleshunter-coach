@@ -13,6 +13,7 @@ export interface HudObjectionCard {
   trap?: string;
   rebuttalScript: string;
   followUpQuestion: string;
+  tradeOptions?: string[];
 }
 
 /** A short, non-interrupting instruction sent by a manager during a call. */
