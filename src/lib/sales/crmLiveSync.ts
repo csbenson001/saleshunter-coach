@@ -247,11 +247,14 @@ export function createCrmLiveConnector(options: CrmLiveConnectorOptions): CrmLiv
     const body = new URLSearchParams({
       grant_type: "refresh_token",
       client_id: options.clientIds[provider],
-      refresh_token: current.refreshToken,
     });
     const response = await fetchImpl(provider === "salesforce" ? SALESFORCE_TOKEN_URL : HUBSPOT_TOKEN_URL, {
       method: "POST",
-      headers: { "content-type": "application/x-www-form-urlencoded", Accept: "application/json" },
+      headers: {
+        "content-type": "application/x-www-form-urlencoded",
+        Accept: "application/json",
+        "X-Refresh-Token": current.refreshToken,
+      },
       body,
     });
     const tokenBody = await responseBody(response);

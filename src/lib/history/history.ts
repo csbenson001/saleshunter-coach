@@ -27,6 +27,7 @@ import { translate } from "../../i18n/messages";
 import type { ReplaySession } from "../replay/types";
 import type { ActionItem, TimelineEvent, TranscriptSegment } from "../types";
 import type { HistoryEntry, HistoryEntrySummary } from "./types";
+import { runExecutiveDealMemo } from "../sales/executiveDealMemoRunner";
 
 const HISTORY_UPDATED_EVENT = "history://updated";
 const RECORDING_SAVED_EVENT = "meeting://recording-saved";
@@ -96,6 +97,7 @@ function snapshotAnalysis() {
     speechRateHz: s.replay?.speechRateHz ?? null,
     // Study outputs ride along so a plain save/overwrite never drops them.
     brief: s.brief,
+    executiveDealMemo: s.executiveDealMemo,
   };
 }
 
@@ -457,6 +459,26 @@ export async function updateHistoryEntry(id: string, snapshot?: AnalysisSnapshot
   log.info("history: entry analysis overwritten", { id, findings: updated.findings.length });
 }
 
+/** Persist the post-call executive memo without rewriting transcript analysis. */
+export async function updateExecutiveDealMemo(
+  id: string,
+  memo: NonNullable<HistoryEntry["executiveDealMemo"]>,
+): Promise<void> {
+  if (!isTauri()) return;
+  const { meta } = await invoke<HistoryReadResult>("read_history_entry", { id });
+  const updated: HistoryEntry = { ...meta, executiveDealMemo: memo };
+  await invoke("save_history_entry", {
+    id,
+    summaryJson: JSON.stringify(buildSummary(updated)),
+    metaJson: JSON.stringify(updated),
+    audioSourcePath: null,
+    compress: false,
+  });
+  await emitHistoryUpdated(id);
+  pushToCloud(id);
+  log.info("history: executive deal memo saved", { id });
+}
+
 /**
  * Persist the loaded entry's STUDY OUTPUTS (brief and a legacy entry's
  * recomputed delivery assessment) without touching the rest of its analysis.
@@ -490,6 +512,7 @@ export async function persistStudyOutputs(): Promise<void> {
     ...meta,
     brief: s.brief ?? meta.brief ?? null,
     deliveryAssessment: s.deliveryAssessment ?? meta.deliveryAssessment ?? null,
+    executiveDealMemo: s.executiveDealMemo ?? meta.executiveDealMemo ?? null,
   };
   await invoke("save_history_entry", {
     id,
