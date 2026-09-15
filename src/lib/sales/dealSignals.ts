@@ -113,6 +113,21 @@ export function analyzeDealSignals(
   text: string,
   timestampMs: number = Date.now()
 ): { signals: DealSignal[]; risks: DealRisk[] } {
+  return analyzeDealSignalsAt(text, timestampMs, Math.random().toString(36).slice(2, 6));
+}
+
+/**
+ * Scan dialogue with a caller-provided deterministic id suffix.
+ *
+ * Live transcript evaluation uses this variant so a stable segment set yields
+ * a stable report. The legacy `analyzeDealSignals` entry point retains its
+ * existing timestamp/random-id behavior for callers that process free text.
+ */
+export function analyzeDealSignalsAt(
+  text: string,
+  timestampMs: number,
+  idSuffix: string,
+): { signals: DealSignal[]; risks: DealRisk[] } {
   if (!text || typeof text !== "string") {
     return { signals: [], risks: [] };
   }
@@ -124,7 +139,7 @@ export function analyzeDealSignals(
     const match = pattern.regex.exec(text);
     if (match) {
       signals.push({
-        id: `sig_${pattern.category}_${timestampMs}_${Math.random().toString(36).slice(2, 6)}`,
+        id: `sig_${pattern.category}_${timestampMs}_${idSuffix}`,
         category: pattern.category,
         label: pattern.label,
         matchedPhrase: match[0],
@@ -138,7 +153,7 @@ export function analyzeDealSignals(
     const match = pattern.regex.exec(text);
     if (match) {
       risks.push({
-        id: `risk_${pattern.category}_${timestampMs}_${Math.random().toString(36).slice(2, 6)}`,
+        id: `risk_${pattern.category}_${timestampMs}_${idSuffix}`,
         category: pattern.category,
         label: pattern.label,
         severity: pattern.severity,

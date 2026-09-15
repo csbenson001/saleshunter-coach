@@ -1,20 +1,15 @@
 import { useMemo } from "react";
 import { AlertTriangle, TrendingUp, ShieldCheck, Zap } from "lucide-react";
-import { analyzeDealSignals, calculateDealHealth } from "../../lib/sales/dealSignals";
+import { evaluateLiveDealRisk } from "../../lib/sales/liveDealRisk";
 import { useStore } from "../../lib/store";
-import type { TranscriptSegment } from "../../lib/types";
 
 export function DealRiskHud() {
   const segments = useStore((s) => s.segments);
 
-  const { signals, risks, health } = useMemo(() => {
-    const fullText = (segments || []).map((u: TranscriptSegment) => u.text || "").join(" ");
-    const { signals: sList, risks: rList } = analyzeDealSignals(fullText);
-    const h = calculateDealHealth(sList, rList);
-    return { signals: sList, risks: rList, health: h };
-  }, [segments]);
+  const report = useMemo(() => evaluateLiveDealRisk(segments), [segments]);
+  const { buyingSignals: signals, risks, healthScore, momentum, qualification, talkTimeAlert } = report;
 
-  if (signals.length === 0 && risks.length === 0) {
+  if (signals.length === 0 && risks.length === 0 && talkTimeAlert === null) {
     return (
       <div className="flex items-center justify-between border-b border-border/40 bg-card/40 px-3 py-1.5 text-xs text-muted-foreground backdrop-blur-sm">
         <div className="flex items-center gap-1.5">
@@ -23,16 +18,16 @@ export function DealRiskHud() {
           <span className="text-[11px] opacity-70">— Listening for buying signals &amp; deal risks...</span>
         </div>
         <div className="flex items-center gap-1 rounded bg-muted/60 px-1.5 py-0.5 text-[10px] font-mono text-muted-foreground">
-          55% Baseline
+          {healthScore}% Baseline
         </div>
       </div>
     );
   }
 
   const badgeColor =
-    health.momentum === "positive"
+    momentum === "positive"
       ? "text-emerald-400 bg-emerald-950/40 border-emerald-800/40"
-      : health.momentum === "at_risk"
+      : momentum === "at_risk"
       ? "text-amber-400 bg-amber-950/40 border-amber-800/40"
       : "text-sky-400 bg-sky-950/40 border-sky-800/40";
 
@@ -41,8 +36,8 @@ export function DealRiskHud() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-semibold ${badgeColor}`}>
-            {health.momentum === "positive" ? <TrendingUp className="size-3" /> : <AlertTriangle className="size-3" />}
-            Deal Health: {health.healthScore}% ({health.momentum.replace("_", " ").toUpperCase()})
+            {momentum === "positive" ? <TrendingUp className="size-3" /> : <AlertTriangle className="size-3" />}
+            Deal Health: {healthScore}% ({momentum.replace("_", " ").toUpperCase()})
           </span>
           {signals.length > 0 && (
             <span className="flex items-center gap-1 text-emerald-400">
@@ -58,6 +53,28 @@ export function DealRiskHud() {
           )}
         </div>
       </div>
+
+      <div className="mt-1.5 flex flex-wrap items-center gap-1.5" aria-label="MEDDIC qualification status">
+        {qualification.map((criterion) => (
+          <span
+            key={criterion.key}
+            className={`rounded border px-1.5 py-0.5 text-[10px] font-semibold ${
+              criterion.badgeTone === "green"
+                ? "border-emerald-800/40 bg-emerald-950/30 text-emerald-300"
+                : "border-red-900/40 bg-red-950/20 text-red-300"
+            }`}
+          >
+            {criterion.key}: {criterion.status}
+          </span>
+        ))}
+      </div>
+
+      {talkTimeAlert && (
+        <div className="mt-1.5 rounded border border-red-900/40 bg-red-950/30 px-2 py-1 text-[11px] text-red-200" role="alert">
+          <span className="font-semibold text-red-300">Talk-time alert:</span>{" "}
+          You have spoken {Math.round(talkTimeAlert.ratio * 100)}% for {Math.round(talkTimeAlert.sustainedMs / 1000)}s.
+        </div>
+      )}
 
       {/* Top coaching insight if risk exists */}
       {risks.length > 0 && (

@@ -1,8 +1,8 @@
 import { useMemo, useState } from "react";
 import { CheckCircle2, Circle, ChevronDown, ChevronUp, Layers } from "lucide-react";
-import { evaluateMeddicProgress, INITIAL_MEDDIC_CRITERIA, type MeddicItem } from "../../lib/sales/meddic";
+import { INITIAL_MEDDIC_CRITERIA, type MeddicItem } from "../../lib/sales/meddic";
+import { evaluateLiveDealRisk } from "../../lib/sales/liveDealRisk";
 import { useStore } from "../../lib/store";
-import type { TranscriptSegment } from "../../lib/types";
 
 export function MeddicMatrix() {
   const segments = useStore((s) => s.segments);
@@ -10,11 +10,19 @@ export function MeddicMatrix() {
   const [manualOverrides, setManualOverrides] = useState<Record<string, boolean>>({});
 
   const { items, score } = useMemo(() => {
-    const fullText = (segments || []).map((u: TranscriptSegment) => u.text || "").join(" ");
-    const { updated } = evaluateMeddicProgress(fullText, INITIAL_MEDDIC_CRITERIA);
+    const report = evaluateLiveDealRisk(segments);
+    const statusByKey = new Map(report.qualification.map((item) => [item.key, item]));
+    const detectedItems = INITIAL_MEDDIC_CRITERIA.map((criterion) => {
+      const status = statusByKey.get(criterion.key);
+      return {
+        ...criterion,
+        detected: status?.status === "confirmed",
+        evidenceQuote: status?.evidenceQuote,
+      };
+    });
     
     // Apply manual toggles if any
-    const finalItems = updated.map((item) => ({
+    const finalItems = detectedItems.map((item) => ({
       ...item,
       detected: manualOverrides[item.key] !== undefined ? manualOverrides[item.key] : item.detected,
     }));
