@@ -4,6 +4,8 @@ export const MAX_MANAGER_LIVE_CALLS = 10;
 export const MAX_MANAGER_WHISPER_WORDS = 24;
 export const MANAGER_WHISPER_DELIVERY_SLA_MS = 500;
 
+const MEDDIC_KEYS: readonly ManagerMeddicPill["key"][] = ["M", "E", "DC", "DP", "I", "C"];
+
 export interface ManagerMeddicPill {
   key: "M" | "E" | "DC" | "DP" | "I" | "C";
   complete: boolean;
@@ -52,33 +54,70 @@ export interface ManagerWhisperAuditEntry extends ManagerWhisperDispatch {
   progression: readonly DealProgressionEvent[];
 }
 
-/** SAL-19 contract stub: the builder owns the implementation. */
 export function buildManagerCommandCenter(
-  _calls: readonly ManagerLiveCallInput[],
+  calls: readonly ManagerLiveCallInput[],
 ): readonly ManagerCallCard[] {
-  throw new Error("SAL-19 manager command center is not implemented");
+  if (calls.length > MAX_MANAGER_LIVE_CALLS) {
+    throw new RangeError(
+      `Manager command center supports at most ${MAX_MANAGER_LIVE_CALLS} active calls (received ${calls.length}).`,
+    );
+  }
+
+  return calls.map((call) => {
+    const meddic = MEDDIC_KEYS.map((key) => ({
+      key,
+      complete: call.meddic.find((pill) => pill.key === key)?.complete ?? false,
+    }));
+
+    return {
+      ...call,
+      activeObjections: [...call.activeObjections],
+      meddic,
+      meddicCompletedCount: meddic.filter((pill) => pill.complete).length,
+      meddicTotal: MEDDIC_KEYS.length,
+    };
+  });
 }
 
-/** SAL-19 contract stub: the builder owns the implementation. */
 export async function dispatchManagerWhisper(
-  _input: ManagerWhisperInput,
-  _send: ManagerWhisperSender,
+  input: ManagerWhisperInput,
+  send: ManagerWhisperSender,
 ): Promise<ManagerWhisperAuditEntry> {
-  throw new Error("SAL-19 manager whisper dispatch is not implemented");
+  const message = input.message.trim();
+  const wordCount = message === "" ? 0 : message.split(/\s+/u).length;
+  if (wordCount < 1 || wordCount > MAX_MANAGER_WHISPER_WORDS) {
+    throw new RangeError(
+      `Manager whispers must contain 1-${MAX_MANAGER_WHISPER_WORDS} words (received ${wordCount}).`,
+    );
+  }
+
+  const dispatch: ManagerWhisperDispatch = { ...input, message };
+  await send(dispatch);
+
+  return { ...dispatch, progression: [] };
 }
 
-/** SAL-19 contract stub: the builder owns the implementation. */
 export function recordDealProgression(
-  _entry: ManagerWhisperAuditEntry,
-  _event: DealProgressionEvent,
+  entry: ManagerWhisperAuditEntry,
+  event: DealProgressionEvent,
 ): ManagerWhisperAuditEntry {
-  throw new Error("SAL-19 deal progression audit is not implemented");
+  if (event.callId !== entry.callId) {
+    throw new Error(`Deal progression event targets ${event.callId}, expected ${entry.callId}.`);
+  }
+
+  return {
+    ...entry,
+    progression: [...entry.progression, event],
+  };
 }
 
-/** SAL-19 contract stub: the builder owns the implementation. */
 export function measureManagerWhisperDelivery(
-  _dispatch: ManagerWhisperDispatch,
-  _renderedAtMs: number,
+  dispatch: ManagerWhisperDispatch,
+  renderedAtMs: number,
 ): { latencyMs: number; withinSla: boolean } {
-  throw new Error("SAL-19 manager whisper delivery measurement is not implemented");
+  const latencyMs = renderedAtMs - dispatch.sentAtMs;
+  return {
+    latencyMs,
+    withinSla: latencyMs >= 0 && latencyMs <= MANAGER_WHISPER_DELIVERY_SLA_MS,
+  };
 }

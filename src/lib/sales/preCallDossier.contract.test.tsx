@@ -54,6 +54,34 @@ describe("pre-call intelligence dossier contract", () => {
         manualTrigger: true,
       }),
     ).toBe(false);
+    expect(
+      shouldPresentPreCallDossier({
+        nowMs: callStartAtMs - 5_000,
+        callStartAtMs,
+        manualTrigger: false,
+      }),
+    ).toBe(true);
+    expect(
+      shouldPresentPreCallDossier({
+        nowMs: callStartAtMs + 1,
+        callStartAtMs,
+        manualTrigger: false,
+      }),
+    ).toBe(false);
+    expect(
+      shouldPresentPreCallDossier({
+        nowMs: callStartAtMs + 1,
+        callStartAtMs,
+        manualTrigger: true,
+      }),
+    ).toBe(false);
+    expect(
+      shouldPresentPreCallDossier({
+        nowMs: callStartAtMs - 5_000,
+        callStartAtMs: null,
+        manualTrigger: false,
+      }),
+    ).toBe(false);
   });
 
   it("renders the economic buyer, last blocker, competitor traps, and short opening question", () => {
@@ -74,7 +102,9 @@ describe("pre-call intelligence dossier contract", () => {
     expect(resolveSalesCallSurface({ meetingStatus: "pre-call", dossierVisible: true })).toBe("pre-call-dossier");
     expect(resolveSalesCallSurface({ meetingStatus: "recording", dossierVisible: true })).toBe("in-call-nudge-hud");
     expect(resolveSalesCallSurface({ meetingStatus: "recording", dossierVisible: false })).toBe("in-call-nudge-hud");
+    expect(resolveSalesCallSurface({ meetingStatus: "idle", dossierVisible: true })).toBe("hidden");
     expect(resolveSalesCallSurface({ meetingStatus: "paused", dossierVisible: true })).toBe("hidden");
+    expect(resolveSalesCallSurface({ meetingStatus: "stopped", dossierVisible: true })).toBe("hidden");
     expect(resolveSalesCallSurface({ meetingStatus: "replay", dossierVisible: true })).toBe("hidden");
   });
 });
