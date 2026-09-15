@@ -236,12 +236,32 @@ async function applyDefaultOrgShare(id: string, res: MeetingSaveTarget): Promise
  * during the slow compress can't run updateHistoryEntry before the file exists.
  */
 let uploadSaveInFlight: Promise<unknown> | null = null;
+const liveSaveRuns = new Map<string, Promise<void>>();
+const completedLiveSavePaths = new Set<string>();
 
 /**
  * Auto-save a finished LIVE meeting once Rust reports the encoded recording.
  * No-op when the meeting produced no transcript (e.g. started + stopped at once).
  */
-export async function saveLiveToHistory(audioTempPath: string, durationMs: number): Promise<void> {
+export function saveLiveToHistory(audioTempPath: string, durationMs: number): Promise<void> {
+  if (completedLiveSavePaths.has(audioTempPath)) return Promise.resolve();
+  const existing = liveSaveRuns.get(audioTempPath);
+  if (existing) return existing;
+
+  const run = saveLiveToHistoryImpl(audioTempPath, durationMs).then(
+    () => {
+      completedLiveSavePaths.add(audioTempPath);
+    },
+    (error) => {
+      liveSaveRuns.delete(audioTempPath);
+      throw error;
+    },
+  );
+  liveSaveRuns.set(audioTempPath, run);
+  return run;
+}
+
+async function saveLiveToHistoryImpl(audioTempPath: string, durationMs: number): Promise<void> {
   if (!isTauri()) return;
   if (!hasSpokenTranscript()) {
     // Nothing was transcribed — almost certainly an accidental Start/Stop. Don't
@@ -288,6 +308,17 @@ export async function saveLiveToHistory(audioTempPath: string, durationMs: numbe
     log.warn("history: post-save re-diarization failed", { id: entry.id, error: String(e) }),
   );
   await applyDefaultOrgShare(entry.id, save);
+  const startExecutiveMemo = () => {
+    const current = useStore.getState();
+    return runExecutiveDealMemo(entry.id, {
+      callId: entry.id,
+      callTitle: entry.title,
+      callEndedAtMs: entry.createdAt + durationMs,
+      segments: current.loadedHistoryId === entry.id ? current.segments : entry.segments,
+    }).catch((error) =>
+      log.warn("history: executive deal memo failed", { id: entry.id, error: String(error) }),
+    );
+  };
   // 會後 60 秒: a meeting's natural ending is its debrief — slide straight into
   // the study tense (landing on the report), unless the user already started
   // another meeting or opened a different recording in the meantime.
@@ -298,6 +329,7 @@ export async function saveLiveToHistory(audioTempPath: string, durationMs: numbe
       log.warn("history: auto-open after stop failed", { id: entry.id, error: String(e) }),
     );
   }
+  void startExecutiveMemo();
 }
 
 /**
