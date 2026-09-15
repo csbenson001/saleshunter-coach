@@ -346,7 +346,7 @@ async function findSalesforceContacts(
   if (!credential.instanceUrl) throw new CrmAuthError("Salesforce authorization is missing its instance URL; reconnect required");
   const matches: ContactMatch[] = [];
   for (const email of emails) {
-    const query = `SELECT Id, Email FROM Contact WHERE Email = '${email.replaceAll("'", "\\'")}'`;
+    const query = `SELECT Id, Email FROM Contact WHERE Email = '${email.replace(/'/g, "\\'")}'`;
     const body = await request(`${credential.instanceUrl.replace(/\/$/, "")}/services/data/${SALESFORCE_API_VERSION}/query/?q=${encodeURIComponent(query)}`);
     const records = Array.isArray(body.records) ? body.records : [];
     const record = records.find((candidate): candidate is Record<string, unknown> => {

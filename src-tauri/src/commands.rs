@@ -1,12 +1,16 @@
 use std::sync::Mutex;
+use std::time::Instant;
 
 use tauri::{AppHandle, Emitter, Manager, State};
 
 use tokio::sync::mpsc::UnboundedReceiver;
 
 use crate::audio::microphone::Microphone;
+use crate::audio::meeting_tap::{AudioChunk, AudioSource as MeetingAudioSource, MeetingAudioTap};
+use crate::audio::CapturedAudio;
 use crate::capture::{
-    run_metered_session, spawn_capture, Begin, MicCoordinator, MicTap, MicUser, RecorderBuf,
+    run_metered_session, spawn_capture, spawn_timestamped_capture, Begin, MicCoordinator, MicTap,
+    MicUser, RecorderBuf,
 };
 use crate::transcription::common::{LevelMeter, LEVEL_EVENT};
 use crate::transcription::{SttProvider, TranscribeConfig};
@@ -218,6 +222,7 @@ pub fn start_meeting(
         // Unreachable today (Meeting outranks everything), kept for safety.
         Begin::Busy(owner) => return Err(format!("microphone is in use by {owner:?}")),
     };
+    let meeting_started = Instant::now();
     // Arm a fresh recording buffer for this meeting (the designated session below
     // tees its PCM into it; stop_meeting encodes + clears it).
     *state.recorder.lock().unwrap() = Some(Vec::new());
@@ -263,12 +268,12 @@ pub fn start_meeting(
         if diarization {
             // Tap the PRE-MIX mic for delivery coaching (issue #22): the prosody
             // analyzer must see raw mic, never the mixed/diarized stream.
-            let rx_me = spawn_capture(&coord, MicUser::Meeting, mic, gate.clone(), "me")
+            let rx_me = spawn_timestamped_capture(&coord, MicUser::Meeting, mic, gate.clone())
                 .ok()
-                .map(|rx| spawn_mic_prosody_tap(&app, rx, Some(far.clone())));
-            let rx_them = spawn_capture(&coord, MicUser::Meeting, sys, gate.clone(), "them")
+                .map(|rx| spawn_timestamped_mic_prosody_tap(&app, rx, Some(far.clone())));
+            let rx_them = spawn_timestamped_capture(&coord, MicUser::Meeting, sys, gate.clone())
                 .ok()
-                .map(|rx| spawn_farend_tap(rx, far));
+                .map(|rx| spawn_timestamped_farend_tap(rx, far));
             let mut tasks = state.tasks.lock().unwrap();
             log::info!(
                 "meeting: capture started (mic: {}, system: {})",
@@ -277,14 +282,13 @@ pub fn start_meeting(
             );
             match (rx_me, rx_them) {
                 (Some(a), Some(b)) => {
-                    let (tx_mix, rx_mix) = tokio::sync::mpsc::unbounded_channel::<Vec<i16>>();
-                    tauri::async_runtime::spawn(crate::audio::mixer::mix_streams(
+                    let rx_mix = spawn_meeting_audio_tap(
                         app.clone(),
                         a,
                         b,
-                        tx_mix,
-                    ));
-                    // Record the mixed stream → the saved file holds both sides.
+                        meeting_started,
+                    );
+                    // Record the one chronological stream → the saved file holds both sides.
                     tasks.push(run_metered_session(
                         &app,
                         provider,
@@ -730,6 +734,32 @@ fn spawn_mic_prosody_tap(
     out_rx
 }
 
+/// Timestamped counterpart of [`spawn_mic_prosody_tap`] for the diarizing
+/// meeting path. Keeping the packet intact lets the interleaver use capture
+/// time rather than the order in which the two async channels are serviced.
+fn spawn_timestamped_mic_prosody_tap(
+    app: &AppHandle,
+    mut rx: UnboundedReceiver<CapturedAudio>,
+    far: Option<std::sync::Arc<crate::audio::prosody::FarEndState>>,
+) -> UnboundedReceiver<CapturedAudio> {
+    let (tx, out_rx) = tokio::sync::mpsc::unbounded_channel::<CapturedAudio>();
+    let app = app.clone();
+    let tap = app.state::<MicTap>().inner().clone();
+    tap.source_started();
+    tauri::async_runtime::spawn(async move {
+        let mut analyzer = crate::audio::prosody::ProsodyAnalyzer::new(app, "me", far);
+        while let Some(packet) = rx.recv().await {
+            analyzer.push(&packet.pcm);
+            tap.forward(&packet.pcm);
+            if tx.send(packet).is_err() {
+                break;
+            }
+        }
+        tap.source_ended();
+    });
+    out_rx
+}
+
 /// Tee the system-audio ("them") PCM through a
 /// [`FarEndAnalyzer`](crate::audio::prosody::FarEndAnalyzer) that feeds the
 /// shared far-end state for speaker-bleed rejection, forwarding every chunk
@@ -750,6 +780,115 @@ fn spawn_farend_tap(
         }
     });
     out_rx
+}
+
+/// Timestamped counterpart of [`spawn_farend_tap`]. The far-end analyzer is
+/// still run before the shared tap so speaker-bleed coaching observes the
+/// native system-audio stream, not a later interleaved stream.
+#[cfg(target_os = "macos")]
+fn spawn_timestamped_farend_tap(
+    mut rx: UnboundedReceiver<CapturedAudio>,
+    far: std::sync::Arc<crate::audio::prosody::FarEndState>,
+) -> UnboundedReceiver<CapturedAudio> {
+    let (tx, out_rx) = tokio::sync::mpsc::unbounded_channel::<CapturedAudio>();
+    tauri::async_runtime::spawn(async move {
+        let mut analyzer = crate::audio::prosody::FarEndAnalyzer::new(far);
+        while let Some(packet) = rx.recv().await {
+            analyzer.push(&packet.pcm);
+            if tx.send(packet).is_err() {
+                break;
+            }
+        }
+    });
+    out_rx
+}
+
+/// Merge the timestamped mic and system-output callbacks into one chronological
+/// STT input. The tap is deliberately the lifecycle owner: a source disconnect
+/// flushes the pending PCM and closes the other capture through the shared gate,
+/// so late callbacks from the old meeting cannot leak into a new one.
+fn spawn_meeting_audio_tap(
+    app: AppHandle,
+    mut mic: UnboundedReceiver<CapturedAudio>,
+    mut loopback: UnboundedReceiver<CapturedAudio>,
+    meeting_started: Instant,
+) -> UnboundedReceiver<Vec<i16>> {
+    let (tx, rx) = tokio::sync::mpsc::unbounded_channel::<Vec<i16>>();
+    tauri::async_runtime::spawn(async move {
+        let mut tap = MeetingAudioTap::new();
+        let mut mic_open = true;
+        let mut loopback_open = true;
+        let mut tick = tokio::time::interval(std::time::Duration::from_millis(50));
+        tick.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Delay);
+
+        while mic_open || loopback_open {
+            let mut disconnected = None;
+            tokio::select! {
+                packet = mic.recv(), if mic_open => match packet {
+                    Some(packet) => tap.push(to_meeting_chunk(packet, MeetingAudioSource::Microphone, meeting_started)),
+                    None => {
+                        mic_open = false;
+                        disconnected = Some(MeetingAudioSource::Microphone);
+                    }
+                },
+                packet = loopback.recv(), if loopback_open => match packet {
+                    Some(packet) => tap.push(to_meeting_chunk(packet, MeetingAudioSource::SystemLoopback, meeting_started)),
+                    None => {
+                        loopback_open = false;
+                        disconnected = Some(MeetingAudioSource::SystemLoopback);
+                    }
+                },
+                _ = tick.tick() => {}
+            }
+
+            let ready = if let Some(source) = disconnected {
+                mic_open = false;
+                loopback_open = false;
+                tap.source_disconnected(source)
+            } else {
+                tap.drain_ready(elapsed_ms(meeting_started, Instant::now()))
+            };
+            if !send_audio_chunks(&tx, ready) {
+                return;
+            }
+            if disconnected.is_some() {
+                break;
+            }
+        }
+
+        let _ = send_audio_chunks(&tx, tap.end_meeting());
+        log::debug!("meeting: timestamped audio tap stopped");
+        let _ = app;
+    });
+    rx
+}
+
+fn to_meeting_chunk(
+    packet: CapturedAudio,
+    source: MeetingAudioSource,
+    meeting_started: Instant,
+) -> AudioChunk {
+    AudioChunk {
+        source,
+        captured_at_ms: elapsed_ms(meeting_started, packet.captured_at),
+        pcm: packet.pcm,
+    }
+}
+
+fn elapsed_ms(start: Instant, now: Instant) -> u64 {
+    now.saturating_duration_since(start).as_millis().min(u64::MAX as u128) as u64
+}
+
+fn send_audio_chunks(
+    tx: &tokio::sync::mpsc::UnboundedSender<Vec<i16>>,
+    chunks: Vec<AudioChunk>,
+) -> bool {
+    for chunk in chunks {
+        if tx.send(chunk.pcm).is_err() {
+            return false;
+        }
+    }
+    true
 }
 
 /// Get the absolute path to the templates.json file.

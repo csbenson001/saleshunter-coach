@@ -82,6 +82,9 @@ function ReportPage() {
   const replayName = useStore((s) => s.replay?.name);
   const replayTitle = replayName || "Sales Meeting";
   const actionItems = useStore((s) => s.actionItems) || [];
+  const executiveDealMemo = useStore((s) => s.executiveDealMemo);
+  const executiveDealMemoStatus = useStore((s) => s.executiveDealMemoStatus);
+  const executiveDealMemoError = useStore((s) => s.executiveDealMemoError);
 
   const utterances = useMemo<TranscriptUtterance[]>(() => {
     return segments.map((seg) => ({
@@ -132,6 +135,11 @@ function ReportPage() {
               <Mail className="size-3.5" />
               Follow-Up Pack
             </Button>
+            <span className="text-[11px] text-muted-foreground" role="status">
+              {executiveDealMemoStatus === "running" && "Executive memo generating…"}
+              {executiveDealMemoStatus === "done" && "Executive memo ready"}
+              {executiveDealMemoStatus === "error" && (executiveDealMemoError ?? "Executive memo failed")}
+            </span>
             <Button
               size="sm"
               variant="outline"
@@ -203,6 +211,7 @@ function ReportPage() {
         onClose={() => setFollowUpOpen(false)}
         meetingTitle={replayTitle}
         actionItems={actionItems.map((a) => a.text)}
+        memo={executiveDealMemo}
       />
 
       <CrmExportModal
