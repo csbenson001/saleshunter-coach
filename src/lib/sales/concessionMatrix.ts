@@ -10,6 +10,7 @@
 
 import {
   CONCESSION_TRADE_OPTIONS,
+  detectConcessionPressure,
   type ConcessionTradeOption,
 } from "./concessionVault";
 
@@ -162,6 +163,21 @@ export interface ConcessionDetectionResult {
 export function detectConcessionDemands(transcriptText: string): ConcessionDetectionResult {
   const startTime = performance.now();
   const lower = transcriptText.toLowerCase();
+
+  const pressureCue = detectConcessionPressure(transcriptText);
+  const discountDemand = CONCESSION_TRADE_MATRIX.find(
+    (demand) => demand.id === "concession_discount",
+  );
+  if (pressureCue && discountDemand) {
+    const elapsed = (performance.now() - startTime) / 1000;
+    return {
+      detected: true,
+      concession: discountDemand,
+      matchPhrase: pressureCue.matchedPhrase,
+      latencySeconds: Math.max(0.2, Math.round((elapsed + 0.3) * 10) / 10),
+      spineRating: "Ironclad",
+    };
+  }
 
   for (const demand of CONCESSION_TRADE_MATRIX) {
     for (const phrase of demand.buyerPhrases) {
