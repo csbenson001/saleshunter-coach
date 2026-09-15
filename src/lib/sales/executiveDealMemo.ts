@@ -154,7 +154,7 @@ export async function generateExecutiveDealMemo(
   }
 
   const draft = await withTimeout(
-    Promise.resolve().then(() => options.generateDraft(input)),
+    Promise.resolve().then(() => options.generateDraft({ ...input, segments: finalSegments })),
   );
   const risk = evaluateLiveDealRisk(finalSegments);
   const concession = exposureFor(finalSegments);
@@ -165,7 +165,7 @@ export async function generateExecutiveDealMemo(
   const recap = recapFor(draft);
   const prospect = input.prospectName?.trim() || "there";
   const emailBody = `Hi ${prospect},\n\n${recap}\n\nBest regards,`;
-  const generatedAtMs = (options.now ?? (() => Date.now()))();
+  const generatedAtMs = (options.now ?? (() => input.callEndedAtMs))();
 
   return {
     callId: input.callId,
