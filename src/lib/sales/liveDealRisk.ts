@@ -98,7 +98,7 @@ function talkTimeFrom(segments: readonly TranscriptSegment[]): {
 
   const ratio = { me: meMs / totalMs, them: themMs / totalMs };
   const sustainedMs = Math.max(0, lastEndMs - firstStartMs);
-  const alert =
+  const alert: TalkTimeAlert | null =
     ratio.me > TALK_TIME_ALERT_RATIO && sustainedMs > TALK_TIME_ALERT_SUSTAIN_MS
       ? {
           ratio: ratio.me,

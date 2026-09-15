@@ -21,13 +21,13 @@ interface HudTrade {
 }
 
 function getHudTrades(concession: ConcessionDemand): HudTrade[] {
-  const canonicalTrades = concession.tradeOptions ?? concession.recommendedTradeDemands
-    .map((trade) => (
-      trade.id
-        ? CONCESSION_TRADE_OPTIONS.find((option) => option.id === trade.id) ?? null
-        : null
-    ))
-    .filter((trade): trade is ConcessionTradeOption => trade !== null);
+  const canonicalTrades: readonly ConcessionTradeOption[] = concession.tradeOptions ?? concession.recommendedTradeDemands
+    .flatMap((trade) => {
+      const option = trade.id
+        ? CONCESSION_TRADE_OPTIONS.find((candidate) => candidate.id === trade.id)
+        : undefined;
+      return option ? [option] : [];
+    });
 
   if (canonicalTrades.length === 3) {
     return canonicalTrades.map((trade) => ({
