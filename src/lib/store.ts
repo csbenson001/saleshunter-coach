@@ -20,6 +20,7 @@ import type {
 import type { ReplaySession } from "./replay/types";
 import type { CloudAuth } from "./cloud/types";
 import type { HistoryEntry } from "./history/types";
+import type { ExecutiveDealMemo } from "./sales/executiveDealMemo";
 import type { MeetingShare } from "./history/history";
 import type { LibraryNode } from "./library/scope";
 import {
@@ -259,6 +260,9 @@ const CLEARED_STUDY_SLICE: Pick<
   | "deliveryStatus"
   | "brief"
   | "briefStatus"
+  | "executiveDealMemo"
+  | "executiveDealMemoStatus"
+  | "executiveDealMemoError"
 > = {
   findings: [],
   analysisStatus: "idle",
@@ -274,6 +278,9 @@ const CLEARED_STUDY_SLICE: Pick<
   deliveryStatus: "idle",
   brief: null,
   briefStatus: "idle",
+  executiveDealMemo: null,
+  executiveDealMemoStatus: "idle",
+  executiveDealMemoError: null,
 };
 
 /**
@@ -411,6 +418,13 @@ interface CoachState {
   /** Append a streamed chunk to the brief (streaming render). */
   appendBrief: (chunk: string) => void;
   setBriefStatus: (status: AsyncTaskStatus) => void;
+  /** Generated post-call recap + internal deal memo for the loaded recording. */
+  executiveDealMemo: ExecutiveDealMemo | null;
+  executiveDealMemoStatus: AsyncTaskStatus;
+  executiveDealMemoError: string | null;
+  setExecutiveDealMemo: (memo: ExecutiveDealMemo | null) => void;
+  setExecutiveDealMemoStatus: (status: AsyncTaskStatus) => void;
+  setExecutiveDealMemoError: (error: string | null) => void;
   /** Insert one finding (MCP/external add) without replacing the list, keeping it
    *  ordered by atMs. A colliding id is reassigned so existing findings are safe. */
   addFinding: (event: TimelineEvent) => void;
@@ -642,6 +656,9 @@ export const useStore = create<CoachState>()(
       deliveryNudge: null,
       deliveryAssessment: null,
       deliveryStatus: "idle",
+      executiveDealMemo: null,
+      executiveDealMemoStatus: "idle",
+      executiveDealMemoError: null,
       actionItems: [],
       actionItemsStatus: "idle",
       actionItemsError: null,
@@ -776,6 +793,9 @@ export const useStore = create<CoachState>()(
       deliveryStatus: entry.deliveryAssessment ? "done" : "idle",
       brief: entry.brief ?? null,
       briefStatus: entry.brief ? "done" : "idle",
+      executiveDealMemo: entry.executiveDealMemo ?? null,
+      executiveDealMemoStatus: entry.executiveDealMemo ? "done" : "idle",
+      executiveDealMemoError: null,
       // Restore the per-meeting context + negotiation setup.
       meetingContext: entry.meetingContext,
       meetingFolderId: entry.folderId ?? null,
@@ -837,6 +857,9 @@ export const useStore = create<CoachState>()(
   setBrief: (brief) => set({ brief }),
   appendBrief: (chunk) => set((s) => ({ brief: (s.brief ?? "") + chunk })),
   setBriefStatus: (status) => set({ briefStatus: status }),
+  setExecutiveDealMemo: (executiveDealMemo) => set({ executiveDealMemo }),
+  setExecutiveDealMemoStatus: (executiveDealMemoStatus) => set({ executiveDealMemoStatus }),
+  setExecutiveDealMemoError: (executiveDealMemoError) => set({ executiveDealMemoError }),
   // Replace the findings list, keeping the selection + cached solutions of any
   // finding that STILL EXISTS in the new list. During streaming, partials commit
   // a growing list with stable ids, so a finding the user opened mid-stream (and
