@@ -19,11 +19,19 @@ export interface HudObjectionCard {
 /** A short, non-interrupting instruction sent by a manager during a call. */
 export interface HudWhisperCard {
   id: string;
+  /** Target metadata is additive so older HUD clients can still render the card. */
+  callId?: string;
+  repId?: string;
   /** `prompt` is accepted for dashboard clients that use the manager vocabulary. */
   message?: string;
   prompt?: string;
   /** Timestamp from the manager submit boundary, used for the delivery SLA. */
   sentAtMs?: number;
+}
+
+export interface HudWhisperSeat {
+  callId: string;
+  repId: string;
 }
 
 export interface InCallHudState {

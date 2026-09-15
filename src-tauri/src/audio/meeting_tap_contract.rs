@@ -4,9 +4,7 @@
 //! the pure, headless seam that the microphone and system-loopback adapters
 //! must feed before their chunks enter the live STT buffer.
 
-use super::meeting_tap::{
-    AudioChunk, AudioSource, MeetingAudioTap, MAX_BUFFER_LATENCY_MS,
-};
+use super::meeting_tap::{AudioChunk, AudioSource, MeetingAudioTap, MAX_BUFFER_LATENCY_MS};
 
 fn chunk(source: AudioSource, captured_at_ms: u64, sample: i16) -> AudioChunk {
     AudioChunk {
@@ -42,7 +40,9 @@ fn headless_harness_releases_chunks_before_the_500ms_latency_ceiling() {
     tap.push(chunk(AudioSource::Microphone, 5_000, 10));
 
     assert_eq!(MAX_BUFFER_LATENCY_MS, 450);
-    assert!(tap.drain_ready(5_000 + MAX_BUFFER_LATENCY_MS - 1).is_empty());
+    assert!(tap
+        .drain_ready(5_000 + MAX_BUFFER_LATENCY_MS - 1)
+        .is_empty());
     assert_eq!(
         tap.drain_ready(5_000 + MAX_BUFFER_LATENCY_MS),
         vec![chunk(AudioSource::Microphone, 5_000, 10)]

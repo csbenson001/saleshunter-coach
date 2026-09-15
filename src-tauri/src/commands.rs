@@ -5,8 +5,8 @@ use tauri::{AppHandle, Emitter, Manager, State};
 
 use tokio::sync::mpsc::UnboundedReceiver;
 
-use crate::audio::microphone::Microphone;
 use crate::audio::meeting_tap::{AudioChunk, AudioSource as MeetingAudioSource, MeetingAudioTap};
+use crate::audio::microphone::Microphone;
 use crate::audio::CapturedAudio;
 use crate::capture::{
     run_metered_session, spawn_capture, spawn_timestamped_capture, Begin, MicCoordinator, MicTap,
@@ -282,12 +282,7 @@ pub fn start_meeting(
             );
             match (rx_me, rx_them) {
                 (Some(a), Some(b)) => {
-                    let rx_mix = spawn_meeting_audio_tap(
-                        app.clone(),
-                        a,
-                        b,
-                        meeting_started,
-                    );
+                    let rx_mix = spawn_meeting_audio_tap(app.clone(), a, b, meeting_started);
                     // Record the one chronological stream → the saved file holds both sides.
                     tasks.push(run_metered_session(
                         &app,
@@ -876,7 +871,9 @@ fn to_meeting_chunk(
 }
 
 fn elapsed_ms(start: Instant, now: Instant) -> u64 {
-    now.saturating_duration_since(start).as_millis().min(u64::MAX as u128) as u64
+    now.saturating_duration_since(start)
+        .as_millis()
+        .min(u64::MAX as u128) as u64
 }
 
 fn send_audio_chunks(

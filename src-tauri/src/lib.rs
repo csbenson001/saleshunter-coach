@@ -90,7 +90,10 @@ pub fn run() {
             // unlock — Carbon hotkey registrations and CGEventTaps can come
             // back dead from a sleep cycle.
             hotkey::install_wake_observer(app.handle().clone());
-            log::info!("app: starting up (saleshunter_coach {})", env!("CARGO_PKG_VERSION"));
+            log::info!(
+                "app: starting up (saleshunter_coach {})",
+                env!("CARGO_PKG_VERSION")
+            );
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![

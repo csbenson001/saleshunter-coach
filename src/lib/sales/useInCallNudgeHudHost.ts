@@ -20,13 +20,14 @@ import {
   createInCallHudCardEmission,
   reduceInCallHudState,
   shouldShowInCallNudgeHud,
+  type HudWhisperSeat,
   type InCallHudEvent,
 } from "./inCallNudgeHud";
 import { isTauri } from "../tauriEvents";
 import { log } from "../log";
 
 /** Keep the main window as the single source of truth for live HUD state. */
-export function useInCallNudgeHudHost(): void {
+export function useInCallNudgeHudHost(seat?: HudWhisperSeat): void {
   const meetingStatus = useStore((s) => s.meetingStatus);
   const meetingStartedAt = useStore((s) => s.meetingStartedAt);
   const segments = useStore((s) => s.segments);
@@ -172,7 +173,7 @@ export function useInCallNudgeHudHost(): void {
     });
     const whispers = listenForManagerWhispers((whisper) => {
       if (active && meetingStatus === "recording") dispatch({ type: "manager-whisper", whisper });
-    });
+    }, seat);
     requests.catch((error) => log.warn("in-call-nudge-hud: request listener failed", { error: String(error) }));
     whispers.catch((error) => log.warn("in-call-nudge-hud: manager whisper listener failed", { error: String(error) }));
     return () => {
@@ -180,5 +181,5 @@ export function useInCallNudgeHudHost(): void {
       requests.then((unlisten) => unlisten()).catch(() => undefined);
       whispers.then((unlisten) => unlisten()).catch(() => undefined);
     };
-  }, [meetingStatus]);
+  }, [meetingStatus, seat?.callId, seat?.repId]);
 }

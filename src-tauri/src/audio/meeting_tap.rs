@@ -122,10 +122,7 @@ impl MeetingAudioTap {
                 entry.arrival_sequence,
             )
         });
-        ready_chunks
-            .into_iter()
-            .map(|entry| entry.chunk)
-            .collect()
+        ready_chunks.into_iter().map(|entry| entry.chunk).collect()
     }
 }
 

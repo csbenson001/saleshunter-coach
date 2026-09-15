@@ -165,6 +165,10 @@ function requiredString(value: unknown, field: string): string {
   return value;
 }
 
+function formEncodeSecret(value: string): string {
+  return Array.from(new TextEncoder().encode(value), (byte) => `%${byte.toString(16).toUpperCase().padStart(2, "0")}`).join("");
+}
+
 function cloneMeeting(meeting: CrmSyncMeeting): CrmSyncMeeting {
   return {
     ...meeting,
@@ -244,16 +248,12 @@ export function createCrmLiveConnector(options: CrmLiveConnectorOptions): CrmLiv
   }
 
   async function refreshCredential(provider: CrmProvider, current: CrmCredential): Promise<CrmCredential> {
-    const body = new URLSearchParams({
-      grant_type: "refresh_token",
-      client_id: options.clientIds[provider],
-    });
+    const body = `grant_type=refresh_token&client_id=${encodeURIComponent(options.clientIds[provider])}&refresh_token=${formEncodeSecret(current.refreshToken)}`;
     const response = await fetchImpl(provider === "salesforce" ? SALESFORCE_TOKEN_URL : HUBSPOT_TOKEN_URL, {
       method: "POST",
       headers: {
         "content-type": "application/x-www-form-urlencoded",
         Accept: "application/json",
-        "X-Refresh-Token": current.refreshToken,
       },
       body,
     });

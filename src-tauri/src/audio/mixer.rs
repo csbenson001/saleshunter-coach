@@ -89,14 +89,8 @@ fn remove_correlated_echo_with_reference(
         }
         let mic_window = &mic[mic_start..mic_start + window_len];
         let far_window = &far[far_start..far_start + window_len];
-        let mic_energy = mic_window
-            .iter()
-            .map(|sample| sample * sample)
-            .sum::<f32>();
-        let far_energy = far_window
-            .iter()
-            .map(|sample| sample * sample)
-            .sum::<f32>();
+        let mic_energy = mic_window.iter().map(|sample| sample * sample).sum::<f32>();
+        let far_energy = far_window.iter().map(|sample| sample * sample).sum::<f32>();
         if mic_energy <= f32::EPSILON || far_energy <= f32::EPSILON {
             continue;
         }
@@ -219,9 +213,11 @@ pub async fn mix_streams(
                 b.pop_front();
             }
             for sample in mixed {
-                out.push((sample * i16::MAX as f32)
-                    .round()
-                    .clamp(i16::MIN as f32, i16::MAX as f32) as i16);
+                out.push(
+                    (sample * i16::MAX as f32)
+                        .round()
+                        .clamp(i16::MIN as f32, i16::MAX as f32) as i16,
+                );
             }
             if !emit(out) {
                 return;
@@ -290,9 +286,15 @@ mod tests {
         let mixed = mix_chunk(&clean_mic, &far);
 
         let residual = clean_mic.iter().map(|sample| sample.abs()).sum::<f32>() / mic.len() as f32;
-        assert!(residual < 0.01, "speaker bleed remained in mic path: {residual}");
+        assert!(
+            residual < 0.01,
+            "speaker bleed remained in mic path: {residual}"
+        );
         for (actual, expected) in mixed.iter().zip(far.iter()) {
-            assert!((actual - expected).abs() < 0.01, "mixed STT sample retained echo");
+            assert!(
+                (actual - expected).abs() < 0.01,
+                "mixed STT sample retained echo"
+            );
         }
     }
 
@@ -314,7 +316,10 @@ mod tests {
             .sum::<f32>();
         let near_energy = near.iter().map(|sample| sample * sample).sum::<f32>();
 
-        assert!(correlation_with_near / near_energy > 0.55, "near-end speech was suppressed");
+        assert!(
+            correlation_with_near / near_energy > 0.55,
+            "near-end speech was suppressed"
+        );
     }
 
     #[test]
@@ -332,7 +337,10 @@ mod tests {
             .map(|sample| sample.abs())
             .sum::<f32>()
             / (far.len() - delay) as f32;
-        assert!(residual < 0.03, "delayed speaker bleed remained in mic path: {residual}");
+        assert!(
+            residual < 0.03,
+            "delayed speaker bleed remained in mic path: {residual}"
+        );
     }
 
     #[test]

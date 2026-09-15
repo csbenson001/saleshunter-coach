@@ -1483,7 +1483,10 @@ fn search_meetings(history_dir: &std::path::Path, args: &Value) -> anyhow::Resul
             // What the analysis concluded.
             for (field, text) in [
                 ("brief", meta.get("brief").and_then(Value::as_str)),
-                ("context", meta.get("meetingContext").and_then(Value::as_str)),
+                (
+                    "context",
+                    meta.get("meetingContext").and_then(Value::as_str),
+                ),
             ] {
                 if let Some(text) = text {
                     if let Some(at) = find_ci(text, &query) {
@@ -1495,7 +1498,12 @@ fn search_meetings(history_dir: &std::path::Path, args: &Value) -> anyhow::Resul
                 ("finding", "findings", ["title", "detail"]),
                 ("actionItem", "actionItems", ["text", "rationale"]),
             ] {
-                for item in meta.get(key).and_then(Value::as_array).into_iter().flatten() {
+                for item in meta
+                    .get(key)
+                    .and_then(Value::as_array)
+                    .into_iter()
+                    .flatten()
+                {
                     let text = parts
                         .iter()
                         .filter_map(|p| item.get(*p).and_then(Value::as_str))
@@ -1900,8 +1908,14 @@ mod tests {
     fn hit_omits_ellipsis_at_the_text_edges_and_atms_when_absent() {
         let h = hit("brief", "東森 outbound", 0, 2, None);
         let snippet = h["snippet"].as_str().unwrap();
-        assert!(!snippet.starts_with('…'), "no leading … at the start of the text");
-        assert!(!snippet.ends_with('…'), "no trailing … at the end of the text");
+        assert!(
+            !snippet.starts_with('…'),
+            "no leading … at the start of the text"
+        );
+        assert!(
+            !snippet.ends_with('…'),
+            "no trailing … at the end of the text"
+        );
         assert!(h.get("atMs").is_none());
     }
 

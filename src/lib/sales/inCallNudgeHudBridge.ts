@@ -6,6 +6,7 @@ import {
   hudShouldIgnoreCursorEvents,
   inCallHudWindowOptions,
   type InCallHudState,
+  type HudWhisperSeat,
   type HudWhisperCard,
 } from "./inCallNudgeHud";
 
@@ -130,16 +131,33 @@ export async function broadcastManagerWhisper(whisper: HudWhisperCard): Promise<
 
 export const sendManagerWhisper = broadcastManagerWhisper;
 
+/**
+ * A seat-specific HUD must not display a whisper addressed to another call or
+ * rep. Untargeted legacy envelopes are accepted only by listeners without a
+ * seat filter, preserving compatibility for older clients.
+ */
+export function managerWhisperTargetsSeat(
+  whisper: HudWhisperCard,
+  seat: HudWhisperSeat,
+): boolean {
+  return whisper.callId === seat.callId && whisper.repId === seat.repId;
+}
+
 export async function listenForManagerWhispers(
   onWhisper: (whisper: HudWhisperCard) => void,
+  seat?: HudWhisperSeat,
 ): Promise<UnlistenFn> {
+  const deliver = (whisper: HudWhisperCard) => {
+    if (seat && !managerWhisperTargetsSeat(whisper, seat)) return;
+    onWhisper(whisper);
+  };
   const unlisten = isTauri()
-    ? await listen<HudWhisperCard>(IN_CALL_MANAGER_WHISPER_EVENT, (event) => onWhisper(event.payload))
+    ? await listen<HudWhisperCard>(IN_CALL_MANAGER_WHISPER_EVENT, (event) => deliver(event.payload))
     : () => {};
   const channel = typeof BroadcastChannel === "undefined"
     ? null
     : new BroadcastChannel(MANAGER_WHISPER_CHANNEL);
-  if (channel) channel.onmessage = (event: MessageEvent<HudWhisperCard>) => onWhisper(event.data);
+  if (channel) channel.onmessage = (event: MessageEvent<HudWhisperCard>) => deliver(event.data);
   return () => {
     unlisten();
     channel?.close();

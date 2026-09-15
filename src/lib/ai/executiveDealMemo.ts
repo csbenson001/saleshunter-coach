@@ -30,7 +30,7 @@ export async function generateExecutiveDealMemoDraft(opts: {
   input: ExecutiveDealMemoInput;
 }): Promise<ExecutiveDealMemoDraft> {
   const { settings, input } = opts;
-  const transcript = transcriptWithTimestamps(input.segments);
+  const transcript = transcriptWithTimestamps([...input.segments]);
   const { object, usage } = await generateObjectResilient({
     settings,
     workload: "deep",

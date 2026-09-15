@@ -225,26 +225,56 @@ pub async fn transcribe_file(
     // `TranscriptionResult` shape (segments + duration); the acoustic speech-rate
     // is grafted on afterward since it's provider-independent.
     let result = match provider.as_str() {
-        "soniox" => run_upload_and_transcribe(
-            &client,
-            &api_key,
-            &upload_path,
-            model.as_deref().unwrap_or(DEFAULT_ASYNC_MODEL),
-            &language_hints,
-            diarization,
-        )
-        .await,
+        "soniox" => {
+            run_upload_and_transcribe(
+                &client,
+                &api_key,
+                &upload_path,
+                model.as_deref().unwrap_or(DEFAULT_ASYNC_MODEL),
+                &language_hints,
+                diarization,
+            )
+            .await
+        }
         "deepgram" => {
-            deepgram_batch(&client, &api_key, &upload_path, &language_hints, diarization).await
+            deepgram_batch(
+                &client,
+                &api_key,
+                &upload_path,
+                &language_hints,
+                diarization,
+            )
+            .await
         }
         "assemblyai" => {
-            assemblyai_batch(&client, &api_key, &upload_path, &language_hints, diarization).await
+            assemblyai_batch(
+                &client,
+                &api_key,
+                &upload_path,
+                &language_hints,
+                diarization,
+            )
+            .await
         }
         "openai" => {
-            openai_batch(&client, &api_key, &upload_path, model.as_deref(), &language_hints).await
+            openai_batch(
+                &client,
+                &api_key,
+                &upload_path,
+                model.as_deref(),
+                &language_hints,
+            )
+            .await
         }
         "gemini" => {
-            gemini_batch(&client, &api_key, &upload_path, model.as_deref(), &language_hints).await
+            gemini_batch(
+                &client,
+                &api_key,
+                &upload_path,
+                model.as_deref(),
+                &language_hints,
+            )
+            .await
         }
         other => Err(format!(
             "File transcription for '{other}' is not supported yet — switch to Soniox in Settings."
@@ -901,7 +931,10 @@ async fn assemblyai_batch(
     );
     match language_hints.first() {
         Some(lang) => {
-            body.insert("language_code".into(), serde_json::Value::String(lang.clone()));
+            body.insert(
+                "language_code".into(),
+                serde_json::Value::String(lang.clone()),
+            );
         }
         None => {
             body.insert("language_detection".into(), serde_json::Value::Bool(true));
@@ -950,7 +983,10 @@ async fn assemblyai_batch(
     };
 
     // 4. Prefer diarized utterances; fall back to the flat transcript text.
-    let duration_ms_meta = final_t.audio_duration.map(|d| (d * 1000.0) as u64).unwrap_or(0);
+    let duration_ms_meta = final_t
+        .audio_duration
+        .map(|d| (d * 1000.0) as u64)
+        .unwrap_or(0);
     let segments: Vec<ReplaySegment> = match final_t.utterances {
         Some(utts) if !utts.is_empty() => utts
             .into_iter()
