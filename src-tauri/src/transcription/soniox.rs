@@ -16,6 +16,10 @@ use crate::audio::resample::pcm_to_le_bytes;
 use crate::audio::TARGET_SAMPLE_RATE;
 
 const SONIOX_WS_URL: &str = "wss://stt-rt.soniox.com/transcribe-websocket";
+// Soniox defaults to 2 s. Keeping endpointing below one second leaves a full
+// second for network transit, local phrase matching, and soundboard scheduling
+// while still avoiding premature splits during a natural speaking pause.
+const MAX_ENDPOINT_DELAY_MS: u32 = 800;
 
 /// Soniox endpoint markers. `<end>` closes an utterance; `<fin>` is the final
 /// token emitted when the whole stream ends.
@@ -35,7 +39,27 @@ struct SonioxConfig<'a> {
     #[serde(skip_serializing_if = "Option::is_none")]
     language_hints: Option<Vec<String>>,
     enable_endpoint_detection: bool,
+    max_endpoint_delay_ms: u32,
     enable_speaker_diarization: bool,
+}
+
+fn wire_config<'a>(
+    api_key: Option<&'a str>,
+    model: &'a str,
+    language_hints: Option<Vec<String>>,
+    diarization: bool,
+) -> SonioxConfig<'a> {
+    SonioxConfig {
+        api_key,
+        model,
+        audio_format: "pcm_s16le",
+        sample_rate: TARGET_SAMPLE_RATE,
+        num_channels: 1,
+        language_hints,
+        enable_endpoint_detection: true,
+        max_endpoint_delay_ms: MAX_ENDPOINT_DELAY_MS,
+        enable_speaker_diarization: diarization,
+    }
 }
 
 #[derive(Deserialize, Default)]
@@ -101,21 +125,17 @@ pub async fn run_session(
     } else {
         Some(config.language_hints.clone())
     };
-    let wire = SonioxConfig {
+    let wire = wire_config(
         // Relay mode omits the key (the relay injects it); BYOK sends it.
-        api_key: if config.relay_endpoint.is_some() {
+        if config.relay_endpoint.is_some() {
             None
         } else {
             Some(config.api_key.as_str())
         },
-        model: &config.model,
-        audio_format: "pcm_s16le",
-        sample_rate: TARGET_SAMPLE_RATE,
-        num_channels: 1,
+        &config.model,
         language_hints,
-        enable_endpoint_detection: true,
-        enable_speaker_diarization: config.diarization,
-    };
+        config.diarization,
+    );
     write
         .send(Message::Text(serde_json::to_string(&wire)?))
         .await?;
@@ -255,4 +275,19 @@ pub async fn run_session(
     };
 
     drive_session("soniox", forward, read_loop).await
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn wire_config_caps_endpoint_delay_below_the_coaching_sla() {
+        let wire = wire_config(Some("test-key"), "stt-rt-v5", None, true);
+        let value = serde_json::to_value(wire).unwrap();
+
+        assert_eq!(value["enable_endpoint_detection"], true);
+        assert_eq!(value["max_endpoint_delay_ms"], MAX_ENDPOINT_DELAY_MS);
+        assert!(MAX_ENDPOINT_DELAY_MS < 1_800);
+    }
 }
